@@ -1,0 +1,12 @@
+#! /bin/sh
+
+# Build local images
+
+$LUCI_ROOT/bin/build-local-docker-images
+
+for test in $LUCI_ROOT/src/test/*.sh ; do
+    echo "######## Executing test '$(basename $test)'"
+    sh $test
+    echo "######## Done testing '$(basename $test)'"
+    echo
+done
