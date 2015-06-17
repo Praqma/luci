@@ -1,3 +1,0 @@
-#!/bin/sh
-
-docker  run --rm -v $LUCI_CONFIG/zetta_config:/config -v ~/.docker/machine:/root/.docker/machine -v /var/run/docker.sock:/var/run/docker.sock zetta-tools docker ps

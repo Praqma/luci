@@ -7,6 +7,7 @@ done
 
 checkEnvDefined() {
     [ $(eval echo \$$1) ] || (echo "ERROR: $1 not defined" ; exit 1)
+    export $1
 }
 
 # The init files in /config must define the following env vars

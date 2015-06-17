@@ -1,7 +1,0 @@
-#! /bin/sh
-
-# Test that the script to build local docker images works
-
-$LUCI_ROOT/bin/build-local-docker-images
-
-# TODO should probably do some asserts, but for now succeed when no errors

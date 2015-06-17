@@ -1,0 +1,7 @@
+#! /bin/sh
+
+# Build local images
+$LUCI_ROOT/bin/build-local-docker-images
+
+bats $LUCI_ROOT/src/test
+
