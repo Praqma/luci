@@ -1,0 +1,22 @@
+#! /bin/sh
+
+source $LUCI_ROOT/functions/zetta-tools
+
+# Create security profile
+
+# Create lucitest profile if it doesn't exits
+if ! runZettaTools openstack security group list -c Name -f csv --quote none | grep -q lucitest ; then
+    runZettaTools openstack security group create lucitest
+fi
+
+# Delete all rules
+for e in $(runZettaTools openstack security group rule list lucitest -f csv -c ID --quote none | tail -n+2) ; do
+    runZettaTools openstack security group rule delete $e
+done
+
+# Add rule for port range 10000-10999
+runZettaTools openstack security group rule create lucitest --dst-port 10000:10999 > /dev/null
+
+
+
+
