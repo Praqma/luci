@@ -63,5 +63,5 @@ _cleanDockerMachine() {
 }
 
 _initDockerMachine() {
-    
+    true # noop
 }
