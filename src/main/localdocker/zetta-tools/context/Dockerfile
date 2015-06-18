@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y python-dev python-setuptools libffi-dev
     && easy_install pip \
     && pip install python-openstackclient python-novaclient \
            python-swiftclient python-heatclient python-cinderclient python-keystoneclient \
-           python-neutronclient python-designateclient docker-compose
+           python-neutronclient python-designateclient \
+    && pip install -U docker-compose
 
 ENV PATH=/root/bin:$PATH
 
