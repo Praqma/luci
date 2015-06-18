@@ -3,7 +3,7 @@
 load utils
 
 @test "Get docker-compose to build our Jenkins suite" {
-
+      skip "Needs fixing"
 #    local machname=lucitest-$(date +%Y%m%d-%H%M%S)
     
 #    echo "Creating docker host called luci-unittest, please wait..."
