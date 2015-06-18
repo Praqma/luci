@@ -14,8 +14,10 @@ for e in $(runZettaTools openstack security group rule list lucitest -f csv -c I
     runZettaTools openstack security group rule delete $e
 done
 
-# Add rule for port range 10000-10999
+# Add rule for port range 10000-10999, 2376 (docker), and 3376 (docker swarm)
 runZettaTools openstack security group rule create lucitest --dst-port 10000:10999 > /dev/null
+runZettaTools openstack security group rule create lucitest --dst-port 2376        > /dev/null
+runZettaTools openstack security group rule create lucitest --dst-port 3376        > /dev/null
 
 
 
