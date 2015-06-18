@@ -43,7 +43,7 @@ function dockerMachineAquire() {
     local name
     local tmpdir=$(mktemp -d)
     # Move the newest free machine to tmpdir. If move fails assume there is no free machine in pool
-    if mv "$(find "$POOL_DIR/free -type f -depth 1" | head -1)" $tmpdir ; then
+    if mv "$(find $POOL_DIR/free -type f -depth 1 | head -1)" $tmpdir ; then
         name="$(ls -1 $tmpdir | head -1)"
         mv "$tmpdir/$name" "$POOL_DIR/busy"
         echo "Docker machine '$name' obtained from pool"
@@ -59,6 +59,7 @@ function dockerMachineAquire() {
 }
 
 _cleanDockerMachine() {
+    #TODO write error message when host has no containers to delete
     runZettaTools docker rm -f $(docker ps -q) || true
 }
 
