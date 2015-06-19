@@ -34,7 +34,8 @@ load utils
     run runZettaTools docker inspect --format '{{ .State.Running }}'  $cid
     [ $output = "true" ]
 
-#    res=$(curl -s --head localhost:18080 | head -n 1 | grep -c "HTTP/1.1 200 OK")
+    res=$(curl -s --head localhost:18080 | head -n 1 | grep -c "HTTP/1.1 200 OK")
+    [ $res = "1" ]
 
 #Cleanup
     run runZettaTools docker rm -f $cid
