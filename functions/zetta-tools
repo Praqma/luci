@@ -1,14 +1,19 @@
 #!/bin/sh
 
-function runZettaTools () {
-    while getopts "v:" flag ; do
+
+function runZettaTools() {
+    local OPTIND BINDINGS
+    BINDINGS=()
+    while getopts ":v:" flag ; do
         case $flag in
             v)
-                BINDINGS="$BINDINGS -v ${OPTARG}" ;;
+                BINDINGS=("${BINDINGS[@]}" "-v" "${OPTARG}")
+                ;;
         esac
     done
-   shift $((OPTIND-1))
-
-   docker run --rm $BINDINGS -v $LUCI_CONFIG/zetta_config:/config -v ~/.docker/machine:/root/.docker/machine -v /var/run/docker.sock:/var/run/docker.sock zetta-tools "$@"
+    shift $((OPTIND-1))
+    
+    docker run --rm ${BINDINGS[@]} -v $LUCI_CONFIG/zetta_config:/config -v ~/.docker/machine:/root/.docker/machine -v /var/run/docker.sock:/var/run/docker.sock zetta-tools "$@"
+    
 }
 
