@@ -12,8 +12,8 @@ function runZettaTools() {
         esac
     done
     shift $((OPTIND-1))
-    
-    docker run --rm ${BINDINGS[@]} -v $LUCI_CONFIG/zetta_config:/config -v ~/.docker/machine:/root/.docker/machine -v /var/run/docker.sock:/var/run/docker.sock zetta-tools "$@"
+
+    docker run --rm ${BINDINGS[@]} -v $LUCI_CONFIG/zetta_config:/config -v $LUCI_DATA/zetta-tools-docker:/root/.docker -v /var/run/docker.sock:/var/run/docker.sock zetta-tools "$@"
     
 }
 
