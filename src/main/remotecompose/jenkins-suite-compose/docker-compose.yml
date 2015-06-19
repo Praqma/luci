@@ -1,0 +1,26 @@
+proxy:
+  image: nginx:1.9.2
+  ports:
+   - "80:80"
+  volumes:
+   - /mnt/praqma/nginx:/etc/nginx/conf.d
+  links:
+   - registry
+   - hub
+registry:
+  image: registry:0.9.1
+  environment:
+   - STORAGE_PATH=/mnt/registry
+  volumes:
+   - /mnt/praqma/registry:/mnt/registry
+  ports:
+   - "5000:5000"
+hub:
+  image: konradkleine/docker-registry-frontend:v1
+  links:
+   - registry
+  environment: 
+   - ENV_DOCKER_REGISTRY_HOST=registry
+   - ENV_DOCKER_REGISTRY_PORT=5000
+  ports:
+   - "8080:80"
