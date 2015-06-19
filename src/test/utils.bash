@@ -20,13 +20,17 @@ function group() {
 # A docker machine is aquired with 'dockerMachineAquire'. It returns the name of the machine.
 # When done using the machine it *must* be returned to the pool with 'dockerMachineRelease'
 #
-# 
-POOL_DIR=$LUCI_CONFIG/dmpool
+#
+
+POOL_DIR=$LUCI_DATA/dmpool
+AQUIRED_MACHINES=()
 function dockerMachineRelease() {
-    local name=$1
-    _cleanDockerMachine "$name"
-    mv "$POOL_DIR/busy/$name" "$POOL_DIR/free/$name"
-    touch "$POOL_DIR/free/$name" # update timestamp
+    for name in $1 ; do 
+        _cleanDockerMachine "$name"
+        mv "$POOL_DIR/busy/$name" "$POOL_DIR/free/$name"
+        touch "$POOL_DIR/free/$name" # update timestamp
+        echo "Released: $name"
+    done
 }
 
 # args:
@@ -35,11 +39,11 @@ function dockerMachineRelease() {
 function dockerMachineAquire() {
     mkdir -p "$POOL_DIR/free"
     mkdir -p "$POOL_DIR/busy"
-
+    
     local var=#1
     local desc=$2
     [ -n "$desc" ] || (echo "Missing 'desc' for aquiring docker machine" ; exit 1)
-
+    
     local name
     local tmpdir=$(mktemp -d)
     # Move the newest free machine to tmpdir. If move fails assume there is no free machine in pool
@@ -55,11 +59,24 @@ function dockerMachineAquire() {
     fi
     echo "$desc" >> "$POOL_DIR/busy/$name"
     eval "$1=$name"
+    AQUIRED_MACHINES=(${AQUIRED_MACHINES[@]} $name)
     return 0
 }
 
+# Release all docker machines aquired since last call to this method
+# Suggestion: Call this from teardown in bats test, and you don't have to bother about
+# releasing machines in individual test cases
+function dockerMachineReleaseAll() {
+    local machines=$AQUIRED_MACHINES
+
+
+    AQUIRED_MACHINES=()
+    dockerMachineRelease $machines
+}
+
 _cleanDockerMachine() {
-    runZettaTools docker rm -f $(docker ps -q) || true
+    local containers=$(docker ps -aq) ; [ -n "$containers" ] && docker rm -f $containers
+    [ -n "$containers" ] && runZettaToolds docker rm -f $containers
 }
 
 _initDockerMachine() {
