@@ -1,6 +1,7 @@
 #! /usr/bin/env bats
 
 load utils
+jPort=18080
 
 @test "Running Jenkins container" {
 #Prepare
@@ -8,7 +9,7 @@ load utils
 
 
 #Verify
-    run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p 18080:8080  luci-jenkins
+    run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p $jPort:8080  luci-jenkins
     [ $status -eq 0 ]    
     local cid=$output
 
@@ -34,10 +35,17 @@ load utils
     run runZettaTools docker inspect --format '{{ .State.Running }}'  $cid
     [ $output = "true" ]
 
-    res=$(curl -s --head localhost:18080 | head -n 1 | grep -c "HTTP/1.1 200 OK")
+    res=$(curl -s --head localhost:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
+    wget http://localhost:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
+#    java -jar jenkins-cli.jar -s http://localhost:$jPort/ create-job luci ./jobs/simpleJob.xml
+
+#    java -jar jenkins-cli.jar -s http://localhost:$jPort/ build-job luci
+
+    rm -f jenkins-cli.jar
+
 #Cleanup
-    run runZettaTools docker rm -f $cid
+#    run runZettaTools docker rm -f $cid
 }
 
