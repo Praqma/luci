@@ -9,9 +9,17 @@ load utils
 @test "Remote docker build with zetta-tools" {
     local tag=$RANDOM
     local dhost
+
+    echo "Using tag: $tag"
     dockerMachineAquire dhost "Testing docker build"
+
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context dm $dhost \
                   build -t jenkins:$tag /tmp/context/
+
     runZettaTools dm $dhost images | grep "jenkins.*$tag"
-    dockerMachineRelease $dhost
 }
+
+function teardown() {
+    dockerMachineReleaseAll
+}
+

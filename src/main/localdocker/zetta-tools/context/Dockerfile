@@ -15,7 +15,7 @@ ENV PATH=/root/bin:$PATH
 ADD entrypoint.sh /entrypoint.sh
 ADD bin /root/bin
 
-VOLUME /root/.docker/machine
+VOLUME /root/.docker
 VOLUME /config
 
 # Symlink .bashrc for customizing bash
