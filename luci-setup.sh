@@ -12,6 +12,7 @@ case $0 in
     bash) f=$BASH_SOURCE ;;
     *) f=$0
 esac
+dir=$(dirname $f)
 # The (cd $dir ; pwd) prints absolute path for $dir. Do the cd with sh, in other shells (e.g. zsh) cd can have other
 # side effects
 export LUCI_ROOT=$(sh -c "(cd $dir ; pwd)")
