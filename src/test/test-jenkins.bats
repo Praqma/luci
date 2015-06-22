@@ -30,7 +30,7 @@ waitForJenkinsRunning() {
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     
 #Verify
-    run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p $jPort:8080  luci-jenkins
+    run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p $jPort:8080  -p 50000:50000 luci-jenkins
     [ $status -eq 0 ]    
     local cid=$output
     
@@ -46,14 +46,12 @@ echo "Container up and running, now start test"
     res=$(curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
-#    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
-#    java -jar jenkins-cli.jar -s http://localhost:$jPort/ create-job luci ./jobs/simpleJob.xml
-
-#    java -jar jenkins-cli.jar -s http://localhost:$jPort/ build-job luci
-
-#    rm -f jenkins-cli.jar
+    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
+    #java -jar jenkins-cli.jar -s http://localhost:$jPort/ create-job luci ./jobs/simpleJob.xml;
+    #java -jar jenkins-cli.jar -s http://localhost:$jPort/ build-job luci;
 
 #Cleanup
     run runZettaTools docker rm -f $cid
+    rm -f jenkins-cli.jar
 }
 
