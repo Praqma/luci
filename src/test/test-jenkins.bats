@@ -1,51 +1,56 @@
 #! /usr/bin/env bats
 
 load utils
+
 jPort=18080
 
+processLines() {
+    while read line; do
+        case "$line" in 
+            *"Jenkins is fully up and running"*)
+                echo "Jenkins up and running!"
+                return 0
+                ;;
+            *)
+                ;;
+        esac
+    done
+    return 1
+}
+
+waitForJenkinsRunning() {
+    # TODO seems the docker logs command creates a container that is not cleaned up
+    runZettaTools docker logs -f $1 2>&1 | processLines
+    local rc=$?
+    return $rc
+}
+
 @test "Running Jenkins container" {
-#Prepare
+    #Prepare
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
-
-
+    
 #Verify
     run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p $jPort:8080  luci-jenkins
     [ $status -eq 0 ]    
     local cid=$output
+    
 
-    sleep 15
+    waitForJenkinsRunning $cid
 
-# TO-DO
-#    run docker logs -f $cid 2>&1 | while read line; do
-#    case "$line" in 
-#      *"Jenkins is fully up and running"*)
-#        jenkinsState="done"
-#        echo "Found Jenkins!"
-#        exit 123
-#        ;;
-#      *)
-#        ;;
-#      esac
-#    done 
-#    rc=$?
-#    echo $rc
-#    echo $jenkinsState
-#    [ $rc -eq 123 ]
-
-    run runZettaTools docker inspect --format '{{ .State.Running }}'  $cid
+    run runZettaTools docker inspect --format '{{ .State.Running }}' $cid
     [ $output = "true" ]
 
-    res=$(curl -s --head localhost:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
+    res=$(curl -s --head $LUCI_DOCKER_HOST:$jPort | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
-    wget http://localhost:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
+#    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
 #    java -jar jenkins-cli.jar -s http://localhost:$jPort/ create-job luci ./jobs/simpleJob.xml
 
 #    java -jar jenkins-cli.jar -s http://localhost:$jPort/ build-job luci
 
-    rm -f jenkins-cli.jar
+#    rm -f jenkins-cli.jar
 
 #Cleanup
-#    run runZettaTools docker rm -f $cid
+    run runZettaTools docker rm -f $cid
 }
 
