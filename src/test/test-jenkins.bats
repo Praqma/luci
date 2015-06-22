@@ -40,7 +40,7 @@ waitForJenkinsRunning() {
     run runZettaTools docker inspect --format '{{ .State.Running }}' $cid
     [ $output = "true" ]
 
-    res=$(curl -s --head $LUCI_DOCKER_HOST:$jPort | grep -c "HTTP/1.1 200 OK")
+    res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
 #    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
