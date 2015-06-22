@@ -47,8 +47,8 @@ echo "Container up and running, now start test"
     [ $res = "1" ]
 
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
-    #java -jar jenkins-cli.jar -s http://localhost:$jPort/ create-job luci ./jobs/simpleJob.xml;
-    #java -jar jenkins-cli.jar -s http://localhost:$jPort/ build-job luci;
+    #java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort create-job luci < jobs/simpleJob.xml
+    #java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort/ build luci;
 
 #Cleanup
     run runZettaTools docker rm -f $cid
