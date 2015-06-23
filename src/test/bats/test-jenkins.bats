@@ -63,7 +63,7 @@ runJenkinsCli(){
 
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O /tmp/jenkins-cli.jar
     
-    runJenkinsCli create-job luci < $LUCI_ROOT/src/test/test-jobs/simpleJob.xml
+    runJenkinsCli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
     runJenkinsCli build luci
 
     res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText|grep -c "SUCCESS")
