@@ -19,10 +19,10 @@ export LUCI_ROOT=$(sh -c "(cd $dir ; pwd)")
 echo "LUCI_ROOT set to '$LUCI_ROOT'. Root of the Luci project source."
 
 if [ -z "$LUCI_DOCKER_HOST" ] ; then
-    if type boot2docker > /dev/null ; then
+    if type boot2docker > /dev/null 2>&1 ; then
         LUCI_DOCKER_HOST=$(boot2docker ip)
     else
-        LUCI_DOCKER_HOST=127.0.0.1
+        LUCI_DOCKER_HOST=$(ifconfig docker0 |grep "inet "|cut -d" " -f10)
     fi
 fi
 export LUCI_DOCKER_HOST
