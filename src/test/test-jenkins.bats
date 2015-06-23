@@ -5,6 +5,9 @@ load utils
 jPort=18080
 
 processLines() {
+# We need to listen to the Jenkins output
+# and wait untill both Jenkins and the jnlp
+# is up af running.
     local points=0
     while read line; do
         case "$line" in 
