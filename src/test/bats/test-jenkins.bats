@@ -13,15 +13,15 @@ processLines() {
         case "$line" in 
             *"Jenkins is fully up and running"*)
                 points=$((points+1))
-                echo "Jenkins up and running!"
-                if (( $points == 2 )) ; then
+                if [ $points -eq 2 ] ; then
+                      echo "Jenkins up and running! $points"
                       return 0
                 fi
                 ;;
             *"setting agent port for jnlp"*)
                 points=$((points+1))
-                echo "Jenkins Jnlp up and running!"
-                if (( $points == 2 )) ; then
+                if [ $points -eq 2 ]  ; then
+                      echo "Jenkins Jnlp up and running! $points"
                       return 0
                 fi
                 ;;
@@ -54,6 +54,8 @@ runJenkinsCli(){
     cleanup_container $cid
 
     waitForJenkinsRunning $cid
+
+echo "Jenkins is up, lets move on"
 
     run runZettaTools docker inspect --format '{{ .State.Running }}' $cid
     [ $output = "true" ]
