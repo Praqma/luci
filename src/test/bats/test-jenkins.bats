@@ -56,16 +56,16 @@ waitForJenkinsRunning() {
     res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
-    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
+    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O /tmp/jenkins-cli.jar
 
-    java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth create-job luci < $LUCI_ROOT/src/test/test-jobs/simpleJob.xml
-    java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth build luci
+    java -jar /tmp/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth create-job luci < $LUCI_ROOT/src/test/test-jobs/simpleJob.xml
+    java -jar /tmp/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth build luci
 
     res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText|grep -c "SUCCESS")
     [ $res = "1" ]
 
 #Cleanup
     run runZettaTools docker rm -f $cid
-    rm -f jenkins-cli.jar
+    rm -f /tmp/jenkins-cli.jar
 }
 
