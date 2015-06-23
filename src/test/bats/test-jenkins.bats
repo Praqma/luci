@@ -40,7 +40,7 @@ waitForJenkinsRunning() {
 }
 
 runJenkinsCli(){
-    java -jar /tmp/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
+    java -jar $tmpdir/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
 }
 
 @test "Running Jenkins container" {
@@ -63,7 +63,9 @@ echo "Jenkins is up, lets move on"
     res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
-    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O /tmp/jenkins-cli.jar
+    tmpdir=$(mktemp -d)
+
+    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O $tmpdir/jenkins-cli.jar
     
     runJenkinsCli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
     runJenkinsCli build luci
@@ -72,7 +74,7 @@ echo "Jenkins is up, lets move on"
     [ $res = "1" ]
 
 #Cleanup
-    rm -f /tmp/jenkins-cli.jar
+    rm -f $tmpdir/jenkins-cli.jar
 }
 
 teardown() {
