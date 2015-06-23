@@ -14,6 +14,22 @@ function group() {
     esac
 }
 
+### Cleanup after test execution
+CLEANUP_CONTAINERS=()
+# Stop and remove
+# 1: Container name or id
+function cleanup_container() {
+    CLEANUP_CONTAINERS=(${CLEANUP_CONTAINERS[@]} $1)
+}
+
+# Perform the actual cleanup
+function cleanup_perform() {
+    if [ -n "$CLEANUP_CONTAINERS" ] ; then
+        runZettaTools docker rm -f ${CLEANUP_CONTAINERS[@]}
+    fi
+}
+
+
 ### Docker Machnine pool
 #
 # Implementation of a pool of docker machines that can be used in tests.
