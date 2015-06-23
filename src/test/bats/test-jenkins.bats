@@ -51,7 +51,8 @@ runJenkinsCli(){
     run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p $jPort:8080 -p 50000:50000 luci-jenkins
     [ $status -eq 0 ]    
     local cid=$output
-    
+    cleanup_container $cid
+
     waitForJenkinsRunning $cid
 
     run runZettaTools docker inspect --format '{{ .State.Running }}' $cid
@@ -69,7 +70,10 @@ runJenkinsCli(){
     [ $res = "1" ]
 
 #Cleanup
-    run runZettaTools docker rm -f $cid
     rm -f /tmp/jenkins-cli.jar
+}
+
+teardown() {
+    cleanup_perform
 }
 
