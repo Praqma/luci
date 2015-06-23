@@ -25,7 +25,9 @@ function cleanup_container() {
 # Perform the actual cleanup
 function cleanup_perform() {
     if [ -n "$CLEANUP_CONTAINERS" ] ; then
-        runZettaTools docker rm -f ${CLEANUP_CONTAINERS[@]}
+        local containers=$CLEANUP_CONTAINERS
+        CLEANUP_CONTAINERS=()
+        runZettaTools docker rm -f ${containers[@]}
     fi
 }
 
