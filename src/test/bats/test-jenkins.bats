@@ -39,8 +39,12 @@ waitForJenkinsRunning() {
     return $rc
 }
 
+runJenkinsCli(){
+    java -jar /tmp/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
+}
+
 @test "Running Jenkins container" {
-    #Prepare
+#Prepare
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     
 #Verify
@@ -57,9 +61,9 @@ waitForJenkinsRunning() {
     [ $res = "1" ]
 
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O /tmp/jenkins-cli.jar
-
-    java -jar /tmp/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth create-job luci < $LUCI_ROOT/src/test/test-jobs/simpleJob.xml
-    java -jar /tmp/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth build luci
+    
+    runJenkinsCli create-job luci < $LUCI_ROOT/src/test/test-jobs/simpleJob.xml
+    runJenkinsCli build luci
 
     res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText|grep -c "SUCCESS")
     [ $res = "1" ]
