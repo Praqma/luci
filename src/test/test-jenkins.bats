@@ -5,11 +5,22 @@ load utils
 jPort=18080
 
 processLines() {
+    local points=0
     while read line; do
         case "$line" in 
             *"Jenkins is fully up and running"*)
+                points=$((points+1))
                 echo "Jenkins up and running!"
-                return 0
+                if (( $points == 2 )) ; then
+                      return 0
+                fi
+                ;;
+            *"setting agent port for jnlp"*)
+                points=$((points+1))
+                echo "Jenkins Jnlp up and running!"
+                if (( $points == 2 )) ; then
+                      return 0
+                fi
                 ;;
             *)
                 ;;
@@ -43,12 +54,16 @@ waitForJenkinsRunning() {
 echo "Container up and running, now start test"
 
     #TO-DO This needs to run inside zetta-tools
-    res=$(curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
+    res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar
-    #java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort create-job luci < jobs/simpleJob.xml
-    #java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort/ build luci;
+
+    java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth create-job luci < jobs/simpleJob.xml
+#    java -jar jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth build luci
+
+#    res=$(curl -s http://localhost:18080/job/luci/1/consoleText|grep -c "SUCCESS")
+#    [ $res = "1" ]
 
 #Cleanup
     run runZettaTools docker rm -f $cid
