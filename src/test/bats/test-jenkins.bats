@@ -1,29 +1,18 @@
 #! /usr/bin/env bats
 
 load utils
-
+source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
 
 processLines() {
 # We need to listen to the Jenkins output
 # and wait untill both Jenkins and the jnlp
 # is up af running.
-    local points=0
     while read line; do
         case "$line" in 
-            *"Jenkins is fully up and running"*)
-                points=$((points+1))
-                if [ $points -eq 2 ] ; then
-                      echo "Jenkins up and running! $points"
-                      return 0
-                fi
-                ;;
             *"setting agent port for jnlp"*)
-                points=$((points+1))
-                if [ $points -eq 2 ]  ; then
-                      echo "Jenkins Jnlp up and running! $points"
+                      echo "Jenkins Jnlp up and running! $points [$(date)]"
                       return 0
-                fi
                 ;;
             *)
                 ;;
@@ -34,7 +23,7 @@ processLines() {
 
 waitForJenkinsRunning() {
     # TODO seems the docker logs command creates a container that is not cleaned up
-    runZettaTools docker logs -f $1 2>&1 | processLines
+    runZettaTools docker logs -f $1 | processLines
     local rc=$?
     return $rc
 }
@@ -50,14 +39,20 @@ runJenkinsCli() {
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     
 #Verify
-    run runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker run -d -p $jPort:8080 -p 50000:50000 luci-jenkins
+    local tmpdir=$(mktemp -d)
+    generateSshKey $tmpdir "SSH-key-for-LUCI"
+
+    local jenkins_home=$(mktemp -d)
+    run runZettaTools docker run -v $tmpdir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
     [ $status -eq 0 ]    
     local cid=$output
     cleanup_container $cid
 
+    [ -f $jenkins_home/credentials.xml ]
+
     waitForJenkinsRunning $cid
 
-echo "Jenkins is up, lets move on"
+echo "Jenkins is up, lets move on [$(date)]"
 
     run runZettaTools docker inspect --format '{{ .State.Running }}' $cid
     [ $output = "true" ]
