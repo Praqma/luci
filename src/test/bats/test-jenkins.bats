@@ -39,8 +39,10 @@ waitForJenkinsRunning() {
     return $rc
 }
 
-runJenkinsCli(){
-    java -jar $tmpdir/jenkins-cli.jar -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
+runJenkinsCli() {
+    local cli=$1
+    shift 
+    java -jar "$cli" -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
 }
 
 @test "Running Jenkins container" {
@@ -63,18 +65,18 @@ echo "Jenkins is up, lets move on"
     res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
 
-    tmpdir=$(mktemp -d)
+    local cli=$(mktemp -d)/cli.jar
 
-    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O $tmpdir/jenkins-cli.jar
+    wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
     
-    runJenkinsCli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
-    runJenkinsCli build luci
+    runJenkinsCli $cli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
+    runJenkinsCli $cli build luci
 
-    res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText|grep -c "SUCCESS")
+    res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -c "SUCCESS")
     [ $res = "1" ]
 
 #Cleanup
-    rm -f $tmpdir/jenkins-cli.jar
+    rm -f $cli
 }
 
 teardown() {
