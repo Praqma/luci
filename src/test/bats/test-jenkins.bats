@@ -39,58 +39,58 @@ runJenkinsCli() {
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/ 
 #Verify
-    local tmpdir=$(mktemp -d)
-    generateSshKey $tmpdir "SSH-key-for-LUCI"
+    local tmpdir=$(tempdir)
 
-echo "starting Jenkins"
+    local keydir=$tmpdir/keys
+    generateSshKey $keydir "SSH-key-for-LUCI"
 
-    local jenkins_home=$(mktemp -d)
-    run runZettaTools docker run -v $tmpdir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
+    echo "starting Jenkins"
+    
+    local jenkins_home=$tmpdir/home
+    run runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
     [ $status -eq 0 ]    
     local jcid=$output
     cleanup_container $jcid
 
     [ -f $jenkins_home/credentials.xml ]
+    
+    echo "now starting slave"
 
-echo "now starting slave"
-
-    run runZettaTools docker run -v $tmpdir:/home/jenkins/.ssh/ -d -p 22:22 luci-ssh-slave
-    [ $status -eq 0 ]
-    local jscid=$output
-    cleanup_container $jscid
+#    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p 22:22 luci-ssh-slave
+#    [ $status -eq 0 ]
+#    local jscid=$output
+#    cleanup_container $jscid
 
     waitForJenkinsRunning $jcid
 
-echo "Jenkins is up, lets move on [$(date)]"
-
+    echo "Jenkins is up, lets move on [$(date)]"
+    
     run runZettaTools docker inspect --format '{{ .State.Running }}' $jcid
     [ $output = "true" ]
-
+    
     res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
-
-    local cli=$(mktemp -d)/cli.jar
-
+    
+    local cli=$tmpdir/cli.jar
+    
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
     
     runJenkinsCli $cli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
     runJenkinsCli $cli build luci
-
+    
     res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -c "SUCCESS")
     [ $res = "1" ]
-
-    run runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid
-    jsip=$output
-    echo $jsip
-
+    
+#    run runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid
+#    jsip=$output
+#    echo $jsip
+    
     echo "Jenkins Master ID : $jcid"
-
+    
     #run runZettaTools docker exec -it $jcid env
     #[ $status -eq 0 ]
-echo $output
+    echo $output
 
-#Cleanup
-    rm -f $cli
 }
 
 teardown() {
