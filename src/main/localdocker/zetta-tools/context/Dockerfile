@@ -3,12 +3,14 @@ FROM ubuntu:14.04
 MAINTAINER Praqma <info@praqma.net>
 
 RUN apt-get update && apt-get install -y python-dev python-setuptools libffi-dev \
-            libssl-dev ca-certificates openssh-client docker.io curl && apt-get clean \
+            libssl-dev ca-certificates openssh-client wget curl && apt-get clean \
     && easy_install pip \
     && pip install python-openstackclient python-novaclient \
            python-swiftclient python-heatclient python-cinderclient python-keystoneclient \
            python-neutronclient python-designateclient \
     && pip install -U docker-compose
+
+RUN wget -qO- https://get.docker.com/ | sh
 
 ENV PATH=/root/bin:$PATH
 
