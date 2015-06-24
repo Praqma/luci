@@ -47,7 +47,9 @@ runJenkinsCli() {
     echo "starting Jenkins"
     
     local jenkins_home=$tmpdir/home
+    cp $LUCI_ROOT/src/main/remotedocker/jenkins/context/credentials.xml $jenkins_home
     run runZettaTools docker run -v $keydir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
+    echo $output
 
     [ $status -eq 0 ]    
     local jcid=$output
