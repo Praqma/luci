@@ -16,10 +16,29 @@ function group() {
 
 ### Cleanup after test execution
 CLEANUP_CONTAINERS=()
+CLEANUP_ACTIONS=()
+
 # Stop and remove
 # 1: Container name or id
 function cleanup_container() {
     CLEANUP_CONTAINERS=(${CLEANUP_CONTAINERS[@]} $1)
+}
+
+# Creates a tempdir
+# As default it is created inside the users home directory, so it is accessible on the host machine
+# when running docker in boot2docker
+function tempdir() {
+    local parentDir=$LUCI_DATA/tmp
+    mkdir -p "$parentDir"
+    mktemp -d -p "$parentDir"
+}
+
+### Create a temp dir that is deleted as part of cleanup 
+function cleanup_tmpdir() {
+    local name=$(mktemp -d)
+    local action="rm -r $name"
+    CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]} action)
+    echo $name
 }
 
 # Perform the actual cleanup
@@ -29,6 +48,10 @@ function cleanup_perform() {
         CLEANUP_CONTAINERS=()
         runZettaTools docker rm -f ${containers[@]}
     fi
+    for action in $CLEANUP_ACTIONS ; do
+        eval "$action"
+    done
+    CLEANUP_ACTIONS=()
 }
 
 

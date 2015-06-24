@@ -5,7 +5,7 @@ source $LUCI_ROOT/functions/ssh-keys
 
 @test "generateSshKey function" {
 
-    local tmpdir=$(mktemp -d)
+    local tmpdir=$(tempdir)
     generateSshKey $tmpdir "SSH-key-for-LUCI" 
 
     [ -f $tmpdir/id_rsa.pub ]

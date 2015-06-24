@@ -4,6 +4,7 @@ generateSshKey() {
     local destDir=$1
     local comment=$2
 
+    mkdir -p $destDir
     runZettaTools -v "$destDir":/tmp/.ssh ssh-keygen -t rsa -b 4096 -C "$comment" -f /tmp/.ssh/id_rsa -q -N ""
 
 }
