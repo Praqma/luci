@@ -43,6 +43,7 @@ runJenkinsCli() {
 
     local keydir=$tmpdir/keys
     generateSshKey $keydir "SSH-key-for-LUCI"
+    cat $keydir/id_rsa.pub > $keydir/authorized_keys
 
     mkdir $tmpdir/home
     local jenkins_home=$tmpdir/home
@@ -70,7 +71,9 @@ runJenkinsCli() {
     
     run runZettaTools docker inspect --format '{{ .State.Running }}' $jcid
     [ $output = "true" ]
-    
+
+
+    echo "starting tests"    
     res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
     
@@ -86,9 +89,11 @@ runJenkinsCli() {
 
     run runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid
     jsip=$output
-    echo $jsip
-
- #   run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
+    echo "jsip : $jsip"
+    echo "jcid :$jcid"
+    echo "Running : docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env"
+    run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
+echo "SSH output $output"
  #   [ $status -eq 0 ]
 
 }
