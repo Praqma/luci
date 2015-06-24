@@ -1,5 +1,7 @@
 FROM jenkins:1.609.1
 MAINTAINER Praqma <info@praqma.net>
 USER jenkins
-COPY plugins.txt /usr/share/jenkins/plugins.txt
-RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt
+#The credentials.xml will be copied to JENKINS_HOME by entrypoint
+COPY credentials.xml /usr/share/jenkins/ref/
+COPY plugins.txt /data/
+RUN /usr/local/bin/plugins.sh /data/plugins.txt
