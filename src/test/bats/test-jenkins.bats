@@ -41,11 +41,11 @@ runJenkinsCli() {
 #Verify
     local tmpdir=$(mktemp -d)
     generateSshKey $tmpdir "SSH-key-for-LUCI"
-
+    cat $tmpdir/id_rsa.pub > $tmpdir/authorized_keys
 echo "starting Jenkins"
 
     local jenkins_home=$(mktemp -d)
-    run runZettaTools docker run -v $tmpdir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
+    run runZettaTools docker run -v $tmpdir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
     [ $status -eq 0 ]    
     local jcid=$output
     cleanup_container $jcid
@@ -83,11 +83,8 @@ echo "Jenkins is up, lets move on [$(date)]"
     jsip=$output
     echo $jsip
 
-    echo "Jenkins Master ID : $jcid"
-
-    #run runZettaTools docker exec -it $jcid env
-    #[ $status -eq 0 ]
-echo $output
+    run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
+    [ $status -eq 0 ]
 
 #Cleanup
     rm -f $cli
