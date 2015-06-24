@@ -44,29 +44,29 @@ runJenkinsCli() {
     local keydir=$tmpdir/keys
     generateSshKey $keydir "SSH-key-for-LUCI"
 
-    echo "starting Jenkins"
-    
+    mkdir $tmpdir/home
     local jenkins_home=$tmpdir/home
     cp $LUCI_ROOT/src/main/remotedocker/jenkins/context/credentials.xml $jenkins_home
+
+    echo "starting Jenkins"
+
     run runZettaTools docker run -v $keydir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
-    echo $output
 
     [ $status -eq 0 ]    
     local jcid=$output
     cleanup_container $jcid
 
     [ -f $jenkins_home/credentials.xml ]
-    
-    echo "now starting slave"
-
-#    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p 22:22 luci-ssh-slave
-#    [ $status -eq 0 ]
-#    local jscid=$output
-#    cleanup_container $jscid
 
     waitForJenkinsRunning $jcid
-
     echo "Jenkins is up, lets move on [$(date)]"
+
+    echo "now starting slave"
+
+    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p 22:22 luci-ssh-slave
+    [ $status -eq 0 ]
+    local jscid=$output
+    cleanup_container $jscid
     
     run runZettaTools docker inspect --format '{{ .State.Running }}' $jcid
     [ $output = "true" ]
@@ -88,8 +88,8 @@ runJenkinsCli() {
     jsip=$output
     echo $jsip
 
-    run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
-    [ $status -eq 0 ]
+ #   run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
+ #   [ $status -eq 0 ]
 
 }
 
