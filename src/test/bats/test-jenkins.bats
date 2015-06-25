@@ -3,7 +3,7 @@
 load utils
 source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
-
+sshPort=10022
 processLines() {
 # We need to listen to the Jenkins output
 # and wait untill both Jenkins and the jnlp
@@ -59,9 +59,6 @@ runJenkinsCli() {
     local jcid=$output
     cleanup_container $jcid
 
-    # TODO no credential fiel
-    # [ -f $jenkins_home/credentials.xml ]
-
     waitForJenkinsRunning $jcid
 
     echo "starting tests"    
@@ -73,16 +70,16 @@ runJenkinsCli() {
     echo "now starting slave"
 
     # TODO fix slave is not starting
-    return
+    #return
     
-    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p 22:22 luci-ssh-slave
+    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p $sshPort:22 luci-ssh-slave
+    echo $output
     [ $status -eq 0 ]
     local jscid=$output
     cleanup_container $jscid
     
     run runZettaTools docker inspect --format '{{ .State.Running }}' $jcid
     [ $output = "true" ]
-
 
     local cli=$tmpdir/cli.jar
     
@@ -98,11 +95,11 @@ runJenkinsCli() {
     jsip=$output
     echo "jsip : $jsip"
     echo "jcid :$jcid"
-    echo "Running : docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env"
     run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
-    echo "SSH output $output"
-#   [ $status -eq 0 ]
 
+
+    echo "SSH output $output"
+    [ $status -eq 0 ]
 }
 
 teardown() {
