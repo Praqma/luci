@@ -47,7 +47,6 @@ runJenkinsCli() {
 
     mkdir $tmpdir/home
     local jenkins_home=$tmpdir/home
-    cp $LUCI_ROOT/src/main/remotedocker/jenkins/context/credentials.xml $jenkins_home
 
     echo "starting Jenkins"
 
