@@ -57,7 +57,7 @@ runJenkinsCli() {
     fi
 
     echo "starting Jenkins. jenkings home: $jenkins_home"
-    jcid=$(runZettaTools docker run -v $keydir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
+    jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
     cleanup_container $jcid
 
     waitForJenkinsRunning $jcid
@@ -84,7 +84,10 @@ runJenkinsCli() {
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -q "SUCCESS"
 
     jsip=$(runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid)
-    runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
+    runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env 
+
+#Use this, to pause the test before end. This way you can load jenkins in  a bworser and test things out.
+#read -p "Press [Enter] key to start backup..."
 }
 
 teardown() {
