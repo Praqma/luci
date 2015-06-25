@@ -69,11 +69,8 @@ runJenkinsCli() {
 
     echo "now starting slave"
 
-    # TODO fix slave is not starting
-    #return
-    
     run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p $sshPort:22 luci-ssh-slave
-    echo $output
+
     [ $status -eq 0 ]
     local jscid=$output
     cleanup_container $jscid
@@ -96,8 +93,6 @@ runJenkinsCli() {
     echo "jsip : $jsip"
     echo "jcid :$jcid"
     run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
-
-
     echo "SSH output $output"
     [ $status -eq 0 ]
 }
