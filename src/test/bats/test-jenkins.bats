@@ -69,9 +69,7 @@ runJenkinsCli() {
 
     echo "now starting slave"
 
-    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p $sshPort:22 luci-ssh-slave
-
-    [ $status -eq 0 ]
+    runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d -p $sshPort:22 luci-ssh-slave
     local jscid=$output
     cleanup_container $jscid
     
@@ -90,11 +88,7 @@ runJenkinsCli() {
 
     run runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid
     jsip=$output
-    echo "jsip : $jsip"
-    echo "jcid :$jcid"
-    run runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
-    echo "SSH output $output"
-    [ $status -eq 0 ]
+    runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
 }
 
 teardown() {
