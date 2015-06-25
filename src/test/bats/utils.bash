@@ -44,8 +44,9 @@ function cleanup_tmpdir() {
 # Perform the actual cleanup
 function cleanup_perform() {
     if [ -n "$CLEANUP_CONTAINERS" ] ; then
-        local containers=$CLEANUP_CONTAINERS
+        local containers=${CLEANUP_CONTAINERS[@]}
         CLEANUP_CONTAINERS=()
+        echo "Deleting containers:"
         runZettaTools docker rm -f ${containers[@]}
     fi
     for action in $CLEANUP_ACTIONS ; do
