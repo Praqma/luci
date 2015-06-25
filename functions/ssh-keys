@@ -6,6 +6,6 @@ generateSshKey() {
 
     mkdir -p $destDir
     runZettaTools -v "$destDir":/tmp/.ssh ssh-keygen -t rsa -b 4096 -C "$comment" -f /tmp/.ssh/id_rsa -q -N ""
-    chmod o+r "$destDir/*"
+    runZettaTools -v "$destDir":/tmp/.ssh chown $(id -u) /tmp/.ssh/id_rsa
 
 }
