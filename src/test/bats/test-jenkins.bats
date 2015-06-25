@@ -38,25 +38,25 @@ runJenkinsCli() {
 #Prepare
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/ 
-#Verify
+    #Verify
     local tmpdir=$(tempdir)
 
     local keydir=$tmpdir/keys
     generateSshKey $keydir "SSH-key-for-LUCI"
     cat $keydir/id_rsa.pub > $keydir/authorized_keys
 
-#Init a variable to house the jenkins_home folder. The home folder needs to be created here.
-#Else, it will be created by a container, by root and jenkins then cant access it.
-    local jenkins_home=$tmpdir/home
-    mkdir $jenkins_home
-    echo "Jenkins home er sat til : $jenkins_home"
     # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
     # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
     if type boot2docker > /dev/null 2>&1 ; then
         jenkins_home=$(boot2docker ssh mktemp -d)
+    else
+        #Init a variable to house the jenkins_home folder. The home folder needs to be created here.
+        #Else, it will be created by a container, by root and jenkins then cant access it.
+        local jenkins_home=$tmpdir/home
+        mkdir $jenkins_home
     fi
 
-    echo "starting Jenkins"
+    echo "starting Jenkins. jenkings home: $jenkins_home"
     run runZettaTools docker run -v $keydir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
     [ $status -eq 0 ]    
     local jcid=$output
