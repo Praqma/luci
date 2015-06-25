@@ -23,7 +23,7 @@ processLines() {
 
 waitForJenkinsRunning() {
     # TODO seems the docker logs command creates a container that is not cleaned up
-    runZettaTools docker logs -f -t $1 | processLines
+    (runZettaTools docker logs -f -t $1) | processLines
     local rc=$?
     return $rc
 }
@@ -45,7 +45,11 @@ runJenkinsCli() {
     generateSshKey $keydir "SSH-key-for-LUCI"
     cat $keydir/id_rsa.pub > $keydir/authorized_keys
 
+#Init a variable to house the jenkins_home folder. The home folder needs to be created here.
+#Else, it will be created by a container, by root and jenkins then cant access it.
     local jenkins_home=$tmpdir/home
+    mkdir $jenkins_home
+    echo "Jenkins home er sat til : $jenkins_home"
     # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
     # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
     if type boot2docker > /dev/null 2>&1 ; then
