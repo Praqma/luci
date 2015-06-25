@@ -1,9 +1,0 @@
-#! /bin/sh
-# script to replace docker binary. The intension is to call the correct client version in zetta tools to match server version
-# for now always call 1.7.0
-
-# TODO how do we decide what version to use?
-
-version=1.7.0
-
-exec docker-$version "$@"

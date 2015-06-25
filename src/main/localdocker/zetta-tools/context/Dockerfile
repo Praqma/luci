@@ -13,8 +13,9 @@ RUN apt-get update && apt-get install -y python-dev python-setuptools libffi-dev
 # Install docker-machine
 RUN mkdir /root/bin && wget -q https://github.com/docker/machine/releases/download/v0.3.0/docker-machine_linux-amd64 -O /root/bin/docker-machine
 
-# Install a few versions of the docker client (so we can choose the one that matches the server)
-RUN for v in 1.7.0 1.6.2 ; do wget -q https://get.docker.com/builds/Linux/x86_64/docker-$v -O /root/bin/docker-$v ; done && chmod +x /root/bin/docker-* 
+ENV DOCKER_VERSION 1.6.2
+# Install client. Deliberately don't install newest version to make it compatible with more server version (docker assumes server version >= client version)
+RUN wget -q https://get.docker.com/builds/Linux/x86_64/docker-$DOCKER_VERSION -O /root/bin/docker && chmod +x /root/bin/* 
 
 ADD entrypoint.sh /entrypoint.sh
 
