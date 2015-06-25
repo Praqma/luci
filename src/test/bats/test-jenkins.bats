@@ -11,8 +11,8 @@ processLines() {
     while read line; do
         case "$line" in 
             *"setting agent port for jnlp"*)
-                      echo "Jenkins Jnlp up and running! $points [$(date)]"
-                      return 0
+                echo "Jenkins Jnlp up and running! $points [$(date)]"
+                return 0
                 ;;
             *)
                 ;;
@@ -23,7 +23,7 @@ processLines() {
 
 waitForJenkinsRunning() {
     # TODO seems the docker logs command creates a container that is not cleaned up
-    (runZettaTools docker logs -f -t $1) | processLines
+    runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
 }
@@ -57,27 +57,22 @@ runJenkinsCli() {
     fi
 
     echo "starting Jenkins. jenkings home: $jenkins_home"
-    run runZettaTools docker run -v $keydir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins
-    [ $status -eq 0 ]    
-    local jcid=$output
+    jcid=$(runZettaTools docker run -v $keydir:/root/.ssh -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
     cleanup_container $jcid
 
     waitForJenkinsRunning $jcid
 
     echo "starting tests"    
-    res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
-    [ $res = "1" ]
+    runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -q "HTTP/1.1 200 OK"
     
     echo "Jenkins is up, lets move on [$(date)]"
 
-    run runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d luci-ssh-slave
-    local jscid=$output
+    jscid=$(runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d luci-ssh-slave)
     cleanup_container $jscid
     echo "slave started. cid: '$jscid'"
 
 
-    run runZettaTools docker inspect --format '{{ .State.Running }}' $jcid
-    [ $output = "true" ]
+    [ $(runZettaTools docker inspect --format '{{ .State.Running }}' $jcid) = "true" ]
 
     local cli=$tmpdir/cli.jar
     
@@ -86,11 +81,9 @@ runJenkinsCli() {
     runJenkinsCli $cli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
     runJenkinsCli $cli build luci
     
-    res=$(runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -c "SUCCESS")
-    [ $res = "1" ]
+    runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -q "SUCCESS"
 
-    run runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid
-    jsip=$output
+    jsip=$(runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid)
     runZettaTools docker exec $jcid ssh -oStrictHostKeyChecking=no jenkins@$jsip env 
 }
 
