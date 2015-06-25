@@ -73,7 +73,6 @@ runJenkinsCli() {
 
 
     echo "starting tests"   
-    echo "runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c HTTP/1.1 200 OK" 
     res=$(runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -c "HTTP/1.1 200 OK")
     [ $res = "1" ]
     
