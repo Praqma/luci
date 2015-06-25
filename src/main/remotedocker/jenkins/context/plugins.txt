@@ -1,5 +1,4 @@
 ssh-slaves:latest
 durable-task:latest
 token-macro:latest
-config-file-provider
 docker-plugin:latest
