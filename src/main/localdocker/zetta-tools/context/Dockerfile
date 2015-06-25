@@ -10,11 +10,16 @@ RUN apt-get update && apt-get install -y python-dev python-setuptools libffi-dev
            python-neutronclient python-designateclient \
     && pip install -U docker-compose
 
-RUN wget -qO- https://get.docker.com/ | sh
+# Install docker-machine
+RUN mkdir /root/bin && wget -q https://github.com/docker/machine/releases/download/v0.3.0/docker-machine_linux-amd64 -O /root/bin/docker-machine
 
-ENV PATH=/root/bin:$PATH
+# Install a few versions of the docker client (so we can choose the one that matches the server)
+RUN for v in 1.7.0 1.6.2 ; do wget -q https://get.docker.com/builds/Linux/x86_64/docker-$v -O /root/bin/docker-$v ; done && chmod +x /root/bin/docker-* 
 
 ADD entrypoint.sh /entrypoint.sh
+
+# Add luci bins to /root/bin
+ENV PATH=/root/bin:$PATH
 ADD bin /root/bin
 
 VOLUME /root/.docker
