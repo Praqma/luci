@@ -57,7 +57,7 @@ runJenkinsCli() {
     fi
     sh $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml 
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
-    rm -f $jenkins_home/config.xml
+    rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
 #Verify
  
     echo "starting Jenkins. jenkings home: $jenkins_home"
