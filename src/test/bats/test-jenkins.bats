@@ -36,14 +36,16 @@ runJenkinsCli() {
 
 @test "Running Jenkins container" {
 #Prepare
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/ 
-    #Verify
     local tmpdir=$(tempdir)
 
     local keydir=$tmpdir/keys
     generateSshKey $keydir "SSH-key-for-LUCI"
-    cat $keydir/id_rsa.pub > $keydir/authorized_keys
+#    cat $keydir/id_rsa.pub > $keydir/authorized_keys
+
+    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/data/context/:/tmp/context docker build -t luci-data /tmp/context/
+    jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
+    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
+    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/ 
 
     # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
     # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
@@ -56,6 +58,9 @@ runJenkinsCli() {
         mkdir $jenkins_home
     fi
 
+#Verify
+#    runZettaTools -v $keydir:/data/server-keys docker run --name "luci-data" luci-data
+  
     echo "starting Jenkins. jenkings home: $jenkins_home"
     jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
     cleanup_container $jcid
@@ -67,9 +72,9 @@ runJenkinsCli() {
     
     echo "Jenkins is up, lets move on [$(date)]"
 
-    jscid=$(runZettaTools docker run -v $keydir:/home/jenkins/.ssh/ -d luci-ssh-slave)
+    jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-ssh-slave)
     cleanup_container $jscid
-    echo "slave started. cid: '$jscid'"
+    echo "slave started. jscid: '$jscid'"
 
 
     [ $(runZettaTools docker inspect --format '{{ .State.Running }}' $jcid) = "true" ]
