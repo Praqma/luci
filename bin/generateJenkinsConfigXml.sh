@@ -23,9 +23,15 @@ cat  << EOF
   <jdks/>
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+EOF
+
+cat << CLOUD_HEADER
   <clouds>
     <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.9.3">
-      <name>LocalDocker</name>
+      <name>LocalDocker</name> 
+CLOUD_HEADER
+
+cat << CLOUD_TEMPLATE
       <templates>
         <com.nirima.jenkins.plugins.docker.DockerTemplate>
           <image>luci-ssh-slave</image>
@@ -34,7 +40,7 @@ cat  << EOF
           <hostname></hostname>
           <dnsHosts/>
           <volumes/>
-          <volumesFrom>
+          <volumesFrom2>
             <string>$luci_datacontainer</string>
           </volumesFrom2>
           <environment/>
@@ -61,6 +67,9 @@ cat  << EOF
           <numExecutors>1</numExecutors>
         </com.nirima.jenkins.plugins.docker.DockerTemplate>
       </templates>
+CLOUD_TEMPLATE
+
+cat << CLOUD_FOOTER
       <serverUrl>http://$luci_docker_host:$luci_docker_port</serverUrl>
       <containerCap>2147483647</containerCap>
       <connectTimeout>5</connectTimeout>
@@ -69,6 +78,9 @@ cat  << EOF
       <credentialsId></credentialsId>
     </com.nirima.jenkins.plugins.docker.DockerCloud>
   </clouds>
+CLOUD_FOOTER
+
+cat << EOF
   <quietPeriod>5</quietPeriod>
   <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
   <views>
