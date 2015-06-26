@@ -40,12 +40,10 @@ runJenkinsCli() {
 
     local keydir=$tmpdir/keys
     generateSshKey $keydir "SSH-key-for-LUCI"
-#    cat $keydir/id_rsa.pub > $keydir/authorized_keys
 
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/data/context/:/tmp/context docker build -t luci-data /tmp/context/
     jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/ 
+    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/
 
     # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
     # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
@@ -57,10 +55,11 @@ runJenkinsCli() {
         local jenkins_home=$tmpdir/home
         mkdir $jenkins_home
     fi
-
+    sh $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml 
+    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
+    rm -f $jenkins_home/config.xml
 #Verify
-#    runZettaTools -v $keydir:/data/server-keys docker run --name "luci-data" luci-data
-  
+ 
     echo "starting Jenkins. jenkings home: $jenkins_home"
     jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
     cleanup_container $jcid
@@ -84,6 +83,8 @@ runJenkinsCli() {
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
     
     runJenkinsCli $cli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
+    runJenkinsCli $cli create-job luci-docker < $LUCI_ROOT/src/test/jenkins-jobs/dockerJob.xml
+
     runJenkinsCli $cli build luci
     
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -q "SUCCESS"
