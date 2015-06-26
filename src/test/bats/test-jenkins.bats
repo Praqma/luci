@@ -43,7 +43,7 @@ runJenkinsCli() {
 
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/data/context/:/tmp/context docker build -t luci-data /tmp/context/
     jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/simpel-ssh/context/:/tmp/context docker build -t luci-ssh-slave /tmp/context/
+    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/:/tmp/context docker build -t luci-shell-slave /tmp/context/
 
     # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
     # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
@@ -71,7 +71,7 @@ runJenkinsCli() {
     
     echo "Jenkins is up, lets move on [$(date)]"
 
-    jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-ssh-slave)
+    jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
     cleanup_container $jscid
     echo "slave started. jscid: '$jscid'"
 
