@@ -31,7 +31,11 @@ cat << CLOUD_HEADER
       <name>LocalDocker</name> 
 CLOUD_HEADER
 
-cat << CLOUD_TEMPLATE
+for dir in $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/*/
+do
+    dir=${dir%*/}
+    slave=${dir##*/}
+    cat << CLOUD_TEMPLATE
       <templates>
         <com.nirima.jenkins.plugins.docker.DockerTemplate>
           <image>luci-ssh-slave</image>
@@ -41,7 +45,7 @@ cat << CLOUD_TEMPLATE
           <dnsHosts/>
           <volumes/>
           <volumesFrom2>
-            <string>$luci_datacontainer</string>
+            <string>$slave</string>
           </volumesFrom2>
           <environment/>
           <bindPorts></bindPorts>
@@ -68,6 +72,7 @@ cat << CLOUD_TEMPLATE
         </com.nirima.jenkins.plugins.docker.DockerTemplate>
       </templates>
 CLOUD_TEMPLATE
+done
 
 cat << CLOUD_FOOTER
       <serverUrl>http://$luci_docker_host:$luci_docker_port</serverUrl>
