@@ -22,8 +22,12 @@ if [ -z "$LUCI_DOCKER_HOST" ] ; then
     if type boot2docker > /dev/null 2>&1 ; then
         LUCI_DOCKER_HOST=$(boot2docker ip)
     else
-        LUCI_DOCKER_HOST=$(ifconfig docker0 |grep "inet "|cut -d" " -f10)
+        echo "--------"
+        echo "ERROR : You need to specify your host ip in LUCI_DOCKER_HOST, then try again..."
+        echo "eg. export LUCI_DOCKER_HOST=<host-ip>"
+        echo "--------"
     fi
 fi
 export LUCI_DOCKER_HOST
 echo "LUCI_DOCKER_HOST set to '$LUCI_DOCKER_HOST'. Docker host for executing local docker containers"
+export LUCI_DOCKER_PORT=${LUCI_DOCKER_PORT:-2375}
