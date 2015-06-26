@@ -1,9 +1,9 @@
 #!/bin/sh
 
 #define parameters which are passed in.
-LUCI_DATAVOLUME_ID=$1
-LUCI_DOCKER_HOST=$2
-LUCI_DOCKER_PORT=$3
+luci_datacontainer=$1
+luci_docker_host=$2
+luci_docker_port=$3
 
 #define the template.
 cat  << EOF
@@ -34,8 +34,8 @@ cat  << EOF
           <hostname></hostname>
           <dnsHosts/>
           <volumes/>
-          <volumesFrom2>
-            <string>$LUCI_DATAVOLUME_ID</string>
+          <volumesFrom>
+            <string>$luci_datacontainer</string>
           </volumesFrom2>
           <environment/>
           <bindPorts></bindPorts>
@@ -61,7 +61,7 @@ cat  << EOF
           <numExecutors>1</numExecutors>
         </com.nirima.jenkins.plugins.docker.DockerTemplate>
       </templates>
-      <serverUrl>http://$LUCI_DOCKER_HOST:$LUCI_DOCKER_PORT</serverUrl>
+      <serverUrl>http://$luci_docker_host:$luci_docker_port</serverUrl>
       <containerCap>2147483647</containerCap>
       <connectTimeout>5</connectTimeout>
       <readTimeout>15</readTimeout>
