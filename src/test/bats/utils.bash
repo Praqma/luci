@@ -15,7 +15,7 @@ function cleanup_container() {
 # As default it is created inside the users home directory, so it is accessible on the host machine
 # when running docker in boot2docker
 function tempdir() {
-    local parentDir=$LUCI_DATA/tmp
+    local parentDir=$LUCI_ROOT/build/tmp
     mkdir -p "$parentDir"
     mktemp -d -p "$parentDir"
 }
