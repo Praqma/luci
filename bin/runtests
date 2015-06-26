@@ -2,19 +2,34 @@
 
 # Run tests
 #
-# Based on arguments the TEST_GROUP is define.
+# Based on arguments the TEST_GROUPS is define.
 # Valid values are
-# - complete
-# - quick (default): A test is assumed to be quick unless otherwise specified with the group function call. 
+# - complete:        Execute all tests
+# - zetta:           Execute tests that needs to access the Zetta cloud
+# - quick:           A test is assumed to be quick unless otherwise specified with the group function call.
+#                    This is always included
 
-TEST_GROUP=quick
-if [ -n "$1" ] ; then
-    TEST_GROUP=$1
-fi
-export TEST_GROUP
+source $LUCI_ROOT/functions/testing
+
+export TEST_GROUPS=(quick "$@")
+
+for e in ${TEST_GROUPS[@]} ; do
+    if ! validTestGroup $e ; then
+        echo "Invalid test group: $e"
+        exit 1
+    fi
+done
+echo 4
+
+
+echo
+echo "Executiong Luci tests"
+echo "  groups: ${TEST_GROUPS[@]}"
+echo
+
 
 # Build local images
 $LUCI_ROOT/bin/build-local-docker-images
 
-bats $LUCI_ROOT/src/test/bats
+$LUCI_ROOT/bats/bin/bats $LUCI_ROOT/src/test/bats
 

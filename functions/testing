@@ -1,0 +1,49 @@
+# Test if an element is in an array
+# First argument is the element to test for, the rest is the array
+function containsElement () {
+    local e
+    for e in "${@:2}"; do [ "$e" == "$1" ] && return 0 ; done
+    return 1
+}
+
+# Check if a String is a valid test group
+function validTestGroup() {
+    containsElement $1 complete zetta quick
+}
+
+function _checkTest() {
+    local groups="$@"
+    local g
+    for g in "${TEST_GROUPS[@]}" ; do
+        echo "g=$g"
+        case $g in
+            complete)
+                return 0
+                ;;
+            
+            *)
+                if validTestGroup "$g" ; then
+                    containsElement "$g" ${groups[@]} && return 0
+                else
+                    echo "Invalid test group '$1'"
+                    exit 100
+                fi
+                ;;
+            
+            *)
+        esac
+    done
+    return 1
+}
+
+# Specify one or more groups for a Bats test
+function group() {
+    # TEST_GROUPS is the groups we want to execute
+    # This function is called with the groups the current test belongs to
+    # If there is any overlap between the arguments for this function and TEST_GROUPS the test should be executed,
+    # if not the skip function should be called to stop the execution
+    # Special cases:
+    # If TEST_GROUPS contains 'complete' all tests are executed
+    
+    _checkTest "${@}" || skip "Groups for test are '${@}'"
+}

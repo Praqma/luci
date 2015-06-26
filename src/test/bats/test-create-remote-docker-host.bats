@@ -3,12 +3,12 @@
 load utils
 
 @test "Use openstack CLI with zetta-tools" {
-    group quick
+    group zetta
     runZettaTools openstack server list
 }
 
 @test "Create a docker machine with zetta-tools" {
-    group complete
+    group zetta
 
     local machname=lucitest-$(date +%Y%m%d-%H%M%S)
     
