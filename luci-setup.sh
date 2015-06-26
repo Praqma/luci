@@ -31,3 +31,4 @@ fi
 export LUCI_DOCKER_HOST
 echo "LUCI_DOCKER_HOST set to '$LUCI_DOCKER_HOST'. Docker host for executing local docker containers"
 export LUCI_DOCKER_PORT=${LUCI_DOCKER_PORT:-2375}
+echo "LUCI_DOCKER_PORT set to '$LUCI_DOCKER_PORT'."
