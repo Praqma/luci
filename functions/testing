@@ -14,8 +14,7 @@ function validTestGroup() {
 function _checkTest() {
     local groups="$@"
     local g
-    for g in "${TEST_GROUPS[@]}" ; do
-        echo "g=$g"
+    for g in $TEST_GROUPS ; do
         case $g in
             complete)
                 return 0
@@ -44,6 +43,6 @@ function group() {
     # if not the skip function should be called to stop the execution
     # Special cases:
     # If TEST_GROUPS contains 'complete' all tests are executed
-    
-    _checkTest "${@}" || skip "Groups for test are '${@}'"
+
+    _checkTest "${@}" ||  skip "Groups for test are '${@}'"
 }
