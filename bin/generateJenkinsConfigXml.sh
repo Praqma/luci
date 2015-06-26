@@ -30,29 +30,26 @@ cat << CLOUD_HEADER
     <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.9.3">
       <name>LocalDocker</name> 
 CLOUD_HEADER
-
-for dir in $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/*/
-do
-    dir=${dir%*/}
-    slave=${dir##*/}
+dirs=$(find $LUCI_ROOT/src/main/remotedocker/jenkins-slaves -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
+for slave in $dirs; do
     cat << CLOUD_TEMPLATE
       <templates>
         <com.nirima.jenkins.plugins.docker.DockerTemplate>
-          <image>luci-ssh-slave</image>
+          <image>luci-$slave-slave</image>
           <dockerCommand></dockerCommand>
           <lxcConfString></lxcConfString>
           <hostname></hostname>
           <dnsHosts/>
           <volumes/>
           <volumesFrom2>
-            <string>$slave</string>
+            <string>$luci_datacontainer</string>
           </volumesFrom2>
           <environment/>
           <bindPorts></bindPorts>
           <bindAllPorts>false</bindAllPorts>
           <privileged>false</privileged>
           <tty>false</tty>
-          <labelString>ssh-slave</labelString>
+          <labelString>$slave</labelString>
           <credentialsId>cf65a07f-851a-4d80-aa44-8e5635ccd1e6</credentialsId>
           <idleTerminationMinutes>5</idleTerminationMinutes>
           <sshLaunchTimeoutMinutes>1</sshLaunchTimeoutMinutes>
