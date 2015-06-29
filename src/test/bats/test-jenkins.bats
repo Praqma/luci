@@ -9,7 +9,7 @@ processLines() {
 # and wait untill both Jenkins and the jnlp
 # is up af running.
     while read line; do
-        case "$line" in 
+        case "$line" in
             *"setting agent port for jnlp"*)
                 echo "Jenkins Jnlp up and running! $points [$(date)]"
                 return 0
@@ -30,7 +30,7 @@ waitForJenkinsRunning() {
 
 runJenkinsCli() {
     local cli=$1
-    shift 
+    shift
     java -jar "$cli" -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
 }
 
@@ -55,20 +55,20 @@ runJenkinsCli() {
         local jenkins_home=$tmpdir/home
         mkdir $jenkins_home
     fi
-    sh $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml 
+    sh $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
 #Verify
- 
+
     echo "starting Jenkins. jenkings home: $jenkins_home"
     jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
     cleanup_container $jcid
 
     waitForJenkinsRunning $jcid
 
-    echo "starting tests"    
+    echo "starting tests"
     runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -q "HTTP/1.1 200 OK"
-    
+
     echo "Jenkins is up, lets move on [$(date)]"
 
     jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
@@ -79,24 +79,30 @@ runJenkinsCli() {
     [ $(runZettaTools docker inspect --format '{{ .State.Running }}' $jcid) = "true" ]
 
     local cli=$tmpdir/cli.jar
-    
+
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
-    
-    runJenkinsCli $cli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
-    runJenkinsCli $cli create-job luci-docker < $LUCI_ROOT/src/test/jenkins-jobs/dockerJob.xml
+
+    #runJenkinsCli $cli create-job luci < $LUCI_ROOT/src/test/jenkins-jobs/simpleJob.xml
+    jJobCmd="env"
+    jJob=$($LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd)
+
+    echo $jJob | runJenkinsCli $cli create-job luci
+
+    jJobCmd="env"
+    jJob=$($LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd "shell")
+    echo $jJob | runJenkinsCli $cli create-job luci-docker
 
     runJenkinsCli $cli build luci
-    
+
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -q "SUCCESS"
 
     jsip=$(runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid)
-    runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env 
+    runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-#read -p "Press [Enter] key to continue..."
+read -p "Press [Enter] key to continue..."
 }
 
 teardown() {
     cleanup_perform
 }
-
