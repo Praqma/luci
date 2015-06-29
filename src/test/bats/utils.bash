@@ -105,7 +105,7 @@ function dockerMachineReleaseAll() {
 
 _cleanDockerMachine() {
     local containers=$(docker ps -aq) ; [ -n "$containers" ] && docker rm -f $containers
-    [ -n "$containers" ] && runZettaToolds docker rm -f $containers
+    [ -n "$containers" ] && runZettaTools docker rm -f $containers
 }
 
 _initDockerMachine() {
