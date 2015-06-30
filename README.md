@@ -22,3 +22,10 @@ ZETTA_USERNAME=jas
 ZETTA_PASSWORD=mysecret
 ```
 
+## Boot2docker Issues
+
+It seems to docker plugin for Jenkins assumes the docker host is available without tls on port 2375. If you use boot2docker the docker host is on port 2376 with tls. A workaround is to execute
+```
+$(docker run sequenceiq/socat)
+```
+see http://blog.sequenceiq.com/blog/2014/10/17/boot2docker-tls-workaround/ for details
