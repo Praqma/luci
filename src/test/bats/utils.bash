@@ -20,9 +20,9 @@ function tempdir() {
     mktemp -d -p "$parentDir"
 }
 
-### Create a temp dir that is deleted as part of cleanup 
-function cleanup_tmpdir() {
-    local name=$(mktemp -d)
+### Create a temp dir that is deleted as part of cleanup
+function cleanup_tempdir() {
+    local name=$(tempdir)
     local action="rm -r $name"
     CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]} action)
     echo $name
@@ -54,7 +54,7 @@ function cleanup_perform() {
 POOL_DIR=$LUCI_DATA/dmpool
 AQUIRED_MACHINES=()
 function dockerMachineRelease() {
-    for name in $1 ; do 
+    for name in $1 ; do
         _cleanDockerMachine "$name"
         mv "$POOL_DIR/busy/$name" "$POOL_DIR/free/$name"
         touch "$POOL_DIR/free/$name" # update timestamp
@@ -68,11 +68,11 @@ function dockerMachineRelease() {
 function dockerMachineAquire() {
     mkdir -p "$POOL_DIR/free"
     mkdir -p "$POOL_DIR/busy"
-    
+
     local var=#1
     local desc=$2
     [ -n "$desc" ] || (echo "Missing 'desc' for aquiring docker machine" ; exit 1)
-    
+
     local name
     local tmpdir=$(mktemp -d)
     # Move the newest free machine to tmpdir. If move fails assume there is no free machine in pool
@@ -98,7 +98,6 @@ function dockerMachineAquire() {
 function dockerMachineReleaseAll() {
     local machines=$AQUIRED_MACHINES
 
-
     AQUIRED_MACHINES=()
     dockerMachineRelease $machines
 }
@@ -110,4 +109,26 @@ _cleanDockerMachine() {
 
 _initDockerMachine() {
     true # noop
+}
+
+
+
+### Constructing test projects for Jenkins
+
+# Construct a test project for Jenkins (i.e. a project that can be build by Jenkins)
+# The git url for the project is returned.
+# The project is registrered for automatically cleanup
+function constructJenkinsTestProject() {
+    # A test project for jenkins is constructed by merging the
+    # source for a project with the buildsystem.
+    # The
+    local sourceDir="$LUCI_ROOT/src/test/jenkins-projects/$1"
+    local buildSystemDir="$LUCI_ROOT/src/test/jenkins-buildsystems/$2"
+
+    local target=$(cleanup_tempdir)
+
+    cp -r $sourceDir/* $buildSystemDir/* $target
+
+    (cd $target; git init; git add --all; git commit -m"Commit for Luci test project" )
+    echo "file://$target"
 }
