@@ -28,4 +28,6 @@ It seems to docker plugin for Jenkins assumes the docker host is available witho
 ```
 $(docker run sequenceiq/socat)
 ```
-see http://blog.sequenceiq.com/blog/2014/10/17/boot2docker-tls-workaround/ for details
+see http://blog.sequenceiq.com/blog/2014/10/17/boot2docker-tls-workaround/ for details.
+
+Alternatively TLS can be disabled in the boot2docker vm as described on https://github.com/boot2docker/boot2docker
