@@ -4,14 +4,17 @@ load utils
 source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
 
+#TODO new/better saying name
 processLines() {
 # We need to listen to the Jenkins output
 # and wait untill both Jenkins and the jnlp
 # is up af running.
+
+    breakPoint=$1
     while read line; do
         case "$line" in
-            *"setting agent port for jnlp"*)
-                echo "Jenkins Jnlp up and running! $points [$(date)]"
+            *"$breakPoint"*) #TODO cleanup
+                echo "Breakpoint found [$(date)]"
                 return 0
                 ;;
             *)
@@ -28,9 +31,10 @@ dockerLogs(){
 
   #Argument 1 is container id to be logged
   local cid=$1
+  local timeStamp
 
   while true; do
-    nextTime=$(date +%s)
+    local nextTime=$(date +%s)
     runZettaTools docker logs --since=$timeStamp $cid 2>&1
 
     #This line is nessasary for the process to die, when the function proccessLines dies
@@ -45,9 +49,7 @@ dockerLogs(){
 }
 
 waitForJenkinsRunning() {
-    # TODO seems the docker logs command creates a container that is not cleaned up
-
-    dockerLogs $1 | processLines
+    dockerLogs $1 | processLines "setting agent port for jnlp"
     #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
@@ -90,12 +92,14 @@ runJenkinsCli() {
     #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
     #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
     #Jenkins is build. The Dockerfile will take care of the config.xml.
-    sh $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+    $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
 
     #Verify
 
+
+#TODO Create a startJenkins function with the three next commands
     #Start the Jenkins Server container with link to the data container that holds the SSH-keys.
     jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
     cleanup_container $jcid
@@ -103,9 +107,11 @@ runJenkinsCli() {
     #We have to wait for the Jenkins Server to get started. Not just the server
     #but also the Jnlp service
     waitForJenkinsRunning $jcid
+#TODO end
 
     echo "starting tests"
     #Check if the Jenkins Server webpage is responding OK
+#TODO Create function - isWebsiteUp
     runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -q "HTTP/1.1 200 OK"
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
@@ -113,6 +119,7 @@ runJenkinsCli() {
     cleanup_container $jscid
 
     #Is Jenkins container running?
+#TODO Create a function isContainerRunning
     [ $(runZettaTools docker inspect --format '{{ .State.Running }}' $jcid) = "true" ]
 
     #Set location for jenkins-cli.jar
@@ -126,17 +133,25 @@ runJenkinsCli() {
     jJob=$($LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd)
     echo $jJob | runJenkinsCli $cli create-job luci
 
-    #Set the shell command for the docker job and create it on the Jenkins server
-    jJobCmd="env"
-    jJob=$($LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd "shell")
-    echo $jJob | runJenkinsCli $cli create-job luci-docker
-
-    #Run the two jobs on Jenkins
+    #Build the simple job
     runJenkinsCli $cli build luci
-    runJenkinsCli $cli build luci-docker
 
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci/1/consoleText | grep -q "SUCCESS"
+
+    #Set the shell command for the docker job and create it on the Jenkins server
+#TODO Create function createJenkinsJob
+    jJobCmd="env"
+    $LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd "shell" | runJenkinsCli $cli create-job luci-docker
+
+    #Build the docker job
+    runJenkinsCli $cli build luci-docker
+
+    #Wait for the job to finish
+    dockerLogs $jcid | processLines "luci-docker #1 main build"
+
+    #Check if the simple job had a success string in the output
+    runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
     #Get the IP adress of the Jenkins Slave container, and SSH to it from the
     #Jenkins Master contianer with ssh keys
