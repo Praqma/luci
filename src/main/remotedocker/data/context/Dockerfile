@@ -5,4 +5,7 @@ FROM scratch
 # it would mean every container has access to the private keys
 VOLUME /data/server-keys
 
+# User home for gradle builds
+VOLUME /data/gradle-user-home
+
 CMD not possible to run this container
