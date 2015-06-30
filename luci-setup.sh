@@ -39,7 +39,9 @@ echo "LUCI_DOCKER_HOST set to '$LUCI_DOCKER_HOST'. Docker host for executing loc
 
 if [ -z "$LUCI_DOCKER_PORT" ] ; then
     if [ $usingBoot2docker = 'true' ] ; then
-        LUCI_DOCKER_PORT=2376
+        #TODO see boot2docker issue in README.md
+        # Would be nice with a better solution
+        LUCI_DOCKER_PORT=2375
     fi
 fi
 export LUCI_DOCKER_PORT=${LUCI_DOCKER_PORT:-2375}
