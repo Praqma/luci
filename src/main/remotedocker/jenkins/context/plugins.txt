@@ -2,3 +2,13 @@ ssh-slaves:latest
 durable-task:latest
 token-macro:latest
 docker-plugin:latest
+parameterized-trigger:latest
+token-macro:latest
+mailer:latest
+scm-api:latest
+promoted-builds:latest
+matrix-project:latest
+git-client:latest
+ssh-credentials:latest
+credentials:latest
+git:latest
