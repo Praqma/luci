@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y python-dev python-setuptools libffi-dev
 RUN mkdir /root/bin && wget -q https://github.com/docker/machine/releases/download/v0.3.0/docker-machine_linux-amd64 -O /root/bin/docker-machine
 
 ENV DOCKER_VERSION 1.7.0
-# Install client. Deliberately don't install newest version to make it compatible with more server version (docker assumes server version >= client version)
+# Install client. We use the --since flag on docker logs, and it only works in Docker 1.7.0 and upwards 
 RUN wget -q https://get.docker.com/builds/Linux/x86_64/docker-$DOCKER_VERSION -O /root/bin/docker && chmod +x /root/bin/* 
 
 ADD entrypoint.sh /entrypoint.sh
