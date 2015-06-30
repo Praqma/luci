@@ -22,20 +22,20 @@ processLines() {
 }
 
 dockerLogs(){
-  #This code is a temporary replacement for docker logs -f
+  #This code is a replacement for docker logs -f
   #This code is not complete. It will print some lines out twice. This
   #needs to be fixed.
 
   #Argument 1 is container id to be logged
-  cId=$1
+  local cid=$1
 
   while true; do
     nextTime=$(date +%s)
-    runZettaTools docker logs --since=$timeStamp $cId 2>&1
+    runZettaTools docker logs --since=$timeStamp $cid 2>&1
 
     #This line is nessasary for the process to die, when the function proccessLines dies
     echo "### LUCI $(date)"
-    if [ $(runZettaTools docker inspect --format='{{.State.Running}}' $cId) = "false" ]; then
+    if [ $(runZettaTools docker inspect --format='{{.State.Running}}' $cid) = "false" ]; then
         return 0
     fi
 
