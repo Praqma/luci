@@ -4,7 +4,7 @@ load utils
 source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
 
-waitOnJenkinsOutputLines() {
+waitForLine() {
 # We need to listen to the Jenkins output
 # and wait untill both Jenkins and the jnlp
 # is up af running.
@@ -96,7 +96,7 @@ dockerLogs(){
 }
 
 waitForJenkinsRunning() {
-    dockerLogs $1 | waitOnJenkinsOutputLines "setting agent port for jnlp"
+    dockerLogs $1 | waitForLine "setting agent port for jnlp"
     #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
@@ -172,7 +172,7 @@ runJenkinsCli() {
     #Build the shell job
     runJenkinsCli $cli build luci-shell
     #Wait for the job to finish
-    dockerLogs $jcid | waitOnJenkinsOutputLines "luci-shell #1 main build"
+    dockerLogs $jcid | waitForLine "luci-shell #1 main build"
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
@@ -181,7 +181,7 @@ runJenkinsCli() {
     #Build the docker job
     runJenkinsCli $cli build luci-docker
     #Wait for the job to finish
-    dockerLogs $jcid | waitOnJenkinsOutputLines "luci-docker #1 main build"
+    dockerLogs $jcid | waitForLine "luci-docker #1 main build"
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
