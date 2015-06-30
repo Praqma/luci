@@ -28,10 +28,11 @@ EOF
 cat << CLOUD_HEADER
   <clouds>
     <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.9.3">
-      <name>LocalDocker</name> 
+      <name>LocalDocker</name>
 CLOUD_HEADER
-dirs=$(find $LUCI_ROOT/src/main/remotedocker/jenkins-slaves -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
-for slave in $dirs; do
+dirs=$(find $LUCI_ROOT/src/main/remotedocker/jenkins-slaves -maxdepth 1 -mindepth 1 -type d)
+for d in $dirs; do
+    slave=$(basename $d)
     cat << CLOUD_TEMPLATE
       <templates>
         <com.nirima.jenkins.plugins.docker.DockerTemplate>
