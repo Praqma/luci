@@ -4,8 +4,7 @@ load utils
 source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
 
-#TODO new/better saying name
-waitOnJenkinsOutputLines() {
+waitForLine() {
 # We need to listen to the Jenkins output
 # and wait untill both Jenkins and the jnlp
 # is up af running.
@@ -24,10 +23,27 @@ waitOnJenkinsOutputLines() {
     return 1
 }
 
+startJenkinsMaster(){
+  local jcidReturnVar=$1
+  local keyDir=$2
+  local jenkinsHome=$3
+  local jeninsPort=$4
+  local jenkinsName=$5
+
+  #Start the Jenkins Server container with link to the data container that holds the SSH-keys.
+  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -v $jenkinsHome:/var/jenkins_home -d -p $jeninsPort:8080 -p 50000:50000 $jenkinsName)
+  cleanup_container $_jcid
+
+  #We have to wait for the Jenkins Server to get started. Not just the server
+  #but also the Jnlp service
+  waitForJenkinsRunning $_jcid
+  eval "$jcidReturnVar=$_jcid"
+}
+
 isWebsiteUp(){
-  local LUCI_DOCKER_HOST=$1
-  local jPort=$2
-  runZettaTools curl -s --head $LUCI_DOCKER_HOST:$jPort | head -n 1 | grep -q "HTTP/1.1 200 OK"
+  local host=$1
+  local port=$2
+  runZettaTools curl -s --head $host:$port | head -n 1 | grep -q "HTTP/1.1 200 OK"
 }
 
 isContainerRunning(){
@@ -39,7 +55,6 @@ isContainerRunning(){
     echo 1
   fi
 }
-
 
 createJenkinsShellJob(){
   local jJobCmd=$1
@@ -81,7 +96,7 @@ dockerLogs(){
 }
 
 waitForJenkinsRunning() {
-    dockerLogs $1 | waitOnJenkinsOutputLines "setting agent port for jnlp"
+    dockerLogs $1 | waitForLine "setting agent port for jnlp"
     #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
@@ -130,16 +145,8 @@ runJenkinsCli() {
 
     #Verify
 
-
-#TODO Create a startJenkins function with the three next commands
-    #Start the Jenkins Server container with link to the data container that holds the SSH-keys.
-    jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -v $jenkins_home:/var/jenkins_home -d -p $jPort:8080 -p 50000:50000 luci-jenkins)
-    cleanup_container $jcid
-
-    #We have to wait for the Jenkins Server to get started. Not just the server
-    #but also the Jnlp service
-    waitForJenkinsRunning $jcid
-#TODO end
+    startJenkinsMaster jcid $keydir $jenkins_home $jPort "luci-jenkins"
+    echo "jcid is now : $jcid"
 
     echo "starting tests"
     #Check if the Jenkins Server webpage is responding OK
@@ -165,7 +172,7 @@ runJenkinsCli() {
     #Build the shell job
     runJenkinsCli $cli build luci-shell
     #Wait for the job to finish
-    dockerLogs $jcid | waitOnJenkinsOutputLines "luci-shell #1 main build"
+    dockerLogs $jcid | waitForLine "luci-shell #1 main build"
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
@@ -174,7 +181,7 @@ runJenkinsCli() {
     #Build the docker job
     runJenkinsCli $cli build luci-docker
     #Wait for the job to finish
-    dockerLogs $jcid | waitOnJenkinsOutputLines "luci-docker #1 main build"
+    dockerLogs $jcid | waitForLine "luci-docker #1 main build"
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 

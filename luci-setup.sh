@@ -45,4 +45,4 @@ if [ -z "$LUCI_DOCKER_PORT" ] ; then
     fi
 fi
 export LUCI_DOCKER_PORT=${LUCI_DOCKER_PORT:-2375}
-echo "LUCI_DOCKER_PORT set to '$LUCI_DOCKER_PORT'."
+echo "LUCI_DOCKER_PORT set to '$LUCI_DOCKER_PORT'. Its used to contact the Docker hosts Docker daemon over TCP by Jenkins"
