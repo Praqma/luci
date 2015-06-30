@@ -5,12 +5,22 @@ source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
 
 waitForLine() {
-# We need to listen to the Jenkins output
-# and wait untill both Jenkins and the jnlp
-# is up af running.
+    # We need to listen to the Jenkins output
+    # and wait untill both Jenkins and the jnlp
+    # is up af running. Set timeToRun in seconds
+    # to break a timeout.
+    local breakPoint=$1
+    local timeToRun=$2
 
-    breakPoint=$1
+    local startTime=$(date +%s)
+    local endTime=$(($startTime+$timeToRun))
+
+
     while read line; do
+        if [ $(date +%s) -gt $endTime ]; then
+          echo "Time out!"
+          return 2
+        fi
         case "$line" in
             *"$breakPoint"*) #TODO cleanup
                 echo "Breakpoint found [$(date)]"
@@ -20,6 +30,7 @@ waitForLine() {
                 ;;
         esac
     done
+    echo "No more lines to read!"
     return 1
 }
 
@@ -96,7 +107,7 @@ dockerLogs(){
 }
 
 waitForJenkinsRunning() {
-    dockerLogs $1 | waitForLine "setting agent port for jnlp"
+    dockerLogs $1 | waitForLine "setting agent port for jnlp" 30
     #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
@@ -172,7 +183,7 @@ runJenkinsCli() {
     #Build the shell job
     runJenkinsCli $cli build luci-shell
     #Wait for the job to finish
-    dockerLogs $jcid | waitForLine "luci-shell #1 main build"
+    dockerLogs $jcid | waitForLine "luci-shell #1 main build" 10
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
@@ -181,7 +192,7 @@ runJenkinsCli() {
     #Build the docker job
     runJenkinsCli $cli build luci-docker
     #Wait for the job to finish
-    dockerLogs $jcid | waitForLine "luci-docker #1 main build"
+    dockerLogs $jcid | waitForLine "luci-docker #1 main build" 120
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
