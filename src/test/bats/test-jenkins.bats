@@ -2,16 +2,8 @@
 
 load utils
 source $LUCI_ROOT/functions/ssh-keys
+source $LUCI_ROOT/functions/docker-functions
 jPort=18080
-
-buildDockerImage() {
-   #$1 is the path to the context folder of the image.
-   #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
-   #$2 is the name of the image.
-   contextRoot=$1
-   imageName=$2
-   runZettaTools -v $contextRoot:/tmp/context docker build -t $imageName /tmp/context
-}
 
 waitForLine() {
     # We need to listen to the Jenkins output
@@ -66,55 +58,6 @@ isWebsiteUp(){
   runZettaTools curl -s --head $host:$port | head -n 1 | grep -q "HTTP/1.1 200 OK"
 }
 
-isContainerRunning(){
-  local containerId=$1
-  local answer=$(runZettaTools docker inspect --format '{{ .State.Running }}' $containerId)
-  if [ "$answer" == "true" ];then
-    echo 0
-  else
-    echo 1
-  fi
-}
-
-createJenkinsShellJob(){
-  local jJobCmd=$1
-  local cli=$2
-  local jobName=$3
-  $LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd | runJenkinsCli $cli create-job $jobName
-}
-
-createJenkinsDockerJob(){
-  local jJobCmd=$1
-  local jobLabel=$2
-  local cli=$3
-  local jobName=$4
-  $LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd $jobLabel | runJenkinsCli $cli create-job $jobName
-}
-
-dockerLogs(){
-  #This code is a replacement for docker logs -f
-  #This code is not complete. It will print some lines out twice. This
-  #needs to be fixed.
-
-  #Argument 1 is container id to be logged
-  local cid=$1
-  local timeStamp
-
-  while true; do
-    local nextTime=$(date +%s)
-    runZettaTools docker logs --since=$timeStamp $cid 2>&1
-
-    #This line is nessasary for the process to die, when the function proccessLines dies
-    echo "### LUCI $(date)"
-    if [ $(runZettaTools docker inspect --format='{{.State.Running}}' $cid) = "false" ]; then
-        return 0
-    fi
-
-    timeStamp=$nextTime
-    sleep 2
-  done
-}
-
 waitForJenkinsRunning() {
     dockerLogs $1 | waitForLine "setting agent port for jnlp" 30
     #runZettaTools docker logs -f -t $1 | processLines
@@ -140,7 +83,8 @@ runJenkinsCli() {
 
     #The data image is build and the container is created to house the SSH-keys
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/data/context/ luci-data
-    jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
+    jdcid=$(createDockerKeyImage $keydir luci-data)
+    #jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
 
     #The Jenkins Slave container is build.
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
@@ -202,7 +146,7 @@ runJenkinsCli() {
     #Build the docker job
     runJenkinsCli $cli build luci-docker
     #Wait for the job to finish
-    dockerLogs $jcid | waitForLine "luci-docker #1 main build" 120
+    dockerLogs $jcid | waitForLine "luci-docker #1 main build" 150
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
