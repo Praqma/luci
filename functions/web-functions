@@ -1,0 +1,5 @@
+isWebsiteUp(){
+  local host=$1
+  local port=$2
+  runZettaTools curl -s --head $host:$port | head -n 1 | grep -q "HTTP/1.1 200 OK"
+}
