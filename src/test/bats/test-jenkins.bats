@@ -4,6 +4,15 @@ load utils
 source $LUCI_ROOT/functions/ssh-keys
 jPort=18080
 
+buildDockerImage() {
+   #$1 is the path to the context folder of the image.
+   #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
+   #$2 is the name of the image.
+   contextRoot=$1
+   imageName=$2
+   runZettaTools -v $contextRoot:/tmp/context docker build -t $imageName /tmp/context
+}
+
 waitForLine() {
     # We need to listen to the Jenkins output
     # and wait untill both Jenkins and the jnlp
@@ -130,11 +139,11 @@ runJenkinsCli() {
     generateSshKey $keydir "SSH-key-for-LUCI"
 
     #The data image is build and the container is created to house the SSH-keys
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/data/context/:/tmp/context docker build -t luci-data /tmp/context/
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/data/context/ luci-data
     jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
 
     #The Jenkins Slave container is build.
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/:/tmp/context docker build -t luci-shell-slave /tmp/context/
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
 
     # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
     # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
@@ -151,7 +160,8 @@ runJenkinsCli() {
     #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
     #Jenkins is build. The Dockerfile will take care of the config.xml.
     $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
-    runZettaTools -v $LUCI_ROOT/src/main/remotedocker/jenkins/context/:/tmp/context docker build -t luci-jenkins /tmp/context/
+
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
 
     #Verify
