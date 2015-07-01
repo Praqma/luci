@@ -1,0 +1,66 @@
+buildDockerImage() {
+   #$1 is the path to the context folder of the image.
+   #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
+   #$2 is the name of the image.
+   contextRoot=$1
+   imageName=$2
+   runZettaTools -v $contextRoot:/tmp/context docker build -t $imageName /tmp/context
+}
+
+createDockerKeyImage() {
+   #$1 is the path to the folder that holds the ssh keys.
+   #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
+   #$2 is the name of the image.
+   keyDir=$1
+   imageName=$2
+   runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys $imageName
+}
+
+isContainerRunning(){
+  local containerId=$1
+  local answer=$(runZettaTools docker inspect --format '{{ .State.Running }}' $containerId)
+  if [ "$answer" == "true" ];then
+    echo 0
+  else
+    echo 1
+  fi
+}
+
+createJenkinsShellJob(){
+  local jJobCmd=$1
+  local cli=$2
+  local jobName=$3
+  $LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd | runJenkinsCli $cli create-job $jobName
+}
+
+createJenkinsDockerJob(){
+  local jJobCmd=$1
+  local jobLabel=$2
+  local cli=$3
+  local jobName=$4
+  $LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd $jobLabel | runJenkinsCli $cli create-job $jobName
+}
+
+dockerLogs(){
+  #This code is a replacement for docker logs -f
+  #This code is not complete. It will print some lines out twice. This
+  #needs to be fixed.
+
+  #Argument 1 is container id to be logged
+  local cid=$1
+  local timeStamp
+
+  while true; do
+    local nextTime=$(date +%s)
+    runZettaTools docker logs --since=$timeStamp $cid 2>&1
+
+    #This line is nessasary for the process to die, when the function proccessLines dies
+    echo "### LUCI $(date)"
+    if [ $(runZettaTools docker inspect --format='{{.State.Running}}' $cid) = "false" ]; then
+        return 0
+    fi
+
+    timeStamp=$nextTime
+    sleep 2
+  done
+}
