@@ -3,6 +3,7 @@
 load utils
 source $LUCI_ROOT/functions/ssh-keys
 source $LUCI_ROOT/functions/docker-functions
+source $LUCI_ROOT/functions/web-functions
 jPort=18080
 
 waitForLine() {
@@ -52,14 +53,8 @@ startJenkinsMaster(){
   eval "$jcidReturnVar=$_jcid"
 }
 
-isWebsiteUp(){
-  local host=$1
-  local port=$2
-  runZettaTools curl -s --head $host:$port | head -n 1 | grep -q "HTTP/1.1 200 OK"
-}
-
 waitForJenkinsRunning() {
-    dockerLogs $1 | waitForLine "setting agent port for jnlp" 30
+    dockerLogs $1 | waitForLine "setting agent port for jnlp" 40
     #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
