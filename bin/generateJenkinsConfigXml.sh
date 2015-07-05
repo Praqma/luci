@@ -29,12 +29,12 @@ cat << CLOUD_HEADER
   <clouds>
     <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.9.3">
       <name>LocalDocker</name>
+      <templates>
 CLOUD_HEADER
 dirs=$(find $LUCI_ROOT/src/main/remotedocker/jenkins-slaves -maxdepth 1 -mindepth 1 -type d)
 for d in $dirs; do
     slave=$(basename $d)
     cat << CLOUD_TEMPLATE
-      <templates>
         <com.nirima.jenkins.plugins.docker.DockerTemplate>
           <image>luci-$slave-slave</image>
           <dockerCommand></dockerCommand>
@@ -68,11 +68,11 @@ for d in $dirs; do
           </retentionStrategy>
           <numExecutors>1</numExecutors>
         </com.nirima.jenkins.plugins.docker.DockerTemplate>
-      </templates>
 CLOUD_TEMPLATE
 done
 
 cat << CLOUD_FOOTER
+      </templates>
       <serverUrl>http://$luci_docker_host:$luci_docker_port</serverUrl>
       <containerCap>2147483647</containerCap>
       <connectTimeout>5</connectTimeout>
