@@ -44,7 +44,8 @@ startJenkinsMaster(){
   local jenkinsName=$5
 
   #Start the Jenkins Server container with link to the data container that holds the SSH-keys.
-  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -v $jenkinsHome:/var/jenkins_home -d -p $jeninsPort:8080 -p 50000:50000 $jenkinsName)
+  #local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -v $jenkinsHome:/var/jenkins_home -d -p $jeninsPort:8080 -p 50000:50000 $jenkinsName)
+  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -d -p $jeninsPort:8080 -p 50000:50000 $jenkinsName)
   cleanup_container $_jcid
 
   #We have to wait for the Jenkins Server to get started. Not just the server
