@@ -20,7 +20,7 @@ waitForLine() {
 
     while read line; do
         if [ $(date +%s) -gt $endTime ]; then
-          echo "Time out!"
+          echo "Time out! ($timeToRun seconds waiting for '$breakpoint')"
           return 2
         fi
         case "$line" in
@@ -54,7 +54,7 @@ startJenkinsMaster(){
 }
 
 waitForJenkinsRunning() {
-    dockerLogs $1 | waitForLine "setting agent port for jnlp" 40
+    dockerLogs $1 | waitForLine "setting agent port for jnlp" 120
     #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
@@ -132,7 +132,7 @@ runJenkinsCli() {
     #Build the shell job
     runJenkinsCli $cli build luci-shell
     #Wait for the job to finish
-    dockerLogs $jcid | waitForLine "luci-shell #1 main build" 10
+    dockerLogs $jcid | waitForLine "luci-shell #1 main build" 30
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
