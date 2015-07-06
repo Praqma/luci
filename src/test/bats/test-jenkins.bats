@@ -100,7 +100,7 @@ runJenkinsCli() {
     #Jenkins is build. The Dockerfile will take care of the config.xml.
     $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
 
-    $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.neti > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
+    $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.net > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
 
@@ -156,7 +156,7 @@ runJenkinsCli() {
     runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-#read -p "Press [Enter] key to continue..."
+read -p "Press [Enter] key to continue..."
 }
 
 teardown() {
