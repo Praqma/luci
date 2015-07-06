@@ -127,6 +127,11 @@ runJenkinsCli() {
     echo "Is container running?"
     [ $(isContainerRunning $jcid) = "0" ]
 
+    #Get the IP adress of the Jenkins Slave container, and SSH to it from the
+    #Jenkins Master contianer with ssh keys
+    jsip=$(runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid)
+    runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env
+
     #Set location for jenkins-cli.jar
     local cli=$tmpdir/cli.jar
 
@@ -152,10 +157,6 @@ runJenkinsCli() {
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
-    #Get the IP adress of the Jenkins Slave container, and SSH to it from the
-    #Jenkins Master contianer with ssh keys
-    jsip=$(runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $jscid)
-    runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
 #read -p "Press [Enter] key to continue..."
