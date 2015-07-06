@@ -1,3 +1,16 @@
+runDockerCompose(){
+   #$1 is path to Compose file
+   composeRoot=$1
+   runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml up -d 
+}
+
+stopDockerCompose(){
+   #$1 is path to Compose file
+   composeRoot=$1
+   runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml stop
+}
+
+
 buildDockerImage() {
    #$1 is the path to the context folder of the image.
    #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
