@@ -4,6 +4,6 @@
 
 pwd
 
-source luci-setup.sh
+source $0/luci-setup.sh
 
-./bin/runTests
+$LUCI_ROOT/bin/runTests
