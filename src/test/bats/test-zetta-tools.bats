@@ -27,6 +27,10 @@ source $LUCI_ROOT/functions/ssh-keys
                   build -t jenkins:$tag /tmp/context/
 
     runZettaTools dm $dhost images | grep "jenkins.*$tag"
+
+    rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+    rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
+
 }
 
 function teardown() {
