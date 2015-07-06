@@ -9,6 +9,7 @@
 # - quick:           A test is assumed to be quick unless otherwise specified (with the group
 #                    function call). These test are always executed.
 
+echo PATH JHS= $PATH
 $LUCI_ROOT/bin/boot2dockerFix
 
 . $LUCI_ROOT/functions/testing
@@ -33,5 +34,6 @@ echo
 $LUCI_ROOT/bin/build-local-docker-images
 
 # Execute tests
+echo PATH JHS= $PATH
 bats $LUCI_ROOT/src/test/bats
 
