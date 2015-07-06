@@ -45,4 +45,13 @@ if [ -z "$LUCI_DOCKER_PORT" ] ; then
     fi
 fi
 export LUCI_DOCKER_PORT=${LUCI_DOCKER_PORT:-2375}
-echo "LUCI_DOCKER_PORT set to '$LUCI_DOCKER_PORT'. Its used to contact the Docker hosts Docker daemon over TCP by Jenkins"
+echo "LUCI_DOCKER_PORT set to '$LUCI_DOCKER_PORT'. Port for Docker daemon for executing local containers"
+
+if [ $usingBoot2docker = 'true' ] ; then
+    : ${LUCI_B2D_WORKAROUND_WITH_SOCAT:=true}
+fi
+if [ -n "$LUCI_B2D_WORKAROUND_WITH_SOCAT" ] ; then
+    echo "LUCI_B2D_WORKAROUND_WITH_SOCAT set to '$LUCI_B2D_WORKAROUND_WITH_SOCAT'. If true a container is started that makes boot2docker listen on port 2375 without TLS"
+fi
+
+$LUCI_ROOT/bin/boot2dockerFix

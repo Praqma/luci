@@ -9,6 +9,8 @@
 # - quick:           A test is assumed to be quick unless otherwise specified (with the group
 #                    function call). These test are always executed.
 
+$LUCI_ROOT/bin/boot2dockerFix
+
 source $LUCI_ROOT/functions/testing
 
 # TEST_GROUPS is on purpose a String and not an array. An array can't be exported
