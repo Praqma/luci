@@ -156,7 +156,7 @@ runJenkinsCli() {
     runZettaTools docker exec $jcid ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no jenkins@$jsip env
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-read -p "Press [Enter] key to continue..."
+#read -p "Press [Enter] key to continue..."
 }
 
 teardown() {
