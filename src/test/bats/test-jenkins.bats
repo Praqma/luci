@@ -91,7 +91,7 @@ runJenkinsCli() {
     else
         #Init a variable to house the jenkins_home folder. The home folder needs to be created here.
         #Else, it will be created by a container, by root and jenkins then cant access it.
-        local jenkins_home=$tmpdir/home
+        local jenkins_home=$(mktemp -d)/home
         mkdir $jenkins_home
     fi
 
