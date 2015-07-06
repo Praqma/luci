@@ -1,4 +1,6 @@
-#! /bin/sh
+#! /bin/bash
+
+echo PATH in script=$PATH
 
 # Execute test on Jenkins
 
