@@ -137,11 +137,7 @@ runJenkinsCli() {
     #Build the shell job
     runJenkinsCli $cli build luci-shell
     #Wait for the job to finish
-<<<<<<< HEAD
     dockerLogs $jcid | waitForLine "luci-shell #1 main build" 30
-=======
-    dockerLogs $jcid | waitForLine "luci-shell #1 main build" 20
->>>>>>> eac7a5054ab67256598c0e804b2f100e80ad7d99
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
