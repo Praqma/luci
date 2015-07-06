@@ -2,9 +2,7 @@
 
 # Execute test on Jenkins
 
-pwd
-echo JHS "$@" JHS
-echo JHS "$1" JHS
+LUCI_ROOT=$1
 
 . /var/jenkins_home/workspace/LUCI/luci-setup.sh
 
