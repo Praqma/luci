@@ -109,6 +109,7 @@ runJenkinsCli() {
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
     #Verify
+    echo "Jenkins home is : $jenkins_home"
     startJenkinsMaster jcid $keydir $jenkins_home $jPort "luci-jenkins"
     echo "jcid is now : $jcid"
 
