@@ -70,6 +70,8 @@ dockerLogs(){
     #This line is nessasary for the process to die, when the function proccessLines dies
     echo "### LUCI $(date)"
     if [ $(runZettaTools docker inspect --format='{{.State.Running}}' $cid) = "false" ]; then
+        runZettaTools docker inspect $cid
+        runZettaTools docker logs $cid
         return 0
     fi
 
