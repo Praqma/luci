@@ -1,7 +1,5 @@
 #! /bin/bash
 
-echo PATH in script=$PATH
-
 # Execute test on Jenkins
 
 LUCI_ROOT=$1
