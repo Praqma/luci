@@ -35,5 +35,6 @@ $LUCI_ROOT/bin/build-local-docker-images
 
 # Execute tests
 echo PATH JHS= $PATH
+which bats
+type -a bats
 bats $LUCI_ROOT/src/test/bats
-
