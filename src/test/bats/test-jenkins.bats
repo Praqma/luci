@@ -100,11 +100,15 @@ runJenkinsCli() {
     #Jenkins is build. The Dockerfile will take care of the config.xml.
     $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
 
+    $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.neti > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
+
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
+
+    #Cleanup
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+    rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
     #Verify
-
     startJenkinsMaster jcid $keydir $jenkins_home $jPort "luci-jenkins"
     echo "jcid is now : $jcid"
 
@@ -127,12 +131,17 @@ runJenkinsCli() {
     #Download the jarfile from the Jenkins server
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
 
+
     #Set the shell command for the job and create it on the Jenkins server
     createJenkinsShellJob "env" $cli "luci-shell"
     #Build the shell job
     runJenkinsCli $cli build luci-shell
     #Wait for the job to finish
+<<<<<<< HEAD
     dockerLogs $jcid | waitForLine "luci-shell #1 main build" 30
+=======
+    dockerLogs $jcid | waitForLine "luci-shell #1 main build" 20
+>>>>>>> eac7a5054ab67256598c0e804b2f100e80ad7d99
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
@@ -141,7 +150,7 @@ runJenkinsCli() {
     #Build the docker job
     runJenkinsCli $cli build luci-docker
     #Wait for the job to finish
-    dockerLogs $jcid | waitForLine "luci-docker #1 main build" 150
+    dockerLogs $jcid | waitForLine "luci-docker #1 main build" 250
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
