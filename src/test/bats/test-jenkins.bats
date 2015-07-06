@@ -4,7 +4,7 @@ load utils
 source $LUCI_ROOT/functions/ssh-keys
 source $LUCI_ROOT/functions/docker-functions
 source $LUCI_ROOT/functions/web-functions
-jPort=18080
+jPort=10080
 
 waitForLine() {
     # We need to listen to the Jenkins output
