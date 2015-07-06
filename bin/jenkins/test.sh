@@ -6,4 +6,4 @@ LUCI_ROOT=$1
 
 . /var/jenkins_home/workspace/LUCI/luci-setup.sh
 
-$LUCI_ROOT/bin/runTests
+$LUCI_ROOT/bin/runtests
