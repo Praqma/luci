@@ -1,9 +1,11 @@
-#! /bin/sh
+#! /bin/bash
+
+echo PATH in script=$PATH
 
 # Execute test on Jenkins
 
-pwd
+LUCI_ROOT=$1
 
-source luci-setup.sh
+. /var/jenkins_home/workspace/LUCI/luci-setup.sh
 
-./bin/runTests
+$LUCI_ROOT/bin/runtests
