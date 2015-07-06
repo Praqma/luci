@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #define parameters which are passed in.
-luci_docker_host=$1
+luci_jenkins_host=$1
 jPort=$2
 
 cat << EOF
@@ -27,17 +27,17 @@ server {
 
   location /jenkins/ {
     # Fix the “It appears that your reverse proxy set up is broken" error.
-    proxy_pass          http://$luci_docker_host:$jPort;
+    proxy_pass          http://$luci_jenkins_host:$jPort;
   }
 
   location / {
-    proxy_pass http://docker-backend;
+    proxy_pass http://registry:5000;
   }
 
-    location /ui/ {
+    location /ui {
         rewrite /ui/(.*) /\$1 break;
         auth_basic off;
-        proxy_pass http://docker-frontend;
+        proxy_pass http://hub:80;
         proxy_set_header        Host \$host;
         proxy_set_header        X-Real-IP \$remote_addr;
         proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
