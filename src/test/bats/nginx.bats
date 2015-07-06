@@ -9,7 +9,9 @@ source $LUCI_ROOT/functions/web-functions
     local registryUiPort=80
 
     #Build the images we need
+    $LUCI_ROOT/bin/generateDockerComposeYml.sh $LUCI_DOCKER_HOST 18080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context nginx
+    rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
 
     #Run the nginx and UI
     ncid=$(runZettaTools docker run -p $nginxPort:80 -d nginx)
