@@ -4,7 +4,8 @@
 
 pwd
 echo JHS "$@" JHS
+echo JHS "$1" JHS
 
-source $1/luci-setup.sh
+source /var/jenkins_home/workspace/LUCI/luci-setup.sh
 
 $LUCI_ROOT/bin/runTests
