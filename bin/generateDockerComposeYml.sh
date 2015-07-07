@@ -28,9 +28,10 @@ server {
     proxy_pass http://docker-backend;
   }
 
-  location /ui/ {
+  location ^~ /ui/ {
       auth_basic off;
-      proxy_pass http://www.praqma.net;
+      proxy_set_header Host http://www.google.com;
+      proxy_pass http://docker-frontend/;
       proxy_redirect    off;
   }
 
