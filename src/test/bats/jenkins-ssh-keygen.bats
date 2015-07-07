@@ -11,7 +11,5 @@ source $LUCI_ROOT/functions/ssh-keys
     [ -f $tmpdir/id_rsa.pub ]
     [ -f $tmpdir/id_rsa ] 
 
-    cat $tmpdir/id_rsa > /dev/null
     echo "Generated in folder $tmpdir"
-
 }
