@@ -56,6 +56,7 @@ if [ $usingBoot2docker = 'true' ] ; then
 fi
 if [ -n "$LUCI_B2D_WORKAROUND_WITH_SOCAT" ] ; then
     echo "LUCI_B2D_WORKAROUND_WITH_SOCAT set to '$LUCI_B2D_WORKAROUND_WITH_SOCAT'. If true a container is started that makes boot2docker listen on port 2375 without TLS"
+    export LUCI_B2D_WORKAROUND_WITH_SOCAT
 fi
 
 $LUCI_ROOT/bin/boot2dockerFix
