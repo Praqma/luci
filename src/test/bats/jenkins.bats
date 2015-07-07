@@ -39,11 +39,10 @@ waitForLine() {
 startJenkinsMaster(){
   local jcidReturnVar=$1
   local keyDir=$2
-  local jenkinsHome=$3
-  local jenkinsPort=$4
-  local jenkinsName=$5
+  local jenkinsPort=$3
+  local jenkinsName=$4
 
-  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -v $jenkinsHome:/var/jenkins_home -d -p $jenkinsPort:8080 -p 50000:50000 $jenkinsName)
+  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -d -p $jenkinsPort:8080 -p 50000:50000 $jenkinsName)
   cleanup_container $_jcid
 
   waitForJenkinsRunning $_jcid
@@ -75,21 +74,9 @@ runJenkinsCli() {
     #The data image is build and the container is created to house the SSH-keys
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/data/context/ luci-data
     jdcid=$(createDockerKeyImage $keydir luci-data)
-    #jdcid=$(runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys luci-data)
 
     #The Jenkins Slave container is build.
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
-
-    # TODO Jenkins seems not to start if jenkins_home is on shared drive in boot2docker.
-    # So if we are using boot2docker create a temp dir on the boot2docker host, and use that as jenkins_home
-    if type boot2docker > /dev/null 2>&1 ; then
-        jenkins_home=$(boot2docker ssh mktemp -d)
-    else
-        #Init a variable to house the jenkins_home folder. The home folder needs to be created here.
-        #Else, it will be created by a container, by root and jenkins then cant access it.
-        local jenkins_home=$(mktemp -d)/home
-        mkdir $jenkins_home
-    fi
 
     #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
     #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
@@ -104,10 +91,8 @@ runJenkinsCli() {
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
-    #Verify
-    echo "Jenkins home is : $jenkins_home"
-    startJenkinsMaster jcid $keydir $jenkins_home $jPort "luci-jenkins"
-    echo "jcid is now : $jcid"
+    startJenkinsMaster jcid $keydir $jPort "luci-jenkins"
+    echo "jcid: $jcid"
 
     echo "starting tests"
     #Check if the Jenkins Server webpage is responding OK
