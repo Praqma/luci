@@ -9,7 +9,7 @@ source $LUCI_ROOT/functions/web-functions
     local registryUiPort=80
 
     #Build the images we need
-    $LUCI_ROOT/bin/generateDockerComposeYml.sh $LUCI_DOCKER_HOST 18080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
+    $LUCI_ROOT/bin/generateDockerComposeYml.sh $LUCI_DOCKER_HOST 10080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context nginx
     rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
 
@@ -18,6 +18,7 @@ source $LUCI_ROOT/functions/web-functions
     cleanup_container $ncid
 
     echo "Is container running?"
+    read -p "Press [Enter] key to continue..."
     [ $(isContainerRunning $ncid) = "0" ]
 
     isWebsiteUp $LUCI_DOCKER_HOST $nginxPort
