@@ -14,7 +14,6 @@ upstream docker-frontend {
 }
 
 server {
-#  server_name registry.praqma.net;
   listen 80;
 
   location / {
@@ -29,11 +28,12 @@ server {
     proxy_pass http://docker-backend;
   }
 
-  location /ui/~ {
-      rewrite           ^/ui/(./*) /$1 break;
-      proxy_pass http://docker-frontend;
+  location /ui/ {
+      auth_basic off;
+      proxy_pass http://www.praqma.net;
       proxy_redirect    off;
-    }
+  }
+
 
 }
 EOF
