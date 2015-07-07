@@ -40,35 +40,31 @@ startJenkinsMaster(){
   local jcidReturnVar=$1
   local keyDir=$2
   local jenkinsHome=$3
-  local jeninsPort=$4
+  local jenkinsPort=$4
   local jenkinsName=$5
 
-  #Start the Jenkins Server container with link to the data container that holds the SSH-keys.
-  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -v $jenkinsHome:/var/jenkins_home -d -p $jeninsPort:8080 -p 50000:50000 $jenkinsName)
+  local _jcid=$(runZettaTools docker run -v $keyDir:/data/praqma-ssh-key -v $jenkinsHome:/var/jenkins_home -d -p $jenkinsPort:8080 -p 50000:50000 $jenkinsName)
   cleanup_container $_jcid
 
-  #We have to wait for the Jenkins Server to get started. Not just the server
-  #but also the Jnlp service
   waitForJenkinsRunning $_jcid
   eval "$jcidReturnVar=$_jcid"
 }
 
 waitForJenkinsRunning() {
     dockerLogs $1 | waitForLine "setting agent port for jnlp" 120
-    #runZettaTools docker logs -f -t $1 | processLines
     local rc=$?
     return $rc
 }
 
+# A function to run commands on the Jenkins Server through jenkins-cli.jar
 runJenkinsCli() {
-    #A function to run commands on the Jenkins Server through jenkins-cli.jar
     local cli=$1
     shift
     java -jar "$cli" -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
 }
 
 @test "Running Jenkins container" {
-#Prepare
+    #Prepare
     local tmpdir=$(tempdir)
     local keydir=$tmpdir/keys
 
