@@ -18,7 +18,7 @@ server {
   listen 80;
 
   location / {
-    proxy_pass http://registry:5000;
+    proxy_pass http://docker-backend;
   }
 
   location /v1/_ping {
@@ -29,9 +29,9 @@ server {
     proxy_pass http://docker-backend;
   }
 
-  location /ui/ {
-      rewrite           ^/ui/(.*) /$1 break;
-      proxy_pass http://hub:80;
+  location /ui/~ {
+      rewrite           ^/ui/(./*) /$1 break;
+      proxy_pass http://docker-frontend;
       proxy_redirect    off;
     }
 
