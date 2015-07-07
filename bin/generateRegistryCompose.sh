@@ -9,8 +9,6 @@ proxy:
   image: $nginx_name
   ports:
    - "$nginx_port:80"
-  volumes:
-   - /mnt/praqma/nginx:/etc/nginx/conf.d
   links:
    - registry
    - hub
@@ -28,4 +26,3 @@ hub:
    - ENV_DOCKER_REGISTRY_HOST=registry
    - ENV_DOCKER_REGISTRY_PORT=5000
 EOF
-
