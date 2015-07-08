@@ -1,7 +1,7 @@
 ssh-slaves:latest
 durable-task:latest
 token-macro:latest
-docker-plugin:latest
+docker-plugin:0.10.0
 parameterized-trigger:latest
 token-macro:latest
 mailer:latest
