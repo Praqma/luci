@@ -1,7 +1,7 @@
 runDockerCompose(){
    #$1 is path to Compose file
    composeRoot=$1
-   runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml up -d 
+   runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml up -d
 }
 
 stopDockerCompose(){
@@ -39,20 +39,6 @@ isContainerRunning(){
   fi
 }
 
-createJenkinsShellJob(){
-  local jJobCmd=$1
-  local cli=$2
-  local jobName=$3
-  $LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd | runJenkinsCli $cli create-job $jobName
-}
-
-createJenkinsDockerJob(){
-  local jJobCmd=$1
-  local jobLabel=$2
-  local cli=$3
-  local jobName=$4
-  $LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd $jobLabel | runJenkinsCli $cli create-job $jobName
-}
 
 dockerLogs(){
   #This code is a replacement for docker logs -f
@@ -78,4 +64,25 @@ dockerLogs(){
     timeStamp=$nextTime
     sleep 2
   done
+}
+
+createSshKeyDataContainer(){
+    local jdcidReturnVar=$1
+    local keydir=$2
+    local keyComment=$3
+    local dataImageLocation=$4
+    local dataImageName=$5
+
+    #We generate new SSH-keys into the tmpdir subfolder "keys" These are then Unsed
+    #by the data container to supply both the Jenkins server and slave
+    generateSshKey $keydir "$keyComment"
+
+    #The data image is build and the container is created to house the SSH-keys
+    buildDockerImage $dataImageLocation $dataImageName
+
+    local _jdcidVal=$(createDockerKeyImage $keydir luci-data)
+    cleanup_container $_jdcidVal
+
+    eval "$jdcidReturnVar=$_jdcidVal"
+
 }
