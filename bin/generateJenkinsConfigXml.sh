@@ -27,7 +27,7 @@ EOF
 
 cat << CLOUD_HEADER
   <clouds>
-    <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.9.3">
+    <com.nirima.jenkins.plugins.docker.DockerCloud plugin="docker-plugin@0.10.0">
       <name>LocalDocker</name>
       <templates>
 CLOUD_HEADER
