@@ -35,39 +35,46 @@ dirs=$(find $LUCI_ROOT/src/main/remotedocker/jenkins-slaves -maxdepth 1 -mindept
 for d in $dirs; do
     slave=$(basename $d)
     cat << CLOUD_TEMPLATE
-        <com.nirima.jenkins.plugins.docker.DockerTemplate>
-          <image>luci-$slave-slave</image>
-          <dockerCommand></dockerCommand>
-          <lxcConfString></lxcConfString>
-          <hostname></hostname>
-          <dnsHosts/>
-          <volumes/>
-          <volumesFrom2>
-            <string>$luci_datacontainer</string>
-          </volumesFrom2>
-          <environment/>
-          <bindPorts></bindPorts>
-          <bindAllPorts>false</bindAllPorts>
-          <privileged>false</privileged>
-          <tty>false</tty>
-          <labelString>$slave</labelString>
+    <com.nirima.jenkins.plugins.docker.DockerTemplate>
+      <configVersion>1</configVersion>
+      <labelString>$slave</labelString>
+      <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
+        <sshConnector plugin="ssh-slaves@1.9">
+          <port>22</port>
           <credentialsId>cf65a07f-851a-4d80-aa44-8e5635ccd1e6</credentialsId>
-          <idleTerminationMinutes>5</idleTerminationMinutes>
-          <sshLaunchTimeoutMinutes>1</sshLaunchTimeoutMinutes>
           <jvmOptions></jvmOptions>
           <javaPath></javaPath>
-          <prefixStartSlaveCmd></prefixStartSlaveCmd>
-          <suffixStartSlaveCmd></suffixStartSlaveCmd>
-          <remoteFsMapping></remoteFsMapping>
-          <remoteFs>/home/jenkins</remoteFs>
-          <instanceCap>2147483647</instanceCap>
-          <mode>EXCLUSIVE</mode>
-          <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerOnceRetentionStrategy">
-            <idleMinutes>0</idleMinutes>
-            <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerOnceRetentionStrategy">0</idleMinutes>
-          </retentionStrategy>
-          <numExecutors>1</numExecutors>
-        </com.nirima.jenkins.plugins.docker.DockerTemplate>
+          <launchTimeoutSeconds>60</launchTimeoutSeconds>
+          <maxNumRetries>5</maxNumRetries>
+          <retryWaitTime>3</retryWaitTime>
+        </sshConnector>
+      </launcher>
+      <remoteFsMapping></remoteFsMapping>
+      <remoteFs>/home/jenkins</remoteFs>
+      <instanceCap>2147483647</instanceCap>
+      <mode>EXCLUSIVE</mode>
+      <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerOnceRetentionStrategy">
+        <idleMinutes>0</idleMinutes>
+        <idleMinutes defined-in="com.nirima.jenkins.plugins.docker.strategy.DockerOnceRetentionStrategy">0</idleMinutes>
+      </retentionStrategy>
+      <numExecutors>1</numExecutors>
+      <dockerTemplateBase>
+        <image>luci-$slave-slave</image>
+        <dockerCommand></dockerCommand>
+        <lxcConfString></lxcConfString>
+        <hostname></hostname>
+        <dnsHosts/>
+        <volumes/>
+        <volumesFrom2>
+          <string>$luci_datacontainer</string>
+        </volumesFrom2>
+        <environment/>
+        <bindPorts></bindPorts>
+        <bindAllPorts>false</bindAllPorts>
+        <privileged>false</privileged>
+        <tty>false</tty>
+      </dockerTemplateBase>
+    </com.nirima.jenkins.plugins.docker.DockerTemplate>
 CLOUD_TEMPLATE
 done
 
