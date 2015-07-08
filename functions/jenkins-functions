@@ -36,7 +36,7 @@ startJenkins(){
 
   #Is Jenkins container running?
   echo "Is container running?"
-  [ $(isContainerRunning $_jcid) = "0" ]
+  isContainerRunning $_jcid
 
   cleanup_container $_jcid
 
