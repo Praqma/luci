@@ -1,15 +1,7 @@
 source $LUCI_ROOT/functions/zetta-tools
 source $LUCI_ROOT/functions/testing
 
-### Cleanup after test execution
-CLEANUP_CONTAINERS=()
-CLEANUP_ACTIONS=()
-
-# Stop and remove
-# 1: Container name or id
-function cleanup_container() {
-    CLEANUP_CONTAINERS=(${CLEANUP_CONTAINERS[@]} $1)
-}
+load utils/cleanup
 
 # Creates a tempdir
 # As default it is created inside the users home directory, so it is accessible on the host machine
@@ -19,29 +11,6 @@ function tempdir() {
     mkdir -p "$parentDir"
     mktemp -d -p "$parentDir"
 }
-
-### Create a temp dir that is deleted as part of cleanup
-function cleanup_tempdir() {
-    local name=$(tempdir)
-    local action="rm -r $name"
-    CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]} action)
-    echo $name
-}
-
-# Perform the actual cleanup
-function cleanup_perform() {
-    if [ -n "$CLEANUP_CONTAINERS" ] ; then
-        local containers=${CLEANUP_CONTAINERS[@]}
-        CLEANUP_CONTAINERS=()
-        echo "Deleting containers:"
-        runZettaTools docker rm -f ${containers[@]}
-    fi
-    for action in $CLEANUP_ACTIONS ; do
-        eval "$action"
-    done
-    CLEANUP_ACTIONS=()
-}
-
 
 ### Docker Machnine pool
 #
