@@ -45,5 +45,5 @@ function cleanup_perform() {
         eval "$action"
     done
     CLEANUP_ACTIONS=()
-    cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
+  #  cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
 }
