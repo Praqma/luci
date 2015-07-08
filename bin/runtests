@@ -13,6 +13,8 @@ $LUCI_ROOT/bin/boot2dockerFix
 
 . $LUCI_ROOT/functions/testing
 
+rm -rf $LUCI_ROOT/build/containerInfos
+
 # TEST_GROUPS is on purpose a String and not an array. An array can't be exported
 export TEST_GROUPS="quick $@"
 
