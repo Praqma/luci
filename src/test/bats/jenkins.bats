@@ -100,12 +100,12 @@ runJenkinsCli() {
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
-    jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
+    local jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
     cleanup_container $jscid
 
     #Is Jenkins container running?
     echo "Is container running?"
-    [ $(isContainerRunning $jcid) = "0" ]
+    isContainerRunning $jcid
 
     #Get the IP adress of the Jenkins Slave container, and SSH to it from the
     #Jenkins Master contianer with ssh keys
