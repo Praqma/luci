@@ -1,0 +1,29 @@
+waitForLine() {
+    # We need to listen to the Jenkins output
+    # and wait untill both Jenkins and the jnlp
+    # is up af running. Set timeToRun in seconds
+    # to break a timeout.
+    local breakPoint=$1
+    local timeToRun=$2
+
+    local startTime=$(date +%s)
+    local endTime=$(($startTime+$timeToRun))
+
+
+    while read line; do
+        if [ $(date +%s) -gt $endTime ]; then
+          echo "Time out! ($timeToRun seconds waiting for '$breakPoint')"
+          return 2
+        fi
+        case "$line" in
+            *"$breakPoint"*) #TODO cleanup
+                echo "Breakpoint found [$(date)]"
+                return 0
+                ;;
+            *)
+                ;;
+        esac
+    done
+    echo "No more lines to read!"
+    return 1
+}
