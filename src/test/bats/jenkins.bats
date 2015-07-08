@@ -14,6 +14,9 @@ jPort=10080
     echo "Starting Jenkins system"
     startJenkins jdcid jcid $jPort
 
+    #Build the Docker slave we need
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
+
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
     local jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
