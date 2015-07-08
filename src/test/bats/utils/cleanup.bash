@@ -30,16 +30,16 @@ function cleanup_perform() {
     mkdir -p "$testInfoDir"
     if [ -n "$CLEANUP_CONTAINERS" ] ; then
         local containers=${CLEANUP_CONTAINERS[@]}
+        echo "Containers to cleanup: ${containers[@]}"
         CLEANUP_CONTAINERS=()
-        echo "Cleanup containers:"
         for e in $containers ; do
             local dir="$testInfoDir/$e"
-            echo $e
+            echo "Deleting container: $e"
             mkdir -p $dir
             runZettaTools docker inspect $e > "$dir/inspect.json"
             runZettaTools docker logs $e > "$dir/log.txt"
+            runZettaTools docker rm -f $e
         done
-        runZettaTools docker rm -f ${containers[@]}
     fi
     for action in $CLEANUP_ACTIONS ; do
         eval "$action"
