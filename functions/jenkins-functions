@@ -1,0 +1,74 @@
+#This function starts a Jenkins system, and check if its running.
+#It creates a custum config.xml, and a location file for jenkins.
+#It also creates ssh-keys for slaves, and build the data container for
+#the slaves, containing the authorized-keys file.
+startJenkins(){
+  local jdcidReturnVar=$1
+  local jcidReturnVar=$2
+  local jPort=$3
+  local tmpdir=$(tempdir)
+  local keydir=$tmpdir/keys
+  local _jcid
+  local _jdcid
+
+  #Create ssh keys, an docker image and create the container
+  createSshKeyDataContainer _jdcid $keydir "SSH-key-for-LUCI" $LUCI_ROOT/src/main/remotedocker/data/context/ luci-data
+
+  #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
+  #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
+  #Jenkins is build. The Dockerfile will take care of the config.xml.
+
+  $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $_jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+  $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.net > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
+  buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
+
+  #Cleanup
+  rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+  rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
+
+  echo "Starting Jenins master"
+
+  local _jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -d -p $jPort:8080 -p 50000:50000 "luci-jenkins")
+  waitForJenkinsRunning $_jcid
+
+  #Check if the Jenkins Server webpage is responding OK
+  isWebsiteUp $LUCI_DOCKER_HOST $jPort
+
+  #Is Jenkins container running?
+  echo "Is container running?"
+  [ $(isContainerRunning $_jcid) = "0" ]
+
+  cleanup_container $_jcid
+
+  eval "$jdcidReturnVar=$_jdcid"
+  eval "$jcidReturnVar=$_jcid"
+
+}
+
+createJenkinsShellJob(){
+  local jJobCmd=$1
+  local cli=$2
+  local jobName=$3
+  $LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd | runJenkinsCli $cli create-job $jobName
+}
+
+createJenkinsDockerJob(){
+  local jJobCmd=$1
+  local jobLabel=$2
+  local cli=$3
+  local jobName=$4
+  $LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd $jobLabel | runJenkinsCli $cli create-job $jobName
+}
+
+waitForJenkinsRunning() {
+    dockerLogs $1 | waitForLine "setting agent port for jnlp" 120
+    local rc=$?
+    return $rc
+}
+
+# A function to run commands on the Jenkins Server through jenkins-cli.jar
+runJenkinsCli() {
+    local cli=$1
+    shift
+    java -jar "$cli" -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"
+}
