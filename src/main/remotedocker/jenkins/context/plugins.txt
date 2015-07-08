@@ -12,3 +12,7 @@ git-client:latest
 ssh-credentials:latest
 credentials:latest
 git:latest
+cloudbees-folder:latest
+vsphere-cloud:latest
+config-file-provider:latest
+job-dsl:latest
