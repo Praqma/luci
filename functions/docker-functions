@@ -22,7 +22,6 @@ buildDockerImage() {
 
 createDockerKeyImage() {
    #$1 is the path to the folder that holds the ssh keys.
-   #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
    #$2 is the name of the image.
    keyDir=$1
    imageName=$2
@@ -33,9 +32,9 @@ isContainerRunning(){
   local containerId=$1
   local answer=$(runZettaTools docker inspect --format '{{ .State.Running }}' $containerId)
   if [ "$answer" == "true" ];then
-    echo 0
+    return 0
   else
-    echo 1
+    return 1
   fi
 }
 

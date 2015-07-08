@@ -25,23 +25,25 @@ function timestamp() {
 
 # Perform the actual cleanup
 function cleanup_perform() {
-    local containerInfoDir="$LUCI_ROOT/build/containerInfos/$BATS_TEST_NAME"
-    rm -rf "$containerInfoDir"
+    local testInfoDir="$LUCI_ROOT/build/testInfo/$BATS_TEST_NAME"
+    rm -rf "$testInfoDir"
+    mkdir -p "$testInfoDir"
     if [ -n "$CLEANUP_CONTAINERS" ] ; then
         local containers=${CLEANUP_CONTAINERS[@]}
+        echo "Containers to cleanup: ${containers[@]}"
         CLEANUP_CONTAINERS=()
-        echo "Cleanup containers:"
         for e in $containers ; do
-            local dir="$containerInfoDir/$e"
-            echo $e
+            local dir="$testInfoDir/$e"
+            echo "Deleting container: $e"
             mkdir -p $dir
             runZettaTools docker inspect $e > "$dir/inspect.json"
             runZettaTools docker logs $e > "$dir/log.txt"
+            runZettaTools docker rm -f $e
         done
-        runZettaTools docker rm -f ${containers[@]}
     fi
     for action in $CLEANUP_ACTIONS ; do
         eval "$action"
     done
     CLEANUP_ACTIONS=()
+    cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
 }

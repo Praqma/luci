@@ -16,7 +16,7 @@ jPort=10080
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
-    jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
+    local jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
     cleanup_container $jscid
 
     #Get the IP address of the Jenkins Slave container
@@ -51,7 +51,7 @@ jPort=10080
 
     #Wait for the job to finish
     dockerLogs $jcid | waitForLine "luci-docker #1 main build" 300
-    
+
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
