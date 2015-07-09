@@ -34,7 +34,8 @@ cat  << EOF
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>cd initial
+      <command>export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+cd initial
 gradle build</command>
     </hudson.tasks.Shell>
   </builders>
