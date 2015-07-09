@@ -100,3 +100,9 @@ createSshKeyDataContainer(){
     eval "$jdcidReturnVar=$_jdcidVal"
 
 }
+
+# Prints the ip of the specified container to stdout
+# 1: the container
+function containerIp() {
+  runZettaTools docker inspect --format '{{ .NetworkSettings.IPAddress }}' $1
+}
