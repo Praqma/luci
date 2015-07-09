@@ -10,8 +10,12 @@ source $LUCI_ROOT/functions/utility-functions
 jPort=10080
 
 @test "Running Gradle job on Jenkins" {
+  #TODO ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
 
   startJenkins jdcid jcid $jPort
+
+  #Build our base slave image. This will be used by all other slaves
+  buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
 
   #Build the Docker slave we need
   buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/gradle/context/ luci-gradle-slave
@@ -33,7 +37,7 @@ jPort=10080
   #  read -p "Press [Enter] key to continue..."
 
   #Wait for the job to finish
-  dockerLogs $jcid | waitForLine "Gradle Test Job #1 main build" 300
+  dockerLogs $jcid | waitForLine "Gradle-Test-Job #1 main build" 300
 
 }
 
