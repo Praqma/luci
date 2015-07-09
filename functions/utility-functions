@@ -1,14 +1,18 @@
+#! /bin/sh
+
 # Generate a unique name
 # 1: tag, a text included in name. Useful for debugging. Can be ommitted
 function uniqueName() {
     echo "luci_$1_$RANDOM"
 }
 
+# We need to listen to the Jenkins output
+# and wait untill both Jenkins and the jnlp
+# is up af running. Set timeToRun in seconds
+# to break a timeout.
+# 1: defines the string we are looking for. The function will stop, when found.
+# 2: timeout defined in seconds. 
 function waitForLine() {
-    # We need to listen to the Jenkins output
-    # and wait untill both Jenkins and the jnlp
-    # is up af running. Set timeToRun in seconds
-    # to break a timeout.
     local breakPoint=$1
     local timeToRun=$2
 
