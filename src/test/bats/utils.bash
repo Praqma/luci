@@ -79,25 +79,3 @@ _cleanDockerMachine() {
 _initDockerMachine() {
     true # noop
 }
-
-
-
-### Constructing test projects for Jenkins
-
-# Construct a test project for Jenkins (i.e. a project that can be build by Jenkins)
-# The git url for the project is returned.
-# The project is registrered for automatically cleanup
-function constructJenkinsTestProject() {
-    # A test project for jenkins is constructed by merging the
-    # source for a project with the buildsystem.
-    # The
-    local sourceDir="$LUCI_ROOT/src/test/jenkins-projects/$1"
-    local buildSystemDir="$LUCI_ROOT/src/test/jenkins-buildsystems/$2"
-
-    local target=$(cleanup_tempdir)
-
-    cp -r $sourceDir/* $buildSystemDir/* $target
-
-    (cd $target; git init; git add --all; git commit -m"Commit for Luci test project" )
-    echo "file://$target"
-}

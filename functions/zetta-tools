@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 function runZettaTools() {
     local OPTIND BINDINGS
     BINDINGS=()
@@ -15,4 +14,3 @@ function runZettaTools() {
 
     docker run --rm ${BINDINGS[@]} -v $LUCI_CONFIG/zetta_config:/config -v $LUCI_DATA/zetta-tools-docker:/root/.docker -v /var/run/docker.sock:/var/run/docker.sock zetta-tools "$@"
 }
-
