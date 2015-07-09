@@ -14,6 +14,9 @@ jPort=10080
     echo "Starting Jenkins system"
     startJenkins jdcid jcid $jPort
 
+    #Build our base slave image. This will be used by all other slaves
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
+
     #Build the Docker slave we need
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ luci-base-slave
 
