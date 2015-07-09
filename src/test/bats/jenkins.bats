@@ -15,11 +15,11 @@ jPort=10080
     startJenkins jdcid jcid $jPort
 
     #Build the Docker slave we need
-    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ luci-base-slave
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
-    local jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-shell-slave)
+    local jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-base-slave)
     cleanup_container $jscid
 
     #Get the IP address of the Jenkins Slave container
@@ -47,7 +47,7 @@ jPort=10080
 
 
     #Call the function createJenkinsDockerJob to create the docker job
-    createJenkinsDockerJob "env" "shell" $cli "luci-docker"
+    createJenkinsDockerJob "env" "base" $cli "luci-docker"
 
     #Build the docker job
     runJenkinsCli $cli build luci-docker
