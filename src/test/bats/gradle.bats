@@ -10,7 +10,7 @@ source $LUCI_ROOT/functions/utility-functions
 jPort=10080
 
 @test "Running Gradle job on Jenkins" {
-
+    skip "Under development"
   startJenkins jdcid jcid $jPort
 
   local gitUrl=$(constructJenkinsTestProject hiker-success gradle)
