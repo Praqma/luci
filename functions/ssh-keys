@@ -1,13 +1,25 @@
+#! /bin/sh
+
+. $LUCI_ROOT/functions/data-container
+
 #This function generates SSH keys based on a output folder and a
 #comment to add to the SSH-keys generated.
-generateSshKey() {
 # 1: Destination to put the SSH keys
 # 2: Comment to add to the SSH key
-
+function generateSshKey() {
     local destDir=$1
     local comment=$2
 
     mkdir -p $destDir
     runZettaTools -v "$destDir":/tmp/.ssh ssh-keygen -t rsa -b 4096 -C "$comment" -f /tmp/.ssh/id_rsa -q -N ""
     runZettaTools -v "$destDir":/tmp/.ssh chown $(id -u) /tmp/.ssh/id_rsa
+}
+
+keyPath=/data/praqma-ssh-key
+function createSecretKeysContainer() {
+    local containerName=$1
+    local workdir=$(mktemp -d)
+    ssh-keygen -t rsa -b 2048 -C "LUCI" -f $workdir/id_rsa -q -N ""
+    createDataContainer $containerName $workdir $keyPath
+    rm -r $workdir
 }
