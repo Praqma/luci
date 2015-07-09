@@ -4,7 +4,7 @@ source $LUCI_ROOT/functions/zetta-tools
 
 # Create security profile
 
-# Create lucitest profile if it doesn't exits
+# Create lucitest profile if it doesn't exits (do not delete in case it is in use)
 if ! runZettaTools openstack security group list -c Name -f csv --quote none | grep -q lucitest ; then
     runZettaTools openstack security group create lucitest
 fi
@@ -14,10 +14,20 @@ for e in $(runZettaTools openstack security group rule list lucitest -f csv -c I
     runZettaTools openstack security group rule delete $e
 done
 
-# Add rule for port range 10000-10999, 2376 (docker), and 3376 (docker swarm)
+
+# Add rules
+
+# Range to be used in luci test
 runZettaTools openstack security group rule create lucitest --dst-port 10000:10999 > /dev/null
+
+# docker
 runZettaTools openstack security group rule create lucitest --dst-port 2376        > /dev/null
+
+# docker swarm
 runZettaTools openstack security group rule create lucitest --dst-port 3376        > /dev/null
+
+# For Jenkins jlnp
+runZettaTools openstack security group rule create lucitest --dst-port 50000       > /dev/null
 
 
 
