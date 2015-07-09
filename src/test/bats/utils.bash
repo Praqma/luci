@@ -1,7 +1,6 @@
 source $LUCI_ROOT/functions/zetta-tools
 source $LUCI_ROOT/functions/testing
-
-load utils/cleanup
+source $LUCI_ROOT/functions/cleanup
 
 # Creates a tempdir
 # As default it is created inside the users home directory, so it is accessible on the host machine

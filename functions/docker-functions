@@ -1,4 +1,6 @@
-#This function is used to execute docker-compose run
+#! /bin/sh
+
+#This function is used to execute docker compose run
 #inside zettatools. It will start the containers defined in
 #the yml fil, found in the directory
 runDockerCompose(){

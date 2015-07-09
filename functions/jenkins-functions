@@ -1,52 +1,37 @@
-#This function starts a Jenkins system, and check if its running.
-#It creates a custum config.xml, and a location file for jenkins.
-#It also creates ssh-keys for slaves, and build the data container for
-#the slaves, containing the authorized-keys file.
+#! /bin/sh
+
+# This function starts a Jenkins system, and check if its running.
+# It creates a custum config.xml, and a location file for jenkins.
+# It also creates ssh-keys for slaves, and build the data container for
+# the slaves, containing the authorized-keys file.
+# 1: Name of jenkins master container to create
+# 2: Data container with public and private keys
+# 3: Data container to use in the jenkins master container
+# 4: Port on docker host bound to the 8080 on the jenkins master container
 startJenkins(){
-  #$1 is Jenkins Data Container ID
-  #$2 is Jenkins Container ID (Jenkins master)
-  #$3 is the port Jenkins Master is listening on
+    local jenkinsContainerName=$1 # Container to create
+    local secretsContainer$2
+    local dataContainer=$3        # existing container
+    local jPort=$4
+    
+    #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
+    #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
+    #Jenkins is build. The Dockerfile will take care of the config.xml.
+    
+    $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $dataContainer $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+    $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.net > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
+    
+    #Cleanup
+    rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
+    rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
-  local jdcidReturnVar=$1
-  local jcidReturnVar=$2
-  local jPort=$3
-  local tmpdir=$(tempdir)
-  local keydir=$tmpdir/keys
-  local _jcid
-  local _jdcid
+    echo "Starting Jenins master"
 
-  #Create ssh keys, an docker image and create the container
-  createSshKeyDataContainer _jdcid $keydir "SSH-key-for-LUCI" $LUCI_ROOT/src/main/remotedocker/data/context/ luci-data
-
-  #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
-  #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
-  #Jenkins is build. The Dockerfile will take care of the config.xml.
-
-  $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $_jdcid $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
-  $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.net > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
-  buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
-
-  #Cleanup
-  rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
-  rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
-
-  echo "Starting Jenins master"
-
-  local _jcid=$(runZettaTools docker run -v $keydir:/data/praqma-ssh-key -d -p $jPort:8080 -p 50000:50000 "luci-jenkins")
-  waitForJenkinsRunning $_jcid
-
-  #Check if the Jenkins Server webpage is responding OK
-  isWebsiteUp $LUCI_DOCKER_HOST $jPort
-
-  #Is Jenkins container running?
-  echo "Is container running?"
-  isContainerRunning $_jcid
-
-  cleanup_container $_jcid
-
-  eval "$jdcidReturnVar=$_jdcid"
-  eval "$jcidReturnVar=$_jcid"
-
+    # $keydir:/data/praqma-ssh-key
+    runZettaTools docker run --volumes-from $secretsContainer --volumes-from=$dataContainer -d -p $jPort:8080 -p 50000:50000 --name=$jenkinsContainerName "luci-jenkins"
+    cleanup_container $jenkinsContainerName
+    waitForJenkinsRunning $jenkinsContainerName    
 }
 
 #A simple function that creates a very simple hello world Jenkins Job.
