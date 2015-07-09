@@ -1,0 +1,38 @@
+#! /bin/sh
+
+# Creates a data container with specified data
+# 1: Name of data container to create
+# 2: Data directory, this directory is included in the container
+# 3: Path in container for the data. This is also declared as a volume
+function createDataContainer() {
+    local containerName=$1
+    local data=$2
+    local volumePath=$3
+    local workdir=$(mktemp -d)
+    local imageTag=luci-data-$RANDOM
+    cat > $workdir/Dockerfile <<-EOF
+FROM scratch
+VOLUME $volumePath
+CMD ['true']
+ADD $data $volumePath
+EOF
+    tar -czP $data -C $workdir Dockerfile | docker build -t $imageTag -
+    rm -r $workdir
+    docker create --name=$containerName $imageTag
+}
+
+
+# Create a standard luci data container based on the lucidata image
+# 1: Name of container created
+# 2: Container with secret sshkeys. The public key is used as authorized keys in the data container
+function createStandardDataContainer() {
+    local containerName=$1
+    local keyContainer=$2
+
+    # Ensure image is build
+    docker build -t luci-data $LUCI_ROOT/src/main/remotedocker/data/context 
+    docker create --name $containerName luci-data
+
+    # Copy public key to authorized keys
+    docker run --rm --volumes-from $keyContainer --volumes-from $containerName busybox cp /data/praqma-ssh-key/id_rsa.pub /data/server-keys/authorized_keys
+}
