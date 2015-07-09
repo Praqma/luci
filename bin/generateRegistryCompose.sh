@@ -12,6 +12,7 @@ proxy:
   links:
    - registry
    - hub
+   - artifactory
 registry:
   image: registry:0.9.1
   environment:
@@ -25,4 +26,6 @@ hub:
   environment:
    - ENV_DOCKER_REGISTRY_HOST=registry
    - ENV_DOCKER_REGISTRY_PORT=5000
+artifactory:
+  image: luci-artifactory
 EOF
