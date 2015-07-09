@@ -13,12 +13,27 @@ jPort=10080
 
   startJenkins jdcid jcid $jPort
 
-  local gitUrl=$(constructJenkinsTestProject hiker-success gradle)
-  echo "Git URL : $gitUrl"
+  #Build the Docker slave we need
+  buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/gradle/context/ luci-gradle-slave
 
-#  "./gradlew test"
+  #Starting a Jenkins Slave, with ssh-keys from the data container
+  echo "Starting Jenkins Slave"
+  local jscid=$(runZettaTools docker run --volumes-from=$jdcid -d luci-gradle-slave)
+  cleanup_container $jscid
 
-  #TODO create a jenkins job for a gradle job
+  local cli=$(tempdir)/cli.jar
+  #Download the cli jarfile from the Jenkins server
+  wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
+
+  createJenkinsGradleJob $cli "Gradle-Test-Job"
+
+  #Build the docker job
+  runJenkinsCli $cli build "Gradle-Test-Job"
+
+  #  read -p "Press [Enter] key to continue..."
+
+  #Wait for the job to finish
+  dockerLogs $jcid | waitForLine "Gradle Test Job #1 main build" 300
 
 }
 
