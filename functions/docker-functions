@@ -1,18 +1,24 @@
+#This function is used to execute docker-compose run
+#inside zettatools. It will start the containers defined in
+#the yml fil, found in the directory
 runDockerCompose(){
-   #$1 is path to Compose file
+   #$1 is path to Compose yml file
    composeRoot=$1
    runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml up -d
 }
 
+#This function is used to execute docker-compose stop
+#inside zettatools. It will stop the containers, started
+#by docker-compose, defined by the yml in the directory.
 stopDockerCompose(){
    #$1 is path to Compose file
    composeRoot=$1
    runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml stop
 }
 
-
+#This function builds a docker image based on a given Dockerfile.
 buildDockerImage() {
-   #$1 is the path to the context folder of the image.
+   #$1 is the path to the context folder of the image that holds the Dockerfile
    #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
    #$2 is the name of the image.
    contextRoot=$1
@@ -20,6 +26,7 @@ buildDockerImage() {
    runZettaTools -v $contextRoot:/tmp/context docker build -t $imageName /tmp/context
 }
 
+#Creating an docker image with a volume that contains ssh keys defined in $1
 createDockerKeyImage() {
    #$1 is the path to the folder that holds the ssh keys.
    #$2 is the name of the image.
@@ -28,7 +35,9 @@ createDockerKeyImage() {
    runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys $imageName
 }
 
+#Askes docker if a container has status running=true from a docker inspect.
 isContainerRunning(){
+  #$1 is the container ID we are investigating
   local containerId=$1
   local answer=$(runZettaTools docker inspect --format '{{ .State.Running }}' $containerId)
   if [ "$answer" == "true" ];then
@@ -39,11 +48,10 @@ isContainerRunning(){
 }
 
 
+#This code is a replacement for docker logs -f
+#This code is not complete. It will print some lines out twice. This
+#needs to be fixed.
 dockerLogs(){
-  #This code is a replacement for docker logs -f
-  #This code is not complete. It will print some lines out twice. This
-  #needs to be fixed.
-
   #Argument 1 is container id to be logged
   local cid=$1
   local timeStamp
@@ -65,7 +73,14 @@ dockerLogs(){
   done
 }
 
+#Here we create a data-container holding the SSH key authorized_keys file.
+#It first generate the SSH keys, and then build the data image. And then
+#it creates the data container.
 createSshKeyDataContainer(){
+    #$1 is a return variable holding the Jenkins Data Container ID.
+    #$2 is the location to the directory we want the SSH keys generated/stored.
+    #$3 is the location to the directory that holds the Dockerfile
+    #$4 Is the tagname we want to give the container.
     local jdcidReturnVar=$1
     local keydir=$2
     local keyComment=$3

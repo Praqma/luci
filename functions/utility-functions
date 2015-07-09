@@ -1,8 +1,10 @@
+# We need to listen to the Jenkins output
+# and wait untill both Jenkins and the jnlp
+# is up af running. Set timeToRun in seconds
+# to break a timeout.
 waitForLine() {
-    # We need to listen to the Jenkins output
-    # and wait untill both Jenkins and the jnlp
-    # is up af running. Set timeToRun in seconds
-    # to break a timeout.
+    #$1 defines the string we are looking for. The function will stop, when found.
+    #$2 is a timeout defined in seconds. 
     local breakPoint=$1
     local timeToRun=$2
 
