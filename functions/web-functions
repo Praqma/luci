@@ -1,5 +1,27 @@
-isWebsiteUp(){
-  local host=$1
-  local port=$2
-  runZettaTools curl -s --head $host:$port | head -n 1 | grep -q "HTTP/1.1 200 OK"
+#! /bin/sh
+
+# 1: url
+function isWebsiteUp(){
+  local url=$1
+  runZettaTools curl -s --head $url | head -n 1 | grep -q "HTTP/1.1 200 OK"
 }
+
+# Wait for a http url to answer 200
+# 1: url
+# 2: timeout
+function waitForHttpSuccess() {
+    local url=$1
+    local timeout=$2
+    local startTime=$(date +%s)
+    local endTime=$(($startTime+$timeout))
+
+    while ! isWebSiteUp() ; do
+        if [ $(date +%s) -gt $endTime ]; then
+          echo "Time out waiting on $url (timeout: $timeout)"
+          return 2
+        fi
+        sleep 1
+    done
+    return 0
+}
+

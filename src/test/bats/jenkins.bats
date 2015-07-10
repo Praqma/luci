@@ -23,7 +23,7 @@ jPort=10080
     startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort
 
     #Check if the Jenkins Server webpage is responding OK
-    isWebsiteUp $LUCI_DOCKER_HOST $jPort
+    isWebsiteUp $LUCI_DOCKER_HOST:$jPort
     
     #Is Jenkins container running?
     echo "Is container running?"
