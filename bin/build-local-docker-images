@@ -3,9 +3,13 @@
 for dir in $LUCI_ROOT/src/main/localdocker/* ; do
     if [ -d $dir ] ; then
         name=$(basename $dir)
-        echo "Building Docker image: '$name'"
-        docker build -t $name $dir/context
-        echo "Done with '$name'"
+        (
+            echo "Building Docker image: '$name'"
+            docker build -t $name $dir/context
+            echo "Done with '$name'"
+        ) &
         echo
     fi
 done
+
+wait
