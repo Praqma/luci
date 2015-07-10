@@ -41,7 +41,7 @@ function cleanup_perform() {
             mkdir -p $dir
             runZettaTools docker inspect $e > "$dir/inspect.json"
             runZettaTools docker logs $e > "$dir/log.txt"
-            runZettaTools docker rm -f $e
+            runZettaTools docker rm --volumes=true -f $e
         done
     fi
     for action in $CLEANUP_ACTIONS ; do
