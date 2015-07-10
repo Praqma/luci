@@ -1,12 +1,11 @@
 #! /bin/sh
 
 # 1: url
-function isWebsiteUp(){
-  local url=$1
-  runZettaTools curl -s --head $url | head -n 1 | grep -q "HTTP/1.1 200 OK"
-  local line=$(runZettaTools curl -s --head $url | head -n 1)
-  echo "isWebSiteUp output : $line"
-  echo $line | grep -q "HTTP/1.1 200 OK"
+function isWebsiteUp() {
+    local url=$1
+    local line="$(runZettaTools curl -s --head $url | head -n 1)"
+    echo "isWebSiteUp output : $line"
+    echo $line | grep -q "HTTP/1.1 200 OK"
 }
 
 # Wait for a http url to answer 200
@@ -18,7 +17,7 @@ function waitForHttpSuccess() {
     local startTime=$(date +%s)
     local endTime=$(($startTime+$timeout))
 
-    while ! isWebSiteUp $url ; do
+    while ! isWebsiteUp $url ; do
         if [ $(date +%s) -gt $endTime ]; then
           echo "Time out waiting on $url (timeout: $timeout)"
           return 2

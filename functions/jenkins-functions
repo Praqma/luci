@@ -31,7 +31,9 @@ startJenkins(){
     # $keydir:/data/praqma-ssh-key
     runZettaTools docker run --volumes-from $secretsContainer --volumes-from=$dataContainer -d -p $jPort:8080 -p 50000:50000 --name=$jenkinsContainerName "luci-jenkins"
     cleanup_container $jenkinsContainerName
-    waitForJenkinsRunning $jenkinsContainerName    
+    waitForJenkinsRunning $jenkinsContainerName
+    # Now wait for the web ui to respond
+    waitForHttpSuccess $LUCI_DOCKER_HOST:$jPort 10
 }
 
 #A simple function that creates a very simple hello world Jenkins Job.
