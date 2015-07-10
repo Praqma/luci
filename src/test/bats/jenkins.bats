@@ -14,20 +14,20 @@ jPort=10080
     local jenkinsContainer=$(uniqueName jenkinsMaster)
     local secretsContainer=$(uniqueName sshkeys)
     local dataContainer=$(uniqueName data)
-    
+
     createSecretKeysContainer $secretsContainer
     createStandardDataContainer $dataContainer $secretsContainer
-    
+
     #We start the Jenkins system up, and waits for it to answer.
     echo "Starting Jenkins system"
     startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort
 
-    #Check if the Jenkins Server webpage is responding OK
-    isWebsiteUp $LUCI_DOCKER_HOST:$jPort
-    
     #Is Jenkins container running?
     echo "Is container running?"
     isContainerRunning $jenkinsContainer
+
+    #Check if the Jenkins Server webpage is responding OK
+    isWebsiteUp $LUCI_DOCKER_HOST $jPort
 
     #Build our base slave image. This will be used by all other slaves
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
