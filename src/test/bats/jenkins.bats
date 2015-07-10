@@ -37,7 +37,7 @@ jPort=10080
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
-    local jscid=$(runZettaTools docker run --volumes-from=$dataContainer -d luci-shell-slave)
+    local jscid=$(runZettaTools docker run --volumes-from=$dataContainer -d luci-base-slave)
     cleanup_container $jscid
 
     local jsip=$(containerIp $jscid)
