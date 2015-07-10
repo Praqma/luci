@@ -83,6 +83,3 @@ jPort=10080
 #read -p "Press [Enter] key to continue..."
 }
 
-teardown() {
-    cleanup_perform
-}

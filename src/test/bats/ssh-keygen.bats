@@ -15,10 +15,6 @@ source $LUCI_ROOT/functions/utility-functions
     echo "Generated in folder $tmpdir"
 }
 
-teardown() {
-  cleanup_perform
-}
-
 @test "Create ssh key data container" {
     local n=$(uniqueName)
     createSecretKeysContainer $n 

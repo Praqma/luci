@@ -8,6 +8,8 @@ source $LUCI_ROOT/functions/ssh-keys
 }
 
 @test "Remote docker build with zetta-tools" {
+    cleanup_action dockerMachineReleaseAll
+    
     local tag=$RANDOM
     local dhost
     local tmpdir=$(tempdir)
@@ -31,8 +33,4 @@ source $LUCI_ROOT/functions/ssh-keys
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
-}
-
-function teardown() {
-    dockerMachineReleaseAll
 }

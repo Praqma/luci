@@ -50,6 +50,3 @@ jPort=10080
 
 }
 
-teardown() {
-    cleanup_perform
-}

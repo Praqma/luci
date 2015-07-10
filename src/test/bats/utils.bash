@@ -2,6 +2,17 @@ source $LUCI_ROOT/functions/zetta-tools
 source $LUCI_ROOT/functions/testing
 source $LUCI_ROOT/functions/cleanup
 
+# Implement bats setup. Bats script should *NOT* implement this. Currently no alternative provided
+setup() {
+    docker run --rm -v /var/lib/docker:/docker ubuntu:14.04 ls -1 /docker/volumes > /tmp/luci-$BATS_TEST_NAME-volumes.txt
+}
+
+# Implement the bats teardown
+# Test cases that needs teardown logic should user cleanup_??? (TODO implement method)
+teardown() {
+    cleanup_perform
+}
+
 # Creates a tempdir
 # As default it is created inside the users home directory, so it is accessible on the host machine
 # when running docker in boot2docker

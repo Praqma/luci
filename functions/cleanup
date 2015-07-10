@@ -13,6 +13,12 @@ function cleanup_container() {
     CLEANUP_CONTAINERS=(${CLEANUP_CONTAINERS[@]} $1)
 }
 
+# Add an action to perform during cleanup
+# 1: Action to perform. This is simply a string representing the shell command
+function cleanup_action() {
+    CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]})
+}
+
 ### Create a temp dir that is deleted as part of cleanup
 function cleanup_tempdir() {
     local name=$(tempdir)
@@ -49,5 +55,13 @@ function cleanup_perform() {
     done
     CLEANUP_ACTIONS=()
     cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
+
+    if [ -f /tmp/luci-volumes.txt ] ; then
+        echo "New volumes created by test $BATS_TEST_NAME"
+        docker run --rm -v /var/lib/docker:/docker ubuntu:14.04 ls -1 /docker/volumes | grep -Fxv -f /tmp/luci-$BATS_TEST_NAME-volumes.txt
+        echo "--- end ---"
+        rm /tmp/luci-$BATS_TEST_NAME-volumes.txt
+    fi
+
     echo "### END CLEANUP FOR $BATS_TEST_NAME ###"
 }
