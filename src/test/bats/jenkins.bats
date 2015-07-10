@@ -62,14 +62,18 @@ jPort=10080
     #Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
+
     #Call the function createJenkinsDockerJob to create the docker job
     createJenkinsDockerJob "env" "base" $cli "luci-docker"
 
     #Build the docker job
     runJenkinsCli $cli build luci-docker
 
+    echo "Before running docker job $(date)"
     #Wait for the job to finish
     dockerLogs $jenkinsContainer | waitForLine "luci-docker #1 main build" 300
+    echo "Before running docker job $(date)"
+
 
     #Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
