@@ -27,7 +27,7 @@ function timestamp() {
 
 # Perform the actual cleanup
 function cleanup_perform() {
-    echo "### BEGIN CLEANUP FOR $BATS_TEST_NAME ###
+    echo "### BEGIN CLEANUP FOR $BATS_TEST_NAME ###"
     local testInfoDir="$LUCI_ROOT/build/testInfo/$BATS_TEST_NAME"
     rm -rf "$testInfoDir"
     mkdir -p "$testInfoDir"
@@ -49,5 +49,5 @@ function cleanup_perform() {
     done
     CLEANUP_ACTIONS=()
     cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
-    echo "### END CLEANUP FOR $BATS_TEST_NAME ###
+    echo "### END CLEANUP FOR $BATS_TEST_NAME ###"
 }
