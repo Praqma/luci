@@ -1,3 +1,5 @@
+#! /bin/sh
+
 # Test if an element is in an array
 # First argument is the element to test for, the rest is the array
 function containsElement () {
@@ -19,7 +21,7 @@ function _checkTest() {
             complete)
                 return 0
                 ;;
-            
+
             *)
                 if validTestGroup "$g" ; then
                     containsElement "$g" ${groups[@]} && return 0
@@ -28,7 +30,7 @@ function _checkTest() {
                     exit 100
                 fi
                 ;;
-            
+
             *)
         esac
     done
