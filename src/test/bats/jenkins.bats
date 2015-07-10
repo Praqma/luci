@@ -22,13 +22,12 @@ jPort=10080
     echo "Starting Jenkins system"
     startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort
 
-    #Check if the Jenkins Server webpage is responding OK
-    sleep 10
-    isWebsiteUp $LUCI_DOCKER_HOST $jPort
-
     #Is Jenkins container running?
     echo "Is container running?"
     isContainerRunning $jenkinsContainer
+
+    #Check if the Jenkins Server webpage is responding OK
+    isWebsiteUp $LUCI_DOCKER_HOST $jPort
 
     #Build our base slave image. This will be used by all other slaves
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
