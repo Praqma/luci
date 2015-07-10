@@ -27,7 +27,7 @@ jPort=10080
     isContainerRunning $jenkinsContainer
 
     #Check if the Jenkins Server webpage is responding OK
-    isWebsiteUp $LUCI_DOCKER_HOST $jPort
+    isWebsiteUp $LUCI_DOCKER_HOST:$jPort
 
     #Build our base slave image. This will be used by all other slaves
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
