@@ -29,8 +29,11 @@ jPort=10080
     echo "Is container running?"
     isContainerRunning $jenkinsContainer
 
+    #Build our base slave image. This will be used by all other slaves
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
+
     #Build the Docker slave we need
-    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
+    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ luci-base-slave
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
@@ -60,7 +63,7 @@ jPort=10080
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
     #Call the function createJenkinsDockerJob to create the docker job
-    createJenkinsDockerJob "env" "shell" $cli "luci-docker"
+    createJenkinsDockerJob "env" "base" $cli "luci-docker"
 
     #Build the docker job
     runJenkinsCli $cli build luci-docker

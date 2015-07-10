@@ -37,10 +37,11 @@ RUN touch $COPY_REFERENCE_FILE_LOG
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
 
+COPY plugins.sh /usr/local/bin/plugins.sh
+COPY plugins.txt /tmp/
+RUN /usr/local/bin/plugins.sh /tmp/plugins.txt
+
 COPY credentials.xml /usr/share/jenkins/ref/
 COPY config.xml /usr/share/jenkins/ref/
 COPY jenkins.model.JenkinsLocationConfiguration.xml /usr/share/jenkins/ref/
 
-COPY plugins.sh /usr/local/bin/plugins.sh
-COPY plugins.txt /tmp/
-RUN /usr/local/bin/plugins.sh /tmp/plugins.txt

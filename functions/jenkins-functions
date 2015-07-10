@@ -35,6 +35,18 @@ startJenkins(){
 }
 
 #A simple function that creates a very simple hello world Jenkins Job.
+createJenkinsGradleJob(){
+  #$1 Location of the jenkins-cli.jar file.
+  #$2 The name you want to give the Jenkins gradle Job.
+  #IMPORTANT : The job name cannot have spaces
+
+  local cli=$1
+  local jobName=$2
+
+  $LUCI_ROOT/bin/gradle-jenkins-job.sh | runJenkinsCli $cli create-job $jobName
+}
+
+#A simple function that creates a very simple hello world Jenkins Job.
 createJenkinsShellJob(){
   #$1 defines the shell script you want run in the job. Eg. echo "hello world"
   #$2 Location of the jenkins-cli.jar file.
