@@ -18,7 +18,7 @@ function waitForHttpSuccess() {
     local startTime=$(date +%s)
     local endTime=$(($startTime+$timeout))
 
-    while ! isWebSiteUp() ; do
+    while ! isWebSiteUp $url ; do
         if [ $(date +%s) -gt $endTime ]; then
           echo "Time out waiting on $url (timeout: $timeout)"
           return 2
