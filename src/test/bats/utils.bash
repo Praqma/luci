@@ -55,11 +55,17 @@ function dockerMachineAquire() {
     local name
     local tmpdir=$(mktemp -d)
     # Move the newest free machine to tmpdir. If move fails assume there is no free machine in pool
-    if mv "$(find "$POOL_DIR/free" -type f -maxdepth 1 | head -1)" $tmpdir ; then
-        name="$(ls -1 $tmpdir | head -1)"
-        mv "$tmpdir/$name" "$POOL_DIR/busy"
-        echo "Docker machine '$name' obtained from pool"
-    else
+    while mv "$(find "$POOL_DIR/free" -type f -maxdepth 1 | head -1)" $tmpdir ; do
+        local n="$(ls -1 $tmpdir | head -1)"
+        # Check if the machine exists? Is server show the best way to do that?
+        if runZettaTools openstack server show $n > /dev/null ; then
+            mv "$tmpdir/$n" "$POOL_DIR/busy"
+            echo "Docker machine '$n' obtained from pool"
+            name=$n
+            break
+        fi
+    done
+    if [ -z "$name" ] ; then
         name="lucitest-$USER-$(date +%Y%m%d-%H%M%S)"
         runZettaTools docker-machine-create --openstack-sec-groups default,lucitest $name
         _initDockerMachine "$name"
