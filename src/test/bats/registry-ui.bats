@@ -11,12 +11,12 @@ source $LUCI_ROOT/functions/web-functions
     local tmpdir=$(tempdir)
 
     #Build the images we need
-    $LUCI_ROOT/bin/generateDockerComposeYml.sh $LUCI_DOCKER_HOST 10080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
+    $LUCI_ROOT/bin/generateNginxConf.sh $LUCI_DOCKER_HOST 10080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context luci-nginx
     rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context luci-artifactory
 
-    $LUCI_ROOT/bin/generateRegistryCompose.sh 80 luci-nginx > $tmpdir/docker-compose.yml
+    $LUCI_ROOT/bin/generateCompose.sh 80 luci-nginx > $tmpdir/docker-compose.yml
     echo $tmpdir
     runDockerCompose $tmpdir
 
