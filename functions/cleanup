@@ -74,9 +74,6 @@ function cleanup_perform() {
         done
     fi
 
-
-    cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
-
     if [ -f /tmp/luci-volumes.txt ] ; then
         echo "New volumes created by test $BATS_TEST_NAME"
         docker run --rm -v /var/lib/docker:/docker ubuntu:14.04 ls -1 /docker/volumes | grep -Fxv -f /tmp/luci-$BATS_TEST_NAME-volumes.txt
@@ -85,6 +82,7 @@ function cleanup_perform() {
     fi
 
     dockerMachineReleaseAll
-    
+
+    cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
     echo "### END CLEANUP FOR $BATS_TEST_NAME ###"
 }
