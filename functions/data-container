@@ -17,8 +17,10 @@ CMD ['true']
 ADD $data $volumePath
 EOF
     tar -czP $data -C $workdir Dockerfile | docker build -t $imageTag -
+    cleanup_image $imageTag
     rm -r $workdir
     docker create --name=$containerName $imageTag
+    cleanup_container $containerName
 }
 
 
@@ -32,6 +34,7 @@ function createStandardDataContainer() {
     # Ensure image is build
     docker build -t luci-data $LUCI_ROOT/src/main/remotedocker/data/context 
     docker create --name $containerName luci-data
+    cleanup_container $containerName
 
     # Copy public key to authorized keys
     docker run --rm --volumes-from $keyContainer --volumes-from $containerName busybox cp /data/praqma-ssh-key/id_rsa.pub /data/server-keys/authorized_keys
