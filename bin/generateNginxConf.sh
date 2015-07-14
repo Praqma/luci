@@ -32,9 +32,29 @@
     proxy_pass http://docker-backend;
   }
 
-  location /artifactory {
-      proxy_pass http://docker-artifactory;
-      proxy_read_timeout 90;
+  location /artifactory/ {
+      ## proxy_pass http://docker-artifactory;
+      ## proxy_read_timeout 90;
+  # Start -- Kamran's config -- 2015-07-14
+       proxy_buffering   off;
+       proxy_set_header Host \$host;
+       proxy_set_header X-Real-IP \$remote_addr;
+       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+       # proxy_set_header X-Forwarded-Ssl on;
+       # proxy_set_header X-Forwarded-Proto https;
+
+      # artifcatory is the name (link) of container linked with the nginx container
+      # Note: Matgrutter's artifactory runs on a "http://hostname:8080/artifactory" out of the box.
+      #       So a trailing /artifactory is necessary. 
+      #       The location directive also as a trailing slash now.
+      proxy_pass http://docker-artifactory/artifactory/;
+
+      # proxy_pass http://caddie.novelda.no:8081/artifactory/;
+      # proxy_pass http://172.17.42.1:8081/artifactory/;
+      
+  # End -- Kamran's config
+
+
   }
 
   location ^~ /ui/ {
