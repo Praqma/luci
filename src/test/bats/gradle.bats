@@ -10,7 +10,7 @@ source $LUCI_ROOT/functions/utility-functions
 jPort=10080
 
 @test "Running Gradle job on Jenkins" {
-  skip "Needs to be adapted to new way to start jenkins"
+#  skip "Needs to be adapted to new way to start jenkins"
   
   local jenkinsContainer=$(uniqueName jenkinsMaster)
   local secretsContainer=$(uniqueName sshkeys)
