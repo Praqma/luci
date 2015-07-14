@@ -38,4 +38,4 @@ echo
 $LUCI_ROOT/bin/build-local-docker-images
 
 # Execute tests
-bats $LUCI_ROOT/src/test/bats
+$LUCI_ROOT/bats/bin/bats $LUCI_ROOT/src/test/bats
