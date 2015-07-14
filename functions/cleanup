@@ -5,12 +5,19 @@
 ###
 
 CLEANUP_CONTAINERS=()
+CLEANUP_IMAGES=()
 CLEANUP_ACTIONS=()
 
-# Stop and remove
+# Stop and remove a docker container
 # 1: Container name or id
 function cleanup_container() {
     CLEANUP_CONTAINERS=(${CLEANUP_CONTAINERS[@]} $1)
+}
+
+# Delete a docker image
+# 1: image name or id
+function cleanup_image() {
+    CLEANUP_IMAGES=(${CLEANUP_IMAGES[@]} $1)
 }
 
 # Add an action to perform during cleanup
@@ -37,6 +44,7 @@ function cleanup_perform() {
     local testInfoDir="$LUCI_ROOT/build/testInfo/$BATS_TEST_NAME"
     rm -rf "$testInfoDir"
     mkdir -p "$testInfoDir"
+
     if [ -n "$CLEANUP_CONTAINERS" ] ; then
         local containers=${CLEANUP_CONTAINERS[@]}
         echo "Containers to cleanup: ${containers[@]}"
@@ -50,10 +58,23 @@ function cleanup_perform() {
             runZettaTools docker rm --volumes=true -f $e
         done
     fi
+
     for action in $CLEANUP_ACTIONS ; do
         eval "$action"
     done
     CLEANUP_ACTIONS=()
+
+    if [ -n "$CLEANUP_IMAGES" ] ; then
+        local images=${CLEANUP_IMAGES[@]}
+        echo "Images to cleanup: ${images[@]}"
+        CLEANUP_IMAGES=()
+        for e in $images ; do
+            echo "Deleting image: $e"
+            runZettaTools docker rmi $e
+        done
+    fi
+
+
     cat $(ls -t1 $(realpath ${TMPDIR:-/tmp})/bats*.out | head -1) > "$testInfoDir/bats.log"
 
     if [ -f /tmp/luci-volumes.txt ] ; then
