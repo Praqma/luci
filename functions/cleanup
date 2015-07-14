@@ -63,5 +63,7 @@ function cleanup_perform() {
         rm /tmp/luci-$BATS_TEST_NAME-volumes.txt
     fi
 
+    dockerMachineReleaseAll
+    
     echo "### END CLEANUP FOR $BATS_TEST_NAME ###"
 }
