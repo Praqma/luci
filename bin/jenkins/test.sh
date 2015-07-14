@@ -10,7 +10,7 @@ echo "Containers before tests:"
 docker ps -a
 echo "--- end ---"
 
-$LUCI_ROOT/bin/runtests
+$LUCI_ROOT/bin/runtests | tee testresults.tap
 rc=$?
 
 echo "Containers after tests:"
