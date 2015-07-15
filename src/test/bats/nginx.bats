@@ -4,23 +4,20 @@ load utils
 source $LUCI_ROOT/functions/docker-functions
 source $LUCI_ROOT/functions/web-functions
 
-@test "Running Registry-UI container" {
-#TODO UI cannot be reached through nginx. But ok directly.
-
-    #Prepare
+@test "Running Artifactory behind nginx" {
     local tmpdir=$(tempdir)
 
     #Build the images we need
     $LUCI_ROOT/bin/generateNginxConf.sh $LUCI_DOCKER_HOST 10080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context luci-nginx
     rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
+
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context luci-artifactory
 
     $LUCI_ROOT/bin/generateCompose.sh 80 luci-nginx > $tmpdir/docker-compose.yml
-    echo $tmpdir
     runDockerCompose $tmpdir
 
-    #read -p "Press [Enter] key to continue..."
+    read -p "Press [Enter] key to continue..."
 
     stopDockerCompose $tmpdir
 }
