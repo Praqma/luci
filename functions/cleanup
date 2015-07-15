@@ -29,14 +29,13 @@ function cleanup_composition() {
 # Add an action to perform during cleanup
 # 1: Action to perform. This is simply a string representing the shell command
 function cleanup_action() {
-    CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]})
+    CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]} $1)
 }
 
 ### Create a temp dir that is deleted as part of cleanup
 function cleanup_tempdir() {
     local name=$(tempdir)
-    local action="rm -r $name"
-    CLEANUP_ACTIONS=(${CLEANUP_ACTIONS[@]} action)
+    cleanup_action "rm -r $name"
     echo $name
 }
 
@@ -66,6 +65,7 @@ function cleanup_perform() {
     fi
 
     for action in $CLEANUP_ACTIONS ; do
+        echo "Executing cleanup: '$action'"
         eval "$action"
     done
     CLEANUP_ACTIONS=()
