@@ -16,8 +16,6 @@ jPort=10080
   local secretsContainer=$(uniqueName sshkeys)
   local dataContainer=$(uniqueName data)
 
-  #TODO ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
-
   createSecretKeysContainer $secretsContainer
   createStandardDataContainer $dataContainer $secretsContainer
 
@@ -28,11 +26,6 @@ jPort=10080
 
   #Build the Docker slave we need
   buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/gradle/context/ luci-gradle-slave
-
-  #Starting a Jenkins Slave, with ssh-keys from the data container
-  echo "Starting Jenkins Slave"
-  local jscid=$(runZettaTools docker run --volumes-from=$dataContainer -d luci-gradle-slave)
-  cleanup_container $jscid
 
   local cli=$(tempdir)/cli.jar
   #Download the cli jarfile from the Jenkins server
