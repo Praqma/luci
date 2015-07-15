@@ -6,6 +6,7 @@ source $LUCI_ROOT/functions/web-functions
 
 @test "Running Artifactory behind nginx" {
     local tmpdir=$(tempdir)
+    echo JHS $tmpdir
 
     #Build the images we need
     echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
@@ -17,9 +18,10 @@ source $LUCI_ROOT/functions/web-functions
 
     $LUCI_ROOT/bin/generateCompose.sh 80 luci-nginx > $tmpdir/docker-compose.yml
     runDockerCompose $tmpdir
-
+    killDockerCompose $(realpath $tempdir)
+#    cleanup_composition $tempdir
+    
     # echo "Press [Enter] key to continue, and stop this test, including shutdown of containers ..."
     # read
 
-    stopDockerCompose $tmpdir
 }
