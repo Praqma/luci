@@ -54,8 +54,8 @@ function cleanup_perform() {
             echo "Deleting container: $e"
             mkdir -p $dir
             runZettaTools docker inspect $e > "$dir/inspect.json"
-            runZettaTools docker logs $e > "$dir/log.txt"
-            sleep 3
+            #runZettaTools docker logs $e > "$dir/log.txt"
+            docker logs $e > "$dir/log.txt"
             runZettaTools docker rm --volumes=true -f $e
         done
     fi
