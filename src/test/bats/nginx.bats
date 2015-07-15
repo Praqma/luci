@@ -18,7 +18,7 @@ source $LUCI_ROOT/functions/web-functions
 
     $LUCI_ROOT/bin/generateCompose.sh 80 luci-nginx > $tmpdir/docker-compose.yml
     runDockerCompose $tmpdir
-    killDockerCompose $(realpath $tempdir)
+    killDockerCompose $(realpath $tmpdir)
 #    cleanup_composition $tempdir
     
     # echo "Press [Enter] key to continue, and stop this test, including shutdown of containers ..."
