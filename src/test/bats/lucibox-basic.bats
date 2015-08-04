@@ -15,6 +15,8 @@ echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
 
 local nginxContainer=$(uniqueName nginx)
 local artifactoryContainer=$(uniqueName artifactory)
+cleanup_container $nginxContainer
+cleanup_container $artifactoryContainer
 
 #Create a artifactory container
 buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context $artifactoryContainer
@@ -41,8 +43,8 @@ buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context $nginxContainer
 
 #Start NginX with link to $jenkinsContainer and artifactory
 runZettaTools docker run -d --name $artifactoryContainer $artifactoryContainer
-runZettaTools docker run -d --name luci-nginx --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ nginx
+runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ $nginxContainer
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-read -p "Press [Enter] key to continue..."
+#read -p "Press [Enter] key to continue..."
 }
