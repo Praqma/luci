@@ -1,8 +1,9 @@
-# the slaves, containing the authorized-keys file.
+# This script outputs the nginx configuration file for
+# Jenkins and artifactory behind nginx.
 # 1: Name of jenkins master container
 # 2: Name of artifactory container
-local jenkinsContainer=$1 # Container to create
-local artifactoryContainer=$2
+jenkinsContainer=$1 # Container to create
+artifactoryContainer=$2
 cat << EOF
 upstream docker-artifactory {
   server $artifactoryContainer:8080;
