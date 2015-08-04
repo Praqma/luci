@@ -1,10 +1,15 @@
+# the slaves, containing the authorized-keys file.
+# 1: Name of jenkins master container
+# 2: Name of artifactory container
+local jenkinsContainer=$1 # Container to create
+local artifactoryContainer=$2
 cat << EOF
 upstream docker-artifactory {
-  server luci-artifactory:8080;
+  server $artifactoryContainer:8080;
 }
 
 upstream docker-jenkins {
-  server luci-jenkins:8080;
+  server $jenkinsContainer:8080;
 }
 
 server {
