@@ -1,5 +1,7 @@
 #! /bin/sh
 
+#TODO Handle 302 redirects !
+
 # 1: url
 function isWebsiteUp() {
     local url=$1
@@ -16,7 +18,7 @@ function waitForHttpSuccess() {
     local timeout=$2
     local startTime=$(date +%s)
     local endTime=$(($startTime+$timeout))
-
+    echo "Checking url : $url"
     while ! isWebsiteUp $url ; do
         if [ $(date +%s) -gt $endTime ]; then
           echo "Time out waiting on $url (timeout: $timeout)"
@@ -24,6 +26,6 @@ function waitForHttpSuccess() {
         fi
         sleep 1
     done
+    echo "Found website at $url"
     return 0
 }
-
