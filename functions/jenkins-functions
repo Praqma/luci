@@ -8,11 +8,23 @@
 # 2: Data container with public and private keys
 # 3: Data container to use in the jenkins master container
 # 4: Port on docker host bound to the 8080 on the jenkins master container
+# 5: Prefix for Jenkins command. Used to add subfolder for Jenkins
 startJenkins(){
     local jenkinsContainerName=$1 # Container to create
     local secretsContainer$2
     local dataContainer=$3        # existing container
     local jPort=$4
+    local prefix=$5
+
+    #If the prefix is set, set the var that will be added to the run command
+    #Else, make it empty.
+    if [ -z "$prefix" ]; then
+      jenkinsPrefix=""
+      jenkinsSubFolder=""
+    else
+      jenkinsPrefix="--prefix=/$prefix"
+      jenkinsSubFolder="/$prefix/"
+    fi
 
     #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
     #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
@@ -29,11 +41,13 @@ startJenkins(){
     echo "Starting Jenins master"
 
     # $keydir:/data/praqma-ssh-key
-    runZettaTools docker run --volumes-from $secretsContainer --volumes-from=$dataContainer -d -p $jPort:8080 -p 50000:50000 --name=$jenkinsContainerName "luci-jenkins"
+    runZettaTools docker run --volumes-from $secretsContainer --volumes-from=$dataContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci-jenkins $jenkinsPrefix
+
     cleanup_container $jenkinsContainerName
     waitForJenkinsRunning $jenkinsContainerName
+
     # Now wait for the web ui to respond
-    waitForHttpSuccess $LUCI_DOCKER_HOST:$jPort 60
+    waitForHttpSuccess $LUCI_DOCKER_HOST:$jPort$jenkinsSubFolder 60
 }
 
 #A simple function that creates a very simple hello world Jenkins Job.
