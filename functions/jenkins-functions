@@ -15,13 +15,12 @@ startJenkins(){
     local dataContainer=$3        # existing container
     local jPort=$4
     local prefix=$5
+    local jenkinsPrefix=""
+    local jenkinsSubFolder=""
 
     #If the prefix is set, set the var that will be added to the run command
     #Else, make it empty.
-    if [ -z "$prefix" ]; then
-      jenkinsPrefix=""
-      jenkinsSubFolder=""
-    else
+    if [ ! -z "$prefix" ]; then
       jenkinsPrefix="--prefix=/$prefix"
       jenkinsSubFolder="/$prefix/"
     fi
