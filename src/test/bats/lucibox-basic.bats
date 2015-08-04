@@ -13,12 +13,11 @@ jPort=10080
 @test "Starting LUCIbox basic" {
 echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
 
-#Create a nginx container
-$LUCI_ROOT/bin/generateLuciboxBasicNginxConf.sh > $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
-buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context luci-nginx
+local nginxContainer=$(uniqueName nginx)
+local artifactoryContainer=$(uniqueName artifactory)
 
 #Create a artifactory container
-buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context luci-artifactory
+buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context $artifactoryContainer
 
 #Create a Jenkins container
 local jenkinsContainer=$(uniqueName jenkinsMaster)
@@ -36,11 +35,14 @@ startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort "jenkins"
 buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
 buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
 
+#Create a nginx container
+$LUCI_ROOT/bin/generateLuciboxBasicNginxConf.sh $jenkinsContainer $artifactoryContainer> $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
+buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context $nginxContainer
 
 #Start NginX with link to $jenkinsContainer and artifactory
-runZettaTools docker run -d --name luci-artifactory luci-artifactory
-runZettaTools docker run -d --name luci-nginx --link luci-artifactory --link $jenkinsContainer:luci-jenkins -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ nginx
+runZettaTools docker run -d --name $artifactoryContainer $artifactoryContainer
+runZettaTools docker run -d --name luci-nginx --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ nginx
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-#read -p "Press [Enter] key to continue..."
+read -p "Press [Enter] key to continue..."
 }
