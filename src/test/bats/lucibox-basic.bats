@@ -45,6 +45,9 @@ buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context $nginxContainer
 runZettaTools docker run -d --name $artifactoryContainer $artifactoryContainer
 runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ $nginxContainer
 
+#cleanup files
+rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
+
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
 #read -p "Press [Enter] key to continue..."
 }
