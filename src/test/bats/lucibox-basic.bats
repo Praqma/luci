@@ -42,5 +42,5 @@ runZettaTools docker run -d --name luci-artifactory luci-artifactory
 runZettaTools docker run -d --name luci-nginx --link luci-artifactory --link $jenkinsContainer:luci-jenkins -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ nginx
 
 #Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-read -p "Press [Enter] key to continue..."
+#read -p "Press [Enter] key to continue..."
 }
