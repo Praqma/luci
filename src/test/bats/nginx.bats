@@ -9,9 +9,9 @@ source $LUCI_ROOT/functions/web-functions
 
     #Build the images we need
     echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
-    $LUCI_ROOT/bin/generateNginxConf.sh $LUCI_DOCKER_HOST 10080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
+    $LUCI_ROOT/bin/generateNginxConf.sh $LUCI_DOCKER_HOST 10080 > $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context luci-nginx
-    rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/praqma.conf
+    rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
 
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context luci-artifactory
 
