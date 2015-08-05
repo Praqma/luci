@@ -28,7 +28,7 @@ startJenkins(){
     #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
     #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
     #Jenkins is build. The Dockerfile will take care of the config.xml.
-
+#TODO Should be moved to a data container
     $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $dataContainer $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.net > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
