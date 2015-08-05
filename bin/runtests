@@ -36,6 +36,7 @@ echo
 
 # Build local images
 $LUCI_ROOT/bin/build-local-docker-images
+$LUCI_ROOT/bin/buildAllImages.sh
 
 # Execute tests
 $LUCI_ROOT/bats/bin/bats $LUCI_ROOT/src/test/bats
