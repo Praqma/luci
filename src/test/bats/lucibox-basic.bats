@@ -43,7 +43,7 @@ buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context $nginxContainer
 
 #Start NginX with link to $jenkinsContainer and artifactory
 runZettaTools docker run -d --name $artifactoryContainer $artifactoryContainer
-runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ $nginxContainer
+runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer:artifactory --link $jenkinsContainer:jenkins -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ $nginxContainer
 
 #cleanup files
 rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
