@@ -38,16 +38,17 @@ buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ b
 buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
 
 #Create a nginx container
+#TODO default.conf should be located in a data container
 $LUCI_ROOT/bin/generateLuciboxBasicNginxConf.sh $jenkinsContainer $artifactoryContainer> $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
-buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context $nginxContainer
+#buildDockerImage $LUCI_ROOT/src/main/remotedocker/nginx/context $nginxContainer
 
 #Start NginX with link to $jenkinsContainer and artifactory
 runZettaTools docker run -d --name $artifactoryContainer $artifactoryContainer
-runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ $nginxContainer
+runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer --link $jenkinsContainer -p 80:80 -v $LUCI_ROOT/src/main/remotedocker/nginx/context/:/etc/nginx/conf.d/ luci/nginx:0.1
+
+#Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
+read -p "Press [Enter] key to continue..."
 
 #cleanup files
 rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
-
-#Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-#read -p "Press [Enter] key to continue..."
 }
