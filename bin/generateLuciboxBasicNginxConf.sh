@@ -1,16 +1,12 @@
 # This script outputs the nginx configuration file for
 # Jenkins and artifactory behind nginx.
-# 1: Name of jenkins master container
-# 2: Name of artifactory container
-jenkinsContainer=$1 # Container to create
-artifactoryContainer=$2
 cat << EOF
 upstream docker-artifactory {
-  server $artifactoryContainer:8080;
+  server artifactory:8080;
 }
 
 upstream docker-jenkins {
-  server $jenkinsContainer:8080;
+  server jenkins:8080;
 }
 
 server {
