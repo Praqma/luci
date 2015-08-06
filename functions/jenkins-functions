@@ -40,7 +40,7 @@ startJenkins(){
     echo "Starting Jenins master"
 
     # $keydir:/data/praqma-ssh-key
-    runZettaTools docker run --volumes-from $secretsContainer --volumes-from=$dataContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci-jenkins $jenkinsPrefix
+    runZettaTools docker run --volumes-from $secretsContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci-jenkins $jenkinsPrefix
 
     cleanup_container $jenkinsContainerName
     waitForJenkinsRunning $jenkinsContainerName
