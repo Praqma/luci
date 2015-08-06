@@ -29,12 +29,6 @@ jPort=10080
     #Check if the Jenkins Server webpage is responding OK
     isWebsiteUp $LUCI_DOCKER_HOST:$jPort
 
-    #Build our base slave image. This will be used by all other slaves
-    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
-
-    #Build the Docker slave we need
-    buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ luci-base-slave
-
     local cli=$(tempdir)/cli.jar
 
     #Download the cli jarfile from the Jenkins server
@@ -54,7 +48,7 @@ jPort=10080
 
 
     #Call the function createJenkinsDockerJob to create the docker job
-    createJenkinsDockerJob "env" "base" $cli "luci-docker"
+    createJenkinsDockerJob "env" "shell" $cli "luci-docker"
 
     #Build the docker job
     runJenkinsCli $cli build luci-docker
@@ -66,7 +60,7 @@ jPort=10080
 
     #Starting a Jenkins Slave, with ssh-keys from the data container
     echo "Starting Jenkins Slave"
-    local jscid=$(runZettaTools docker run --volumes-from=$dataContainer -d luci-base-slave)
+    local jscid=$(runZettaTools docker run --volumes-from=$dataContainer -d luci/slave-shell:0.1)
     cleanup_container $jscid
 
     local jsip=$(containerIp $jscid)
