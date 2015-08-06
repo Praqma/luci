@@ -18,9 +18,6 @@ jPort=10080
   cleanup_container $nginxContainer
   cleanup_container $artifactoryContainer
 
-  # Create a artifactory container
-  buildDockerImage $LUCI_ROOT/src/main/remotedocker/artifactory/context $artifactoryContainer
-
   # Create a Jenkins container
   local jenkinsContainer=$(uniqueName jenkinsMaster)
   local secretsContainer=$(uniqueName sshkeys)
@@ -37,13 +34,12 @@ jPort=10080
   buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
   buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
 
+  # Start artifactory
+  runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1
+
   # Start nginX with link to $jenkinsContainer and $artifactoryContainer
-  runZettaTools docker run -d --name $artifactoryContainer $artifactoryContainer
   runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer:artifactory --link $jenkinsContainer:jenkins -p 80:80 luci/nginx:0.1
 
   # Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
   #read -p "Press [Enter] key to continue..."
-
-  # cleanup files
-  #rm -f $LUCI_ROOT/src/main/remotedocker/nginx/context/default.conf
 }
