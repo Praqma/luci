@@ -7,8 +7,8 @@ in ~/.luci folder (you can use the env var LUCI_CONFIG).
 ### Directory zetta_config
 
 The communication with Zetta cloud in Luci is going throught the zetta-tools Docker container. When starting the 
-zetta-tools container it is sourcing all *.sh files in $LUCI_CONFIG/zetta_config. To authenticate to Zetta it must
-define the following env vars:
+zetta-tools container it is sourcing   all *.sh files in $LUCI_CONFIG/zetta_config. To authenticate to Zetta it must
+define the following env variables:
 - ZETTA_DOMAIN_NAME
 - ZETTA_DOMAIN_ID
 - ZETTA_USERNAME

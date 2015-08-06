@@ -41,7 +41,7 @@ jPort=10080
   waitForHttpSuccess "$LUCI_DOCKER_HOST/$jenkinsPrefix/" 10
 
   # Check if Artifactory is reachable through nginX
-  waitForHttpSuccess "$LUCI_DOCKER_HOST/artifactory/webapp/home.html?0" 100
+  waitForHttpSuccess "$LUCI_DOCKER_HOST/artifactory" 100
 
   # Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
   #read -p "Press [Enter] key to continue..."
