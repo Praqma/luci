@@ -13,4 +13,6 @@ function build {
 build base 0.1
 build base/java7 0.1
 build base/java7/jenkins 0.1
+build base/java7/tomcat7 0.1
+build base/java7/tomcat7/artifactory 0.1
 build base/nginx 0.1

@@ -1,6 +1,6 @@
 FROM luci/java7:0.1
 
-RUN apt-get install -y wget git curl zip && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y wget git zip 
 
 ENV JENKINS_HOME /var/jenkins_home
 
