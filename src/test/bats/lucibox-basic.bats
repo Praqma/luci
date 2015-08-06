@@ -11,6 +11,7 @@ source $LUCI_ROOT/functions/data-container
 jPort=10080
 
 @test "Starting LUCIbox basic" {
+  local jenkinsPrefix="jenkins"
   echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
 
   local nginxContainer=$(uniqueName nginx)
@@ -28,7 +29,7 @@ jPort=10080
 
   # We start the Jenkins system up, and waits for it to answer.
   echo "Starting Jenkins system"
-  startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort "jenkins"
+  startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix
 
   # Build our slaves
   buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
@@ -39,6 +40,12 @@ jPort=10080
 
   # Start nginX with link to $jenkinsContainer and $artifactoryContainer
   runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer:artifactory --link $jenkinsContainer:jenkins -p 80:80 luci/nginx:0.1
+
+  # Check if Jenkins is reachable through nginX
+  waitForHttpSuccess "$LUCI_DOCKER_HOST/$jenkinsPrefix/" 10
+
+  # Check if Artifactory is reachable through nginX
+  waitForHttpSuccess "$LUCI_DOCKER_HOST/artifactory/" 50
 
   # Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
   #read -p "Press [Enter] key to continue..."
