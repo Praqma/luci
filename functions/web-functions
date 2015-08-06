@@ -7,10 +7,11 @@ function isWebsiteUp() {
     local url=$1
     local line="$(runZettaTools curl -s --head $url | head -n 1)"
     echo "isWebSiteUp output : $line"
-    echo $line | grep -q "HTTP/1.1 200 OK"
+    # TODO be smarter with redirects and follow them
+    echo $line | grep -q -e "HTTP/1.1 \(200\|301\|302\) "
 }
 
-# Wait for a http url to answer 200
+# Wait for a http url to answer 200 or 301, 302
 # 1: url
 # 2: timeout
 function waitForHttpSuccess() {
