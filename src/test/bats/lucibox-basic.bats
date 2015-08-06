@@ -31,10 +31,6 @@ jPort=10080
   echo "Starting Jenkins system"
   startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix
 
-  # Build our slaves
-  buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/base/context/ base
-  buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/ luci-shell-slave
-
   # Start artifactory
   runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1
 
