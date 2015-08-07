@@ -1,14 +1,21 @@
 #! /bin/bash
 
-function build {
+function buildHelper {
     local path=$1
-    local name=$(basename $1)
-    local ver=$2
+    local name=$2
+    local ver=$3
     echo "*** Building $path ***"
     docker build -t luci/$name:$ver $LUCI_ROOT/src/main/docker/$path/context
     local rc=$?
     echo "*** Done with $path. RC: $rc ***"
     echo ''
+}
+
+function build {
+    local path=$1
+    local name=$(basename $1)
+    local ver=$2
+    buildHelper $path $name $ver | awk "\$0=\"$name:\t\"\$0"
 }
 
 build base 0.1
