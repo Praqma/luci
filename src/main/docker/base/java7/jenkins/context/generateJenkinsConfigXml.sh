@@ -1,9 +1,8 @@
 #!/bin/sh
 
-#define parameters which are passed in.
-luci_datacontainer=$1
-luci_docker_host=$2
-luci_docker_port=$3
+# define parameters which are passed in.
+dataContainer=$1
+dockerUrl=$2
 
 #define the template.
 cat  << EOF
@@ -31,7 +30,7 @@ cat << CLOUD_HEADER
       <name>LocalDocker</name>
       <templates>
 CLOUD_HEADER
-cat $LUCI_ROOT/bin/conf/slaves.conf | while read line ; do
+cat /lucijenkins/slaves.conf | while read line ; do
     slaveName=$(echo $line | awk '{ print $1 }')
     slaveImage=$(echo $line | awk '{ print $2 }')
     cat << CLOUD_TEMPLATE
@@ -66,7 +65,7 @@ cat $LUCI_ROOT/bin/conf/slaves.conf | while read line ; do
         <dnsHosts/>
         <volumes/>
         <volumesFrom2>
-          <string>$luci_datacontainer</string>
+          <string>$dataContainer</string>
         </volumesFrom2>
         <environment/>
         <bindPorts></bindPorts>
@@ -80,7 +79,7 @@ done
 
 cat << CLOUD_FOOTER
       </templates>
-      <serverUrl>http://$luci_docker_host:$luci_docker_port</serverUrl>
+      <serverUrl>$dockerUrl</serverUrl>
       <containerCap>2147483647</containerCap>
       <connectTimeout>5</connectTimeout>
       <readTimeout>15</readTimeout>

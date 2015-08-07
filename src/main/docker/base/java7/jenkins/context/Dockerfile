@@ -34,11 +34,16 @@ EXPOSE 50000
 ENV COPY_REFERENCE_FILE_LOG /var/log/copy_reference_file.log
 RUN touch $COPY_REFERENCE_FILE_LOG 
 
-COPY jenkins.sh /usr/local/bin/jenkins.sh
-ENTRYPOINT ["/usr/local/bin/jenkins.sh"]
-
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY plugins.txt /tmp/
 RUN /usr/local/bin/plugins.sh /tmp/plugins.txt
 
 COPY credentials.xml /usr/share/jenkins/ref/
+
+COPY generateJenkinsConfigXml.sh /lucijenkins/
+COPY generateJenkinsLocateConfiguration.sh /lucijenkins/
+COPY slaves.conf /lucijenkins/
+
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+

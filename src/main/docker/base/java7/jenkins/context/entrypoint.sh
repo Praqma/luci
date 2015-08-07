@@ -1,5 +1,18 @@
 #! /bin/bash
 
+# Read arguments
+dataContainer=$1	# Name of data container that is used to ??? TODO figure it out
+dockerUrl=$2		# Url for (non-TLS) docker host to run slaves in
+jenkinsUrl=$3		# Url to access jenkins with (from the outside)
+adminEmail=$4           # Admin email in jenkins configuration
+
+# Remote the  arguments, rest is passed on to jenkins.war
+shift ; shift ; shift ; shift
+
+# Generate configuragtion files
+/lucijenkins/generateJenkinsConfigXml.sh $dataContainer $dockerUrl > /usr/share/jenkins/ref/config.xml
+/lucijenkins/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
+
 set -e
 
 # Copy files from /usr/share/jenkins/ref into /var/jenkins_home
