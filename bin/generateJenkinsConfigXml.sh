@@ -31,15 +31,13 @@ cat << CLOUD_HEADER
       <name>LocalDocker</name>
       <templates>
 CLOUD_HEADER
-dirs=$(cat $LUCI_ROOT/bin/conf/slaves.conf)
-for d in $dirs; do
-    dir=$(echo $d | cut -d":" -f1)
-    ver=$(echo $d | cut -d":" -f2)
-    slave=$(basename $dir)
+cat $LUCI_ROOT/bin/conf/slaves.conf | while read line ; do
+    slaveName=$(echo $line | awk '{ print $1 }')
+    slaveImage=$(echo $line | awk '{ print $2 }')
     cat << CLOUD_TEMPLATE
     <com.nirima.jenkins.plugins.docker.DockerTemplate>
       <configVersion>1</configVersion>
-      <labelString>$slave</labelString>
+      <labelString>$slaveName</labelString>
       <launcher class="com.nirima.jenkins.plugins.docker.launcher.DockerComputerSSHLauncher">
         <sshConnector plugin="ssh-slaves@1.9">
           <port>22</port>
@@ -61,7 +59,7 @@ for d in $dirs; do
       </retentionStrategy>
       <numExecutors>1</numExecutors>
       <dockerTemplateBase>
-        <image>luci/slave-$slave:$ver</image>
+        <image>$slaveImage</image>
         <dockerCommand></dockerCommand>
         <lxcConfString></lxcConfString>
         <hostname></hostname>
