@@ -1,7 +1,7 @@
 ssh-slaves:1.9
 durable-task:1.5
 token-macro:1.10
-docker-plugin:0.10.0
+docker-plugin:0.11.0
 parameterized-trigger:2.27
 mailer:1.15
 scm-api:0.2
