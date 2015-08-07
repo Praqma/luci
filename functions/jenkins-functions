@@ -18,42 +18,41 @@ startJenkins(){
     local jenkinsPrefix=""
     local jenkinsSubFolder=""
 
-    #If the prefix is set, set the var that will be added to the run command
-    #Else, make it empty.
+    # If the prefix is set, set the var that will be added to the run command
+    # Else, make it empty.
     if [ ! -z "$prefix" ]; then
       jenkinsPrefix="--prefix=/$prefix"
       jenkinsSubFolder="/$prefix/"
     fi
 
-    #The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
-    #This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
-    #Jenkins is build. The Dockerfile will take care of the config.xml.
-#TODO Should be moved to a data container
+    # The Jenkins Server config.xml file is created dynamicly to incorporate the docker-plugin.
+    # This way its configured on startup automaticly. Its placed in JENKINS_HOME and removed after
+    # Jenkins is build. The Dockerfile will take care of the config.xml.
+# TODO Should be moved to a data container
     $LUCI_ROOT/bin/generateJenkinsConfigXml.sh $dataContainer $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT > $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     $LUCI_ROOT/bin/generateJenkinsLocateConfiguration.sh $LUCI_DOCKER_HOST $jPort heh@praqma.net > $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
     buildDockerImage $LUCI_ROOT/src/main/remotedocker/jenkins/context/ luci-jenkins
 
-    #Cleanup
+    # Cleanup
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/config.xml
     rm -f $LUCI_ROOT/src/main/remotedocker/jenkins/context/jenkins.model.JenkinsLocationConfiguration.xml
 
-    echo "Starting Jenins master"
-
-    # $keydir:/data/praqma-ssh-key
+    # Start the Jenkins master container with dataContainer, and Cleanup
     runZettaTools docker run --volumes-from $secretsContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci-jenkins $jenkinsPrefix
-
     cleanup_container $jenkinsContainerName
+
+    # Wait for the server to respond ready
     waitForJenkinsRunning $jenkinsContainerName
 
     # Now wait for the web ui to respond
     waitForHttpSuccess $LUCI_DOCKER_HOST:$jPort$jenkinsSubFolder 60
 }
 
-#A simple function that creates a very simple hello world Jenkins Job.
+# A simple function that creates a very simple hello world Jenkins Job.
 createJenkinsGradleJob(){
-  #$1 Location of the jenkins-cli.jar file.
-  #$2 The name you want to give the Jenkins gradle Job.
-  #IMPORTANT : The job name cannot have spaces
+  # $1 Location of the jenkins-cli.jar file.
+  # $2 The name you want to give the Jenkins gradle Job.
+  # IMPORTANT : The job name cannot have spaces
 
   local cli=$1
   local jobName=$2
@@ -61,23 +60,23 @@ createJenkinsGradleJob(){
   $LUCI_ROOT/bin/gradle-jenkins-job.sh | runJenkinsCli $cli create-job $jobName
 }
 
-#A simple function that creates a very simple hello world Jenkins Job.
+# A simple function that creates a very simple hello world Jenkins Job.
 createJenkinsShellJob(){
-  #$1 defines the shell script you want run in the job. Eg. echo "hello world"
-  #$2 Location of the jenkins-cli.jar file.
-  #$3 The name you want to give the Jenkins Job.
+  # $1 defines the shell script you want run in the job. Eg. echo "hello world"
+  # $2 Location of the jenkins-cli.jar file.
+  # $3 The name you want to give the Jenkins Job.
   local jJobCmd=$1
   local cli=$2
   local jobName=$3
   $LUCI_ROOT/bin/simple-jenkins-job.sh $jJobCmd | runJenkinsCli $cli create-job $jobName
 }
 
-#Creates a simple Jenkins job that uses a Docker slave by adding a label
+# Creates a simple Jenkins job that uses a Docker slave by adding a label
 createJenkinsDockerJob(){
-  #$1 is the command you want run in the Docker container slave. Eg env.
-  #$2 is the label, specifying which slave you want the job to run at
-  #$3 location of the jenkins-cli-jar file.
-  #$4 is the name you want to give the Jenkins job.
+  # $1 is the command you want run in the Docker container slave. Eg env.
+  # $2 is the label, specifying which slave you want the job to run at
+  # $3 location of the jenkins-cli-jar file.
+  # $4 is the name you want to give the Jenkins job.
   local jJobCmd=$1
   local jobLabel=$2
   local cli=$3
@@ -85,9 +84,9 @@ createJenkinsDockerJob(){
   $LUCI_ROOT/bin/docker-jenkins-job.sh $jJobCmd $jobLabel | runJenkinsCli $cli create-job $jobName
 }
 
-#This function feeds our waitForLine function with docker logs output.
+# This function feeds our waitForLine function with docker logs output.
 waitForJenkinsRunning() {
-    #$1 is the id of the container you need the logs for.
+    # $1 is the id of the container you need the logs for.
     local containerId=$1
     dockerLogs $containerId | waitForLine "setting agent port for jnlp" 120
     local rc=$?
@@ -96,7 +95,7 @@ waitForJenkinsRunning() {
 
 # A function to run commands on the Jenkins Server through jenkins-cli.jar
 runJenkinsCli() {
-    #$1 is the location of the jenkins-cli.jar file.
+    # $1 is the location of the jenkins-cli.jar file.
     local cli=$1
     shift
     java -jar "$cli" -s http://$LUCI_DOCKER_HOST:$jPort -noKeyAuth "$@"

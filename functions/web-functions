@@ -1,6 +1,6 @@
 #! /bin/sh
 
-#TODO Handle 302 redirects !
+# TODO Handle 302 redirects !
 
 # 1: url
 function isWebsiteUp() {

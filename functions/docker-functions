@@ -1,19 +1,19 @@
 #! /bin/sh
 
-#This function is used to execute docker compose run
-#inside zettatools. It will start the containers defined in
-#the yml fil, found in the directory
+# This function is used to execute docker compose run
+# inside zettatools. It will start the containers defined in
+# the yml fil, found in the directory
 function runDockerCompose(){
-   #$1 is path to Compose yml file
+   # $1 is path to Compose yml file
    local composeRoot=$1
    runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml up -d
 }
 
-#This function is used to execute docker-compose stop
-#inside zettatools. It will stop the containers, started
-#by docker-compose, defined by the yml in the directory.
+# This function is used to execute docker-compose stop
+# inside zettatools. It will stop the containers, started
+# by docker-compose, defined by the yml in the directory.
 function stopDockerCompose(){
-   #$1 is path to Compose file
+   # $1 is path to Compose file
    local composeRoot=$1
    runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml stop
 }
@@ -22,34 +22,34 @@ function stopDockerCompose(){
 # inside zettatools. It will stop and remove the containers, started
 # by docker-compose, defined by the yml in the directory.
 function killDockerCompose(){
-   #$1 is path to Compose file
+   # $1 is path to Compose file
    local composeRoot=$1
    runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml stop
-   runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml rm --force -v # -v: remove volumes 
+   runZettaTools -v $composeRoot:/tmp/context docker-compose -f /tmp/context/docker-compose.yml rm --force -v # -v: remove volumes
 }
 
-#This function builds a docker image based on a given Dockerfile.
+# This function builds a docker image based on a given Dockerfile.
 function buildDockerImage() {
-   #$1 is the path to the context folder of the image that holds the Dockerfile
-   #eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
-   #$2 is the name of the image.
+   # $1 is the path to the context folder of the image that holds the Dockerfile
+   # eg. $LUCI_ROOT/src/main/remotedocker/jenkins-slaves/shell/context/
+   # $2 is the name of the image.
    local contextRoot=$1
    local imageName=$2
    runZettaTools -v $contextRoot:/tmp/context docker build -t $imageName /tmp/context
 }
 
-#Creating an docker image with a volume that contains ssh keys defined in $1
+# Creating an docker image with a volume that contains ssh keys defined in $1
 function createDockerKeyImage() {
-   #$1 is the path to the folder that holds the ssh keys.
-   #$2 is the name of the image.
+   # $1 is the path to the folder that holds the ssh keys.
+   # $2 is the name of the image.
    local keyDir=$1
    local imageName=$2
    runZettaTools docker create -v $keydir/id_rsa.pub:/data/server-keys/authorized_keys $imageName
 }
 
-#Askes docker if a container has status running=true from a docker inspect.
+# Askes docker if a container has status running=true from a docker inspect.
 function isContainerRunning(){
-  #$1 is the container ID we are investigating
+  # $1 is the container ID we are investigating
   local containerId=$1
   local answer=$(runZettaTools docker inspect --format '{{ .State.Running }}' $containerId)
   if [ "$answer" == "true" ];then
@@ -60,11 +60,11 @@ function isContainerRunning(){
 }
 
 
-#This code is a replacement for docker logs -f
-#This code is not complete. It will print some lines out twice. This
-#needs to be fixed.
+# This code is a replacement for docker logs -f
+# This code is not complete. It will print some lines out twice. This
+# needs to be fixed.
 function dockerLogs(){
-  #Argument 1 is container id to be logged
+  # Argument 1 is container id to be logged
   local cid=$1
   local timeStamp
 
@@ -72,7 +72,7 @@ function dockerLogs(){
     local nextTime=$(date +%s)
     runZettaTools docker logs --since=$timeStamp $cid 2>&1
 
-    #This line is nessasary for the process to die, when the function proccessLines dies
+    # This line is nessasary for the process to die, when the function proccessLines dies
     echo "### LUCI $(date)"
     if [ $(runZettaTools docker inspect --format='{{.State.Running}}' $cid) = "false" ]; then
         runZettaTools docker inspect $cid
@@ -85,25 +85,25 @@ function dockerLogs(){
   done
 }
 
-#Here we create a data-container holding the SSH key authorized_keys file.
-#It first generate the SSH keys, and then build the data image. And then
-#it creates the data container.
+# Here we create a data-container holding the SSH key authorized_keys file.
+# It first generate the SSH keys, and then build the data image. And then
+# it creates the data container.
 function createSshKeyDataContainer(){
-    #$1 is a return variable holding the Jenkins Data Container ID.
-    #$2 is the location to the directory we want the SSH keys generated/stored.
-    #$3 is the location to the directory that holds the Dockerfile
-    #$4 Is the tagname we want to give the container.
+    # $1 is a return variable holding the Jenkins Data Container ID.
+    # $2 is the location to the directory we want the SSH keys generated/stored.
+    # $3 is the location to the directory that holds the Dockerfile
+    # $4 Is the tagname we want to give the container.
     local jdcidReturnVar=$1
     local keydir=$2
     local keyComment=$3
     local dataImageLocation=$4
     local dataImageName=$5
 
-    #We generate new SSH-keys into the tmpdir subfolder "keys" These are then Unsed
-    #by the data container to supply both the Jenkins server and slave
+    # We generate new SSH-keys into the tmpdir subfolder "keys" These are then Unsed
+    # by the data container to supply both the Jenkins server and slave
     generateSshKey $keydir "$keyComment"
 
-    #The data image is build and the container is created to house the SSH-keys
+    # The data image is build and the container is created to house the SSH-keys
     buildDockerImage $dataImageLocation $dataImageName
 
     local _jdcidVal=$(createDockerKeyImage $keydir luci-data)

@@ -15,64 +15,64 @@ jPort=10080
     local secretsContainer=$(uniqueName sshkeys)
     local dataContainer=$(uniqueName data)
 
+    # Create a container holding ssh keys
     createSecretKeysContainer $secretsContainer
     createStandardDataContainer $dataContainer $secretsContainer
 
-    #We start the Jenkins system up, and waits for it to answer.
-    echo "Starting Jenkins system"
+    # We start the Jenkins system up, and waits for it to answer.
+    echo "Starting Jenkins container"
     startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort
 
-    #Is Jenkins container running?
-    echo "Is container running?"
+    # Is Jenkins container running?
     isContainerRunning $jenkinsContainer
 
-    #Check if the Jenkins Server webpage is responding OK
+    # Check if the Jenkins Server webpage is responding OK
     isWebsiteUp $LUCI_DOCKER_HOST:$jPort
 
     local cli=$(tempdir)/cli.jar
 
-    #Download the cli jarfile from the Jenkins server
+    # Download the cli jarfile from the Jenkins server
     wget http://$LUCI_DOCKER_HOST:$jPort/jnlpJars/jenkins-cli.jar -O "$cli"
 
-    #Set the shell command for the job and create it on the Jenkins server
+
+    # Set the shell command for a simple job and create it on the Jenkins server
     createJenkinsShellJob "env" $cli "luci-shell"
 
-    #Build the shell job
+    # Build the shell job
     runJenkinsCli $cli build luci-shell
 
-    #Wait for the job to finish
+    # Wait for the job to finish
     dockerLogs $jenkinsContainer | waitForLine "luci-shell #1 main build" 30
 
-    #Check if the shell job had a success string in the output
+    # Check if the shell job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-shell/1/consoleText | grep -q "SUCCESS"
 
 
-    #Call the function createJenkinsDockerJob to create the docker job
+    # Call the function createJenkinsDockerJob to create the docker job
     createJenkinsDockerJob "env" "shell" $cli "luci-docker"
 
-    #Build the docker job
+    # Build the docker job
     runJenkinsCli $cli build luci-docker
 
-    echo "Before running docker job $(date)"
-    #Wait for the job to finish
+    # Wait for the job to finish
     dockerLogs $jenkinsContainer | waitForLine "luci-docker #1 main build" 300
     echo "Before running docker job $(date)"
 
-    #Starting a Jenkins Slave, with ssh-keys from the data container
-    echo "Starting Jenkins Slave"
+
+    # Starting a Jenkins Slave, with ssh-keys from the data container
     local jscid=$(runZettaTools docker run --volumes-from=$dataContainer -d luci/slave-shell:0.1)
     cleanup_container $jscid
 
+    # Get the IP adress of the slave, just created
     local jsip=$(containerIp $jscid)
 
-    #SSH to it the slave from the from the Jenkins master container with ssh keys
+    # SSH to it the slave from the from the Jenkins master container with ssh keys
     runZettaTools docker exec $jenkinsContainer ssh -i /data/praqma-ssh-key/id_rsa -oStrictHostKeyChecking=no root@$jsip env
 
-
-    #Check if the simple job had a success string in the output
+    # Check if the simple job had a success string in the output
     runZettaTools curl -s http://$LUCI_DOCKER_HOST:$jPort/job/luci-docker/1/consoleText | grep -q "SUCCESS"
 
 
-#Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
-#read -p "Press [Enter] key to continue..."
+# Use this, to pause the test before end. This way you can load jenkins in  a browser and test things out.
+# read -p "Press [Enter] key to continue..."
 }

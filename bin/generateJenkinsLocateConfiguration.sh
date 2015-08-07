@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#define parameters which are passed in.
+# define parameters which are passed in.
 luci_docker_host=$1
 luci_jenkins_port=$2
 admin_email=$3

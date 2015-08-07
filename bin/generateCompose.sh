@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#define parameters which are passed in.
+# define parameters which are passed in.
 nginx_port=$1
 nginx_image_name=$2
 

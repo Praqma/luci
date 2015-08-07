@@ -11,14 +11,12 @@ function uniqueName() {
 # is up af running. Set timeToRun in seconds
 # to break a timeout.
 # 1: defines the string we are looking for. The function will stop, when found.
-# 2: timeout defined in seconds. 
+# 2: timeout defined in seconds.
 function waitForLine() {
     local breakPoint=$1
     local timeToRun=$2
-
     local startTime=$(date +%s)
     local endTime=$(($startTime+$timeToRun))
-
 
     while read line; do
         if [ $(date +%s) -gt $endTime ]; then
