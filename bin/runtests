@@ -16,7 +16,7 @@ $LUCI_ROOT/bin/boot2dockerFix
 rm -rf $LUCI_ROOT/build/*
 
 # Create file with current docker volumes
-docker run --rm -v /var/lib/docker:/docker ubuntu:14.04 ls -1 /docker/volumes > /tmp/luci-volumes.txt
+docker run --rm -v /var/lib/docker:/docker debian:jessie ls -1 /docker/volumes > /tmp/luci-volumes.txt
 
 # TEST_GROUPS is on purpose a String and not an array. An array can't be exported
 export TEST_GROUPS="quick $@"
