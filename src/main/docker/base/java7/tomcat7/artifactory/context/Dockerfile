@@ -25,8 +25,8 @@ RUN mkdir -p /luci/artifactory
 ENV ARTIFACTORY_HOME /luci/artifactory
 
 # Expose Artifactories data, log and backup directory.
-VOLUME /luci/artifactory/data
+#VOLUME /luci/artifactory/data
 VOLUME /luci/artifactory/logs
-VOLUME /luci/artifactory/backup
+#VOLUME /luci/artifactory/backup
 
 WORKDIR /luci/artifactory

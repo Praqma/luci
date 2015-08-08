@@ -14,6 +14,7 @@ source $functionDir/data-container
 jPort=10080
 
 if [ -z "$DOCKER_HOST" ] ; then
+    echo "DOCKER_HOST is empty, trying localhost"
     $DOCKER_HOST='tcp://localhost:2575'
 fi
 # Remove protocol
@@ -45,8 +46,7 @@ echo "Starting Jenkins system"
 startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix $dockerDestHost $dockerDestPort
 
 # Start artifactory container
-runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1
+runZettaTools docker run -d --name $artifactoryContainer --volumes-from $dataContainer luci/artifactory:0.1
 
 # Start nginX container with link to $jenkinsContainer and $artifactoryContainer
 runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer:artifactory --link $jenkinsContainer:jenkins -p 80:80 luci/nginx:0.1
-

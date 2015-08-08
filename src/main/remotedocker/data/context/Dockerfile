@@ -8,4 +8,11 @@ VOLUME /data/server-keys
 # User home for gradle builds
 VOLUME /data/gradle-user-home
 
+# Jenkins home as a volume
+VOLUME /var/jenkins_home
+
+# Artifactory volumes
+VOLUME /luci/artifactory/data
+VOLUME /luci/artifactory/backup
+
 CMD not possible to run this container

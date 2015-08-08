@@ -33,7 +33,7 @@ jPort=10080
   startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT
 
   # Start artifactory container
-  runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1
+  runZettaTools docker run -d --name $artifactoryContainer --volumes-from $dataContainer luci/artifactory:0.1
 
   # Start nginX container with link to $jenkinsContainer and $artifactoryContainer
   runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer:artifactory --link $jenkinsContainer:jenkins -p 80:80 luci/nginx:0.1

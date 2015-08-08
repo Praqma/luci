@@ -30,7 +30,7 @@ startJenkins(){
     fi
 
     # Start the Jenkins master container and Cleanup
-    runZettaTools docker run --volumes-from $secretsContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci/jenkins:0.1 $dataContainer http://$destHost:$destPort http://$destHost:$jPort heh@praqma.net $jenkinsPrefix
+    runZettaTools docker run --volumes-from $secretsContainer --volumes-from $dataContainer  -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci/jenkins:0.1 $dataContainer http://$destHost:$destPort http://$destHost:$jPort heh@praqma.net $jenkinsPrefix
     cleanup_container $jenkinsContainerName
 
     # Wait for the server to respond ready
