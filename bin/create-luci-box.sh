@@ -2,8 +2,8 @@
 
 functionDir=$(dirname $(dirname $(realpath $0)))/functions
 
-# TODO remove reference to LUCI_ROOT
-source $LUCI_ROOT/src/test/bats/utils.bash
+source $functionDir/cleanup
+source $functionDir/zetta-tools
 source $functionDir/ssh-keys
 source $functionDir/docker-functions
 source $functionDir/web-functions
@@ -13,20 +13,28 @@ source $functionDir/data-container
 
 jPort=10080
 
-dockerDestHost="192.168.1.209"
-dockerDestPort="2375"
+if [ -z "$DOCKER_HOST" ] ; then
+    $DOCKER_HOST='tcp://localhost:2575'
+fi
+# Remove protocol
+hostAndPort=$(echo ${DOCKER_HOST/*:\/\//})
+dockerDestHost=$(echo $hostAndPort | cut -f1 -d:)
+dockerDestPort=$(echo $hostAndPort | cut -f2 -d:)
+
+echo "Initializing Lucibox on Docker @ $dockerDestHost:$dockerDestPort"
 
 jenkinsPrefix="jenkins"
 
 nginxContainer="luci-nginx"
 artifactoryContainer="luci-artifactory"
-cleanup_container $nginxContainer
-cleanup_container $artifactoryContainer
 
 # Get uniq names for our Jenkins server and data containers
 jenkinsContainer="luci-jenkins"
 secretsContainer="luci-secret"
 dataContainer="luci-data"
+
+# Remote existing containers, except the data containers
+runZettaTools docker rm -f $nginxContainer $artifactoryContainer $jenkinsContainer
 
 # Create a container holding ssh keys
 createSecretKeysContainer $secretsContainer
