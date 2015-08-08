@@ -13,6 +13,9 @@ source $functionDir/data-container
 
 jPort=10080
 
+dockerDestHost="192.168.1.209"
+dockerDestPort="2375"
+
 jenkinsPrefix="jenkins"
 
 nginxContainer="luci-nginx"
@@ -31,7 +34,7 @@ createStandardDataContainer $dataContainer $secretsContainer
 
 # We start the Jenkins system up, and waits for it to answer.
 echo "Starting Jenkins system"
-startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix
+startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix $dockerDestHost $dockerDestPort
 
 # Start artifactory container
 runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1

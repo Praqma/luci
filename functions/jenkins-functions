@@ -9,6 +9,8 @@
 # 3: Data container to use in the jenkins master container
 # 4: Port on docker host bound to the 8080 on the jenkins master container
 # 5: Prefix for Jenkins command. Used to add subfolder for Jenkins
+# 6: The ip where the Docker Host Daemon is running
+# 7: The port where the Docker Host Daemin is listening
 startJenkins(){
     local jenkinsContainerName=$1 # Container to create
     local secretsContainer=$2
@@ -17,6 +19,8 @@ startJenkins(){
     local prefix=$5
     local jenkinsPrefix=""
     local jenkinsSubFolder=""
+    local destHost=$6  # DOCKER HOST to use
+    local destPort=$7  # DOCKER PORT to use
 
     # If the prefix is set, set the var that will be added to the run command
     # Else, make it empty.
@@ -26,14 +30,14 @@ startJenkins(){
     fi
 
     # Start the Jenkins master container and Cleanup
-    runZettaTools docker run --volumes-from $secretsContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci/jenkins:0.1 $dataContainer http://$LUCI_DOCKER_HOST:$LUCI_DOCKER_PORT http://$LUCI_DOCKER_HOST:$jPort heh@praqma.net $jenkinsPrefix
+    runZettaTools docker run --volumes-from $secretsContainer -d -p $jPort:8080 -p 50000:50000 --name $jenkinsContainerName luci/jenkins:0.1 $dataContainer http://$destHost:$destPort http://$destHost:$jPort heh@praqma.net $jenkinsPrefix
     cleanup_container $jenkinsContainerName
 
     # Wait for the server to respond ready
     waitForJenkinsRunning $jenkinsContainerName
 
     # Now wait for the web ui to respond
-    waitForHttpSuccess $LUCI_DOCKER_HOST:$jPort$jenkinsSubFolder 60
+    waitForHttpSuccess $destHost:$jPort$jenkinsSubFolder 60
 }
 
 # A simple function that creates a very simple hello world Jenkins Job.
