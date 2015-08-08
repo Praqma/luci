@@ -16,8 +16,16 @@ runZettaTools docker-machine ls
 SwarmID=$(docker run swarm create)
 echo "SwarmID = $SwarmID"
 
+# Creating host for LuciBox
+runZettaTools docker-machine-create --openstack-sec-groups default,DockerAPI luci-box
+
+# Restart the host
+#runZettaTools docker-machine restart luci-box
+
+# Creating host for swarm master and manager
 runZettaTools docker-machine-create --openstack-sec-groups default,lucitest luci-swarm-master
 
+# Removing TLS
 runZettaTools docker-machine ssh luci-swarm-master<<SSH
   sudo sh -c 'echo -e " \
     EXTRA_ARGS=\"--label provider=virtualbox\" \n \
@@ -26,10 +34,13 @@ runZettaTools docker-machine ssh luci-swarm-master<<SSH
     DOCKER_TLS=no" > /var/lib/boot2docker/profile'
 SSH
 
+# Restart the host, for non-TLS to kick in
 runZettaTools docker-machine restart luci-swarm-master
 
+# Creating host for swarm node 01
 runZettaTools docker-machine-create --openstack-sec-groups default,lucitest luci-swarm-node-01
 
+# Removing TLS
 runZettaTools docker-machine ssh luci-swarm-node-01<<SSH
   sudo sh -c 'echo -e " \
     EXTRA_ARGS=\"--label provider=virtualbox\" \n \
@@ -38,13 +49,15 @@ runZettaTools docker-machine ssh luci-swarm-node-01<<SSH
     DOCKER_TLS=no" > /var/lib/boot2docker/profile'
 SSH
 
+# Restart the host, for non-TLS to kick in
 runZettaTools docker-machine restart luci-swarm-node-01
 
 # Get ips of the master node and start swarm
   masterIP=$(runZettaTools docker-machine ls|grep "swarm-master" |cut -d "/" -f3)
   echo "masterIP = $masterIP"
 
-
+echo "The rest need working!"
+exit
 # WORKING UNTIL HERE!!!
 
 # Create a swarm manager
