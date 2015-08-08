@@ -1,28 +1,27 @@
 #! /bin/bash
 
+functionDir=$(dirname $(dirname $0))/functions
+# TODO remove reference to test utils
 source $LUCI_ROOT/src/test/bats/utils.bash
-source $LUCI_ROOT/functions/ssh-keys
-source $LUCI_ROOT/functions/docker-functions
-source $LUCI_ROOT/functions/web-functions
-source $LUCI_ROOT/functions/jenkins-functions
-source $LUCI_ROOT/functions/utility-functions
-source $LUCI_ROOT/functions/data-container
+echo source $functionDir/ssh-keys
+source $functionDir/docker-functions
+source $functionDir/web-functions
+source $functionDir/jenkins-functions
+source $functionDir/utility-functions
+source $functionDir/data-container
 
 jPort=10080
-
 
 jenkinsPrefix="jenkins"
 echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
 
-nginxContainer=$(uniqueName nginx)
+nginxContainer=$(uniqueN\ame nginx)
 artifactoryContainer=$(uniqueName artifactory)
-cleanup_container $nginxContainer
-cleanup_container $artifactoryContainer
 
 # Get uniq names for our Jenkins server and data containers
-jenkinsContainer=$(uniqueName jenkinsMaster)
-secretsContainer=$(uniqueName sshkeys)
-dataContainer=$(uniqueName data)
+jenkinsContainer=jenkinsMaster
+secretsContainer=sshkeys
+dataContainer=data
 
 # Create a container holding ssh keys
 createSecretKeysContainer $secretsContainer
