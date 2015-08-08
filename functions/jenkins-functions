@@ -11,7 +11,7 @@
 # 5: Prefix for Jenkins command. Used to add subfolder for Jenkins
 startJenkins(){
     local jenkinsContainerName=$1 # Container to create
-    local secretsContainer$2
+    local secretsContainer=$2
     local dataContainer=$3        # existing container
     local jPort=$4
     local prefix=$5

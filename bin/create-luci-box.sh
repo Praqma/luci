@@ -10,19 +10,17 @@ source $LUCI_ROOT/functions/data-container
 
 jPort=10080
 
-
 jenkinsPrefix="jenkins"
-echo "LUCI_DOCKER_HOST: $LUCI_DOCKER_HOST"
 
-nginxContainer=$(uniqueName nginx)
-artifactoryContainer=$(uniqueName artifactory)
+nginxContainer="luci-nginx"
+artifactoryContainer="luci-artifactory"
 cleanup_container $nginxContainer
 cleanup_container $artifactoryContainer
 
 # Get uniq names for our Jenkins server and data containers
-jenkinsContainer=$(uniqueName jenkinsMaster)
-secretsContainer=$(uniqueName sshkeys)
-dataContainer=$(uniqueName data)
+jenkinsContainer="luci-jenkins"
+secretsContainer="luci-secret"
+dataContainer="luci-data"
 
 # Create a container holding ssh keys
 createSecretKeysContainer $secretsContainer
@@ -38,4 +36,3 @@ runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1
 # Start nginX container with link to $jenkinsContainer and $artifactoryContainer
 runZettaTools docker run -d --name $nginxContainer --link $artifactoryContainer:artifactory --link $jenkinsContainer:jenkins -p 80:80 luci/nginx:0.1
 
-echo "Luci box basic created at $LUCI_DOCKER_HOST"
