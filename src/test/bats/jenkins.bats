@@ -21,7 +21,7 @@ jPort=10080
 
     # We start the Jenkins system up, and waits for it to answer.
     echo "Starting Jenkins container"
-    startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort
+    startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort "" $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT
 
     # Is Jenkins container running?
     isContainerRunning $jenkinsContainer

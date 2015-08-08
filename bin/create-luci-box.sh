@@ -28,7 +28,7 @@ jenkinsPrefix="jenkins"
 nginxContainer="luci-nginx"
 artifactoryContainer="luci-artifactory"
 
-# Get uniq names for our Jenkins server and data containers
+# Get names for our Jenkins server and data containers
 jenkinsContainer="luci-jenkins"
 secretsContainer="luci-secret"
 dataContainer="luci-data"

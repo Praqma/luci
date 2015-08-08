@@ -30,7 +30,7 @@ jPort=10080
 
   # We start the Jenkins system up, and waits for it to answer.
   echo "Starting Jenkins system"
-  startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix
+  startJenkins $jenkinsContainer $secretsContainer $dataContainer $jPort $jenkinsPrefix $LUCI_DOCKER_HOST $LUCI_DOCKER_PORT
 
   # Start artifactory container
   runZettaTools docker run -d --name $artifactoryContainer luci/artifactory:0.1
