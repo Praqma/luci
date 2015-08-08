@@ -1,12 +1,15 @@
 #! /bin/bash
 
+functionDir=$(dirname $(dirname $(realpath $0)))/functions
+
+# TODO remove reference to LUCI_ROOT
 source $LUCI_ROOT/src/test/bats/utils.bash
-source $LUCI_ROOT/functions/ssh-keys
-source $LUCI_ROOT/functions/docker-functions
-source $LUCI_ROOT/functions/web-functions
-source $LUCI_ROOT/functions/jenkins-functions
-source $LUCI_ROOT/functions/utility-functions
-source $LUCI_ROOT/functions/data-container
+source $functionDir/ssh-keys
+source $functionDir/docker-functions
+source $functionDir/web-functions
+source $functionDir/jenkins-functions
+source $functionDir/utility-functions
+source $functionDir/data-container
 
 jPort=10080
 
