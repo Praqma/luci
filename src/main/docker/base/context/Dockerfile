@@ -7,3 +7,7 @@ RUN apt-get update && apt-get -y upgrade
 
 # Installing often used packages
 RUN apt-get install -y unzip curl
+
+# Add luci user and set password
+RUN useradd -ms /bin/bash luci
+RUN echo "luci:Praqma2007" | chpasswd
