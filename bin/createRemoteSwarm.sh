@@ -17,36 +17,35 @@ SwarmID=$(docker run swarm create)
 echo "SwarmID = $SwarmID"
 
 # Creating host for LuciBox
-runZettaTools docker-machine-create --openstack-sec-groups default,DockerAPI luci-box
+runZettaTools docker-machine-create luci-box
+# Get info on the host
+runZettaTools dm luci-box info
+#TODO Need to run create-luci-box.sh
 
-# Restart the host
-#runZettaTools docker-machine restart luci-box
 
 # Creating host for swarm master and manager
-runZettaTools docker-machine-create --openstack-sec-groups default,lucitest luci-swarm-master
+runZettaTools docker-machine-create luci-swarm-master
 
 # Removing TLS
 runZettaTools docker-machine ssh luci-swarm-master<<SSH
   sudo sh -c 'echo -e " \
-    EXTRA_ARGS=\"--label provider=virtualbox\" \n \
     DOCKER_HOST=\"-H tcp://0.0.0.0:2376\" \n \
     DOCKER_STORAGE=aufs \n \
-    DOCKER_TLS=no" > /var/lib/boot2docker/profile'
+    DOCKER_TLS=no" > /etc/defaut/docker'
 SSH
 
 # Restart the host, for non-TLS to kick in
 runZettaTools docker-machine restart luci-swarm-master
 
 # Creating host for swarm node 01
-runZettaTools docker-machine-create --openstack-sec-groups default,lucitest luci-swarm-node-01
+runZettaTools docker-machine-create luci-swarm-node-01
 
 # Removing TLS
 runZettaTools docker-machine ssh luci-swarm-node-01<<SSH
   sudo sh -c 'echo -e " \
-    EXTRA_ARGS=\"--label provider=virtualbox\" \n \
     DOCKER_HOST=\"-H tcp://0.0.0.0:2376\" \n \
     DOCKER_STORAGE=aufs \n \
-    DOCKER_TLS=no" > /var/lib/boot2docker/profile'
+    DOCKER_TLS=no" > /etc/default/docker'
 SSH
 
 # Restart the host, for non-TLS to kick in
@@ -61,7 +60,7 @@ exit
 # WORKING UNTIL HERE!!!
 
 # Create a swarm manager
-runZettaTools docker-machine ssh luci-swarm-master "docker run -d -p 3376:2375 swarm manage token://$SwarmID"
+runZettaTools dm luci-swarm-master run -d -p 3376:2375 swarm manage token://$SwarmID
 
 # Create a swarm master node
 runZettaTools docker-machine ssh luci-swarm-master "docker run -d swarm join --addr=$masterIP token://$SwarmID"
@@ -80,6 +79,8 @@ managerIP=$(echo $masterIP|cut -d":" -f1):3376
 Your docker host should point at $managerIP
 "
 docker -H tcp://$managerIP info
+
+echo "SwarmID = $SwarmID"
 
 echo "
 
