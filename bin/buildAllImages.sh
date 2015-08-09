@@ -1,6 +1,6 @@
 #! /bin/bash
 
-doPush='yes'
+doPush='no'
 
 function buildHelper {
     local path=$1
