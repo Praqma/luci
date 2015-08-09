@@ -10,4 +10,4 @@ RUN apt-get install -y unzip curl
 
 # Add luci user and set password
 RUN useradd -ms /bin/bash luci
-RUN echo "luci:Praqma2007" | chpasswd
+RUN echo "luci:praqma" | chpasswd

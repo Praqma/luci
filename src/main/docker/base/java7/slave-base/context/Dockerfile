@@ -9,7 +9,7 @@ RUN mkdir ~/.ssh && chmod 700 ~/.ssh
 RUN ln -s /data/server-keys/authorized_keys ~/.ssh/authorized_keys
 
 # Set new password for luci, for slave usage
-RUN echo "luci:Praqma2007" | chpasswd
+RUN echo "luci:praqma" | chpasswd
 
 # Standard SSH port
 EXPOSE 22
