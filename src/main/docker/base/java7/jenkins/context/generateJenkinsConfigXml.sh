@@ -49,7 +49,7 @@ cat /lucijenkins/slaves.conf | while read line ; do
         </sshConnector>
       </launcher>
       <remoteFsMapping></remoteFsMapping>
-      <remoteFs>/home/jenkins</remoteFs>
+      <remoteFs>/home/luci</remoteFs>
       <instanceCap>2147483647</instanceCap>
       <mode>EXCLUSIVE</mode>
       <retentionStrategy class="com.nirima.jenkins.plugins.docker.strategy.DockerOnceRetentionStrategy">
