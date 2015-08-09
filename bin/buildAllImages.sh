@@ -1,12 +1,19 @@
 #! /bin/bash
 
+doPush='no'
+
 function buildHelper {
     local path=$1
     local name=$2
     local ver=$3
+    local fullName="luci/$name:$ver"
     echo "*** Building $path ***"
-    docker build -t luci/$name:$ver $LUCI_ROOT/src/main/docker/$path/context
+    docker build -t $fullName $LUCI_ROOT/src/main/docker/$path/context
     local rc=$?
+    if [ "$doPush" = 'yes' ] ; then
+        echo "Pushing $fullName"
+        docker push $fullName
+    fi
     echo "*** Done with $path. RC: $rc ***"
     echo ''
 }
@@ -18,19 +25,23 @@ function build {
     buildHelper $path $name $ver | awk "\$0=\"$name:\t\"\$0"
 }
 
-build base 0.1
-build base/nginx 0.1 &
+build tools 0.1 &
 (
-    build base/java7 0.1
-    build base/java7/jenkins 0.1 &
+    build base 0.1
+    build base/nginx 0.1 &
     (
-        build base/java7/tomcat7 0.1 
-        build base/java7/tomcat7/artifactory 0.1
-    ) &
-    (
-        build base/java7/slave-base 0.1
-        build base/java7/slave-base/slave-shell 0.1 &
-        build base/java7/slave-base/slave-gradle 0.1 &
+        build base/java7 0.1
+        build base/java7/jenkins 0.1 &
+        (
+            build base/java7/tomcat7 0.1 
+            build base/java7/tomcat7/artifactory 0.1
+        ) &
+        (
+            build base/java7/slave-base 0.1
+            build base/java7/slave-base/slave-shell 0.1 &
+            build base/java7/slave-base/slave-gradle 0.1 &
+            wait
+        ) &
         wait
     ) &
     wait
