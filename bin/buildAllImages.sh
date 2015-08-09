@@ -1,12 +1,19 @@
 #! /bin/bash
 
+doPush='yes'
+
 function buildHelper {
     local path=$1
     local name=$2
     local ver=$3
+    local fullName="luci/$name:$ver"
     echo "*** Building $path ***"
-    docker build -t luci/$name:$ver $LUCI_ROOT/src/main/docker/$path/context
+    docker build -t $fullName $LUCI_ROOT/src/main/docker/$path/context
     local rc=$?
+    if [ "$doPush" = 'yes' ] ; then
+        echo "Pushing $fullName"
+        docker push $fullName
+    fi
     echo "*** Done with $path. RC: $rc ***"
     echo ''
 }
