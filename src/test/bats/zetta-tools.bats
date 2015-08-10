@@ -4,7 +4,7 @@ load utils
 source $LUCI_ROOT/functions/ssh-keys
 
 @test "Check docker command can be executed in zetta-tools" {
-    docker  run --rm -v $LUCI_CONFIG/zetta_config:/config -v ~/.docker/machine:/root/.docker/machine -v /var/run/docker.sock:/var/run/docker.sock zetta-tools docker ps
+    docker  run --rm -v $LUCI_CONFIG/zetta_config:/config -v ~/.docker/machine:/root/.docker/machine -v /var/run/docker.sock:/var/run/docker.sock luci/tools:0.1 docker ps
 }
 
 @test "Remote docker build with zetta-tools" {
