@@ -1,0 +1,29 @@
+apply plugin: 'idea'
+apply plugin: net.praqma.luci.gradle.LuciPlugin
+
+luci {
+
+  
+  boxes {
+    // Declare a new Lucibox named 'dummy'
+    dummy {
+      // Declare one or more services. There is a pre-defined set of service names
+      service 'jenkins'
+
+      // Configure a declared serviced
+      jenkins {
+      }
+
+      // Declare and configure a service
+      service('artifactory') {
+
+      }
+
+      // configure the webfrontend service. It is alway present
+      webfrontend {
+        user 'luci', 'praqma'
+      }
+    }
+  }
+  
+}
