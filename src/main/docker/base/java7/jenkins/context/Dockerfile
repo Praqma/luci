@@ -1,4 +1,4 @@
-FROM luci/java7:0.1
+FROM luci/java7:0.2
 
 RUN apt-get install -y wget git zip 
 
@@ -34,15 +34,18 @@ EXPOSE 50000
 ENV COPY_REFERENCE_FILE_LOG /var/log/copy_reference_file.log
 RUN touch $COPY_REFERENCE_FILE_LOG 
 
-COPY plugins.sh /usr/local/bin/plugins.sh
-COPY plugins.txt /tmp/
-RUN /usr/local/bin/plugins.sh /tmp/plugins.txt
+COPY addPlugin.sh /luci/bin/
+
+# Install standard plugins
+RUN /luci/bin/addPlugin.sh ssh-slaves:1.9 durable-task:1.5 token-macro:1.10 docker-plugin:0.11.0 parameterized-trigger:2.27 mailer:1.15
+RUN /luci/bin/addPlugin.sh scm-api:0.2 promoted-builds:2.21 matrix-project:1.6 git-client:1.17.1 ssh-credentials:1.11 credentials:1.22
+RUN /luci/bin/addPlugin.sh git:2.3.5 cloudbees-folder:4.8 vsphere-cloud:2.6 config-file-provider:2.8.1 job-dsl:1.35
 
 COPY credentials.xml /usr/share/jenkins/ref/
 
-COPY generateJenkinsConfigXml.sh /lucijenkins/
-COPY generateJenkinsLocateConfiguration.sh /lucijenkins/
-COPY slaves.conf /lucijenkins/
+COPY generateJenkinsConfigXml.sh /luci/bin/
+COPY generateJenkinsLocateConfiguration.sh /luci/bin/
+COPY slaves.conf /luci/etc/
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

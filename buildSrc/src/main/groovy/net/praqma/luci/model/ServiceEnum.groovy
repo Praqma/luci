@@ -2,20 +2,20 @@ package net.praqma.luci.model
 
 enum ServiceEnum {
 
-    WEBFRONTEND(NginxModel, 'luci/nginx'),
-    JENKINS(JenkinsModel, 'luci/jenkins'),
-    ARTIFACTORY(ArtifactoryModel, 'luci/artifactory')
+    WEBFRONTEND(NginxModel, 'luci/nginx:0.2'),
+    JENKINS(JenkinsModel, 'luci/jenkins:0.2'),
+    ARTIFACTORY(ArtifactoryModel, 'luci/artifactory:0.2')
 
     final Class<?> modelClass
 
     final String dockerImage
 
+    String getName() {
+        return name().toLowerCase()
+    }
+
     ServiceEnum(Class<?> modelClass, String imageName) {
         this.modelClass = modelClass
-        if (imageName.indexOf(':') == -1) {
-            // Use default version
-            imageName += ':0.1'
-        }
         this.dockerImage = imageName
     }
 

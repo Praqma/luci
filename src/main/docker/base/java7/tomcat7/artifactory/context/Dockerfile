@@ -1,8 +1,5 @@
 FROM luci/tomcat7:0.1
 
-#TODO unzip is not found from base image
-RUN apt-get install -y unzip 
-
 # To update, check https://bintray.com/jfrog/artifactory/artifactory/view
 ENV ARTIFACTORY_VERSION 3.9.2
 ENV ARTIFACTORY_SHA1 245aeb7b2d77830462067d5a19c3bd32ae014ddf
@@ -25,8 +22,8 @@ RUN mkdir -p /luci/artifactory
 ENV ARTIFACTORY_HOME /luci/artifactory
 
 # Expose Artifactories data, log and backup directory.
-#VOLUME /luci/artifactory/data
+VOLUME /luci/artifactory/data
 VOLUME /luci/artifactory/logs
-#VOLUME /luci/artifactory/backup
+VOLUME /luci/artifactory/backup
 
 WORKDIR /luci/artifactory

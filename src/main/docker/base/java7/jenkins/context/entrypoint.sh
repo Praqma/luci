@@ -1,17 +1,19 @@
 #! /bin/bash
 
-# Read arguments
-dataContainer=$1	# Name of data container that is used to ??? TODO figure it out
-dockerUrl=$2		# Url for (non-TLS) docker host to run slaves in
-jenkinsUrl=$3		# Url to access jenkins with (from the outside)
-adminEmail=$4           # Admin email in jenkins configuration
+while getopts "d:c:j:e:" arg; do
+  case $arg in
+    d) dataContainer=$OPTARG ;;  # Name of data container that is used by slaves
+    c) dockerUrl=$OPTARG ;;      # Url for (non-TLS) docker host to run slaves in                    
+    j) jenkinsUrl=$OPTARG ;;     # Url to access jenkins with (from the outside)                     
+    e) adminEmail=$OPTARG ;;     # Admin email in jenkins configuration
+  esac
+done
 
-# Remote the  arguments, rest is passed on to jenkins.war
-shift ; shift ; shift ; shift
+shift $((OPTIND-1))
 
 # Generate configuragtion files
-/lucijenkins/generateJenkinsConfigXml.sh $dataContainer $dockerUrl > /usr/share/jenkins/ref/config.xml
-/lucijenkins/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
+/luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl > /usr/share/jenkins/ref/config.xml
+/luci/bin/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
 
 set -e
 

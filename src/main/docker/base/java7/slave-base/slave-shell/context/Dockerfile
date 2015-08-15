@@ -1,1 +1,1 @@
-FROM luci/slave-base:0.1
+FROM luci/slave-base:0.2

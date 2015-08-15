@@ -1,4 +1,4 @@
-FROM luci/base:0.1
+FROM luci/base:0.2
 
 # Install JDK 7 (latest edition)
-RUN apt-get install -y openjdk-7-jdk
+RUN apt-get update && apt-get install -y ca-certificates openjdk-7-jdk

@@ -3,17 +3,22 @@ apply plugin: net.praqma.luci.gradle.LuciPlugin
 
 luci {
 
-  
   boxes {
     // Declare a new Lucibox named 'dummy'
     dummy {
+      socatForTlsHackPort = 2375
+      
       // Declare one or more services. There is a pre-defined set of service names
       service 'jenkins'
 
+      
       // Configure a declared serviced
       jenkins {
+        /* staticSlave('ubuntu') {
+          dockerImage = 'ubuntu:14.04'
+          } */
       }
-
+      
       // Declare and configure a service
       service('artifactory') {
 
@@ -27,3 +32,4 @@ luci {
   }
   
 }
+

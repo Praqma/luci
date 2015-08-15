@@ -25,21 +25,21 @@ function build {
     buildHelper $path $name $ver | awk "\$0=\"$name:\t\"\$0"
 }
 
-build tools 0.1 &
+build tools 0.2 &
 (
-    build base 0.1
-    build base/nginx 0.1 &
+    build base 0.2
+    build base/nginx 0.2 &
     (
-        build base/java7 0.1
-        build base/java7/jenkins 0.1 &
+        build base/java7 0.2
+        build base/java7/jenkins 0.2 &
         (
-            build base/java7/tomcat7 0.1 
-            build base/java7/tomcat7/artifactory 0.1
+            build base/java7/tomcat7 0.2
+            build base/java7/tomcat7/artifactory 0.2
         ) &
         (
-            build base/java7/slave-base 0.1
-            build base/java7/slave-base/slave-shell 0.1 &
-            build base/java7/slave-base/slave-gradle 0.1 &
+            build base/java7/slave-base 0.2
+            build base/java7/slave-base/slave-shell 0.2 &
+            build base/java7/slave-base/slave-gradle 0.2 &
             wait
         ) &
         wait

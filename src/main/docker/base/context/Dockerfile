@@ -9,5 +9,5 @@ RUN apt-get update && apt-get -y upgrade
 RUN apt-get install -y unzip curl
 
 # Add luci user and set password
-RUN useradd -ms /bin/bash luci
-RUN echo "luci:praqma" | chpasswd
+RUN useradd -ms /bin/bash -u 5824 luci
+

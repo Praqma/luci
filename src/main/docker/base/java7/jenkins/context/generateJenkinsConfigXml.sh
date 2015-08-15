@@ -30,7 +30,7 @@ cat << CLOUD_HEADER
       <name>LocalDocker</name>
       <templates>
 CLOUD_HEADER
-cat /lucijenkins/slaves.conf | while read line ; do
+cat /luci/etc/slaves.conf | while read line ; do
     slaveName=$(echo $line | awk '{ print $1 }')
     slaveImage=$(echo $line | awk '{ print $2 }')
     cat << CLOUD_TEMPLATE
