@@ -34,11 +34,15 @@ The `luciboxconfig-example.yml` should be a show-case on how simple luci is to c
 _Ideas_:
 
 * The user doesn't really need to supply, nor know, about all the configuration a docker-compose file needs (linking, ports etc.) but just maybe the docker images needed within the categories supported.
-* The user need to supply information abou credentials and where to run the lucibox.
+* The user need to supply information about credentials and where to run the lucibox, and for an local registry if used. Else no authentication should really be needed to configure.
 * The user needs to tell which adjustments is needed for the default docker images used (we prefer to use default docker hub images, so users doesn't need to create and maintain their own).
 * The configuraton file tries to re-use as much as possible from other docker tools. For example by supporting docker-compose YAML setings, and using docker-machine syntax to specificy the lucibox hosts configuration.
 
 **The `luciboxconfig-example.yml` will explain a lot more details on design and assumptions as comments**.
+
+An argument to use luci is the configuration is much simpler than for example writing a docker-compose my-self, and wrap that in shell scripts etc. or what-ever needed. The configuration example is much shorter and simpler than a docker-compose file, as we can omit all the ports, linking and so on.... that is one of the thing luci helps me with. That one of the benefits.
+More less what is not in the configuration file example is not supposed to be there, it is not missing but either by convention defined (defaults) or luci will figure out the rest - that is what luci helps we with. We could introduce an extra config-default.yml with defaults, but it shouldn't normally be needed to change it.
+
 
 
 ## Vocabulary
@@ -63,3 +67,8 @@ The following features, autmation and configuration are assumed to be working on
 * The build system is automatically configured so that build slaves can clone the repositories, and push changes back like tags. The same goes for the Artifact management system.
 * The build system also automatically comes with our recommended plugins installed, we know what is needed based on experience. User can apply more plugins, or remove them later in the Jenkins configuration. UI. User can supply extra more special plugins needed. Our default list is: Fingerprint Plugin, Job DSL, build-name-setter, Task Scanner Plug-in, Jenkins Mailer Plugin, Build Failure Analyzer, Environment Injector Plugin, Pretested Integration Plugin, Jenkins Git Plugin, HTML Publisher Plugin, JUnit Plugin, Build Pipeline Plugin, Copy Artifact Plugin, Warnings Plugin, Jenkins Parameterized Trigger Plugin, Safe Restart (list comes from the one used in traing in Praqma: http://code.praqma.net/training/pluginusage/).
 * The `ssh-post-config` option is for now a praqmatic way of customizing slaves. I really think users should be able to just specify things like `git 2.1.5`, `maven 3.0.1`, `RVM Ruby 2.2` etc.
+
+
+
+
+
