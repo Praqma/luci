@@ -8,6 +8,5 @@ class ArtifactoryModel extends BaseServiceModel{
     @Override
     void addToComposeMap(Map map, Context context) {
         super.addToComposeMap(map, context)
-        map.ports = ['10081:8080'] // for debug
     }
 }

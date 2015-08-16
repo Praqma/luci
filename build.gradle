@@ -1,6 +1,7 @@
 apply plugin: 'idea'
 apply plugin: net.praqma.luci.gradle.LuciPlugin
 
+
 luci {
 
   boxes {
@@ -14,9 +15,12 @@ luci {
       
       // Configure a declared serviced
       jenkins {
-        /* staticSlave('ubuntu') {
-          dockerImage = 'ubuntu:14.04'
-          } */
+        staticSlave('worker1') {
+          dockerImage = 'luci/java7:0.2'
+        }
+        staticSlave('worker2') {
+          dockerImage = 'luci/java7:0.2'
+        }
       }
       
       // Declare and configure a service

@@ -8,6 +8,8 @@ abstract class BaseServiceModel {
 
     String serviceName
 
+    LuciboxModel box
+
     boolean includeInWebfrontend = true
 
     Map buildComposeMap(Context context) {
@@ -24,6 +26,10 @@ abstract class BaseServiceModel {
     }
 
     void addServicesToMap(Map<String, ?> map, Context context) {
+
+    }
+
+    void preStart() {
 
     }
 }

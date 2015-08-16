@@ -46,6 +46,7 @@ class LuciPlugin implements Plugin<Project> {
                 description "Bring '${box.name}' up"
                 dependsOn prepareTask
                 doFirst {
+                    box.preStart()
                     project.exec {
                         executable 'docker-compose'
                         args '-f', yaml.path, 'up'

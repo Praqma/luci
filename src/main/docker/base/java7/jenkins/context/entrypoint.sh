@@ -1,11 +1,14 @@
 #! /bin/bash
 
-while getopts "d:c:j:e:" arg; do
+set -e
+
+while getopts "d:c:j:e:s:" arg; do
   case $arg in
     d) dataContainer=$OPTARG ;;  # Name of data container that is used by slaves
     c) dockerUrl=$OPTARG ;;      # Url for (non-TLS) docker host to run slaves in                    
     j) jenkinsUrl=$OPTARG ;;     # Url to access jenkins with (from the outside)                     
     e) adminEmail=$OPTARG ;;     # Admin email in jenkins configuration
+    s) staticSlaves=$OPTARG ;;   # List of names of static slaves
   esac
 done
 
@@ -14,8 +17,6 @@ shift $((OPTIND-1))
 # Generate configuragtion files
 /luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl > /usr/share/jenkins/ref/config.xml
 /luci/bin/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
-
-set -e
 
 # Copy files from /usr/share/jenkins/ref into /var/jenkins_home
 # So the initial JENKINS-HOME is set with expected content. 
@@ -39,6 +40,8 @@ copy_reference_file() {
 export -f copy_reference_file
 echo "--- Copying files at $(date)" >> $COPY_REFERENCE_FILE_LOG
 find /usr/share/jenkins/ref/ -type f -exec bash -c 'copy_reference_file {}' \;
+
+/luci/bin/createStaticSlaves.sh $staticSlaves
 
 # if `docker run` first argument start with `--` the user is passing jenkins launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then

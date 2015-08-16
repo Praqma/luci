@@ -23,6 +23,7 @@ class NginxModel extends BaseServiceModel {
         def services = context.box.services.findAll { it.includeInWebfrontend }*.serviceName
         map.command = ['-s', services.join(' ') ]
     }
+
 }
 
 @Immutable

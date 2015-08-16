@@ -10,13 +10,20 @@ class LuciboxModel {
 
     private Map<ServiceEnum, ?> serviceMap = [:]
 
-    DockerHost dockerHost = DockerHost.fromEnv()
+    DockerHost dockerHost
 
     Integer socatForTlsHackPort
 
     LuciboxModel(String name) {
         this.name = name
         service 'webfrontend'
+    }
+
+    DockerHost getDockerHost() {
+        if (this.@dockerHost == null) {
+            this.@dockerHost = DockerHost.fromEnv()
+        }
+        return this.@dockerHost
     }
 
     Collection<BaseServiceModel> getServices() {
@@ -27,6 +34,7 @@ class LuciboxModel {
         ServiceEnum e = ServiceEnum.valueOf(serviceName.toUpperCase())
         BaseServiceModel model = e.modelClass.newInstance()
         model.serviceName = serviceName
+        model.box = this
         model.dockerImage = e.dockerImage
         ServiceEnum old = serviceMap.put(e, model)
         if (old != null) {
@@ -36,6 +44,7 @@ class LuciboxModel {
         m.metaClass[serviceName] = { Closure c ->
             model.with c
         }
+        m.metaClass['get' + serviceName.capitalize()] = { -> model }
         model.with closure
     }
 
@@ -65,5 +74,14 @@ class LuciboxModel {
     void generateDockerComposeYaml(Context context, Writer out) {
         Map map = buildYamlMap(context)
         new Yaml().dump(map, out)
+    }
+
+    void preStart() {
+        createDataContainer()
+        serviceMap.values().each { it.preStart() }
+    }
+
+    private void createDataContainer() {
+
     }
 }

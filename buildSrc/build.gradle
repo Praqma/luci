@@ -2,13 +2,14 @@ apply plugin: 'idea'
 apply plugin: 'groovy'
 
 repositories {
-  jcenter()
+    jcenter()
 }
 
 dependencies {
-  compile localGroovy()
-  compile gradleApi()
-  compile 'org.yaml:snakeyaml:1.14'
+    compile localGroovy()
+    compile gradleApi()
+    compile 'org.yaml:snakeyaml:1.14'
+    compile 'com.google.guava:guava:19.0-rc1'
 }
 
 test {
