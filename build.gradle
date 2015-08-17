@@ -6,7 +6,7 @@ luci {
 
   boxes {
     demo {
-      socatForTlsHackPort = 2375
+      // socatForTlsHackPort = 2375
       
       service ('jenkins') {
         staticSlave('default') {
@@ -21,7 +21,7 @@ luci {
     // Declare a new Lucibox named 'dummy'
     abc {
       port = 8090
-      socatForTlsHackPort = 2374
+      // socatForTlsHackPort = 2374
       
       // Declare one or more services. There is a pre-defined set of service names
       service 'jenkins'
