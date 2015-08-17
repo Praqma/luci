@@ -23,6 +23,9 @@ Important: When you pull  be sure to rebuild images, there might be changes.
 In the build.gradle file a few example Luciboxes are defined. If you want to spin up 'demo' you execute
 '''./gradlew luciDemoUp'''
 
+The script prints a URL where you can reach the Lucibox. The page shows links to the enabled services.
+Note that Jenkins is rather slow to start and you might get a "503 Service not available" in the beginning.
+
 If you change the configuration you apply the changes by spinning it up again.
 
 To kill it you stop the containers.
