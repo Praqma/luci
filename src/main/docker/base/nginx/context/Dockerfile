@@ -20,7 +20,11 @@ COPY luci.conf /etc/nginx/conf.d/
 
 COPY services/*.conf     /luci/etc/nginx/available.d/
 COPY entrypoint.sh    /
-COPY wwwroot/* /luci/wwwroot/
+
+RUN mkdir /luci/wwwroot
+#COPY wwwroot/* /luci/wwwroot/
+
+COPY bin/* /luci/bin/
 
 EXPOSE 80 443
 

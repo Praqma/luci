@@ -1,8 +1,11 @@
 #! /bin/bash
 
-while getopts "s:" arg; do
+luciboxName=unknown
+
+while getopts "s:n:" arg; do
   case $arg in
-      s) services=$OPTARG          ;;  # enabled services      
+      s) services=$OPTARG          ;;  # enabled services
+      n) luciboxName=$OPTARG       ;;  # name of lucibox
   esac
 done
 echo "Services: $servies"
@@ -15,6 +18,15 @@ for s in $services ; do
     ln -s /luci/etc/nginx/available.d/$s.conf /luci/etc/nginx/conf.d/
 done
 
-exec nginx -g "daemon off;" "$@"
+/luci/bin/generateIndexHtml.sh $luciboxName $services > /luci/wwwroot/index.html
+
+# if `docker run` first argument start with `--` the user is passing nginx launcher arguments
+if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then
+   exec nginx -g "daemon off;" "$@"
+fi
+
+# Assume user want to run his own process, for sample a `bash` shell to explore this image
+exec "$@"
+
 
 

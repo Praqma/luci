@@ -21,7 +21,7 @@ class NginxModel extends BaseServiceModel {
         map.ports = [ '80:80']
         map.links = [ 'jenkins:jenkins', 'artifactory:artifactory']
         def services = context.box.services.findAll { it.includeInWebfrontend }*.serviceName
-        map.command = ['-s', services.join(' ') ]
+        map.command = ['-s', services.join(' '), '-n', box.name ]
     }
 
 }
