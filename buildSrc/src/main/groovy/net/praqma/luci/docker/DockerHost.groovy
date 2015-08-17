@@ -1,5 +1,7 @@
 package net.praqma.luci.docker
 
+import net.praqma.luci.utils.ExternalCommand
+
 
 class DockerHost {
 
@@ -62,5 +64,32 @@ class DockerHost {
 
     int getPort() {
         return uri.port
+    }
+
+    /**
+     *
+     * @return All ports that a bound on the host
+     */
+    Collection<Integer> boundPorts() {
+        // TODO execute on this host
+        Collection<Integer> answer = [] as Set
+        new ExternalCommand().execute(['docker', 'ps', "--format='{{.Ports}}'"]) { InputStream stream ->
+            stream.eachLine { String line ->
+                answer.addAll(extractBoundPortsFromLine(line))
+            }
+        }
+        return answer
+    }
+
+    private Collection<Integer> extractBoundPortsFromLine(String line) {
+        Collection<Integer> ports = []
+        line.split(',').each { s ->
+            int arrayIndex = s.indexOf('->')
+            int colonIndex = s.indexOf(':')
+            if (arrayIndex && colonIndex > 0 && arrayIndex > colonIndex) {
+                ports << (s[colonIndex + 1..arrayIndex - 1] as Integer)
+            }
+        }
+        return ports
     }
 }
