@@ -15,7 +15,8 @@ abstract class BaseServiceModel {
     Map buildComposeMap(Context context) {
         Map answer = [
                 image: dockerImage,
-                extra_hosts: [lucibox: context.internalLuciboxIp]
+                extra_hosts: [lucibox: context.internalLuciboxIp],
+                container_name: "${box.name}_${serviceName}" as String
         ]
         addToComposeMap(answer, context)
         return answer
@@ -32,4 +33,5 @@ abstract class BaseServiceModel {
     void preStart() {
 
     }
+
 }
