@@ -1,44 +1,37 @@
-# Luci Understands Continuous Integration
+# LUCI Understands Continuous Integration
 
-## Local Configuration
-You need to specify a bit of configuration to work with Luci. This is done 
-in ~/.luci folder (you can use the env var LUCI_CONFIG).
+## Running LUCI
 
-### Directory zetta_config
+You need a Docker host to run Luci on. You setup your shell to point at any Docker host as you
+would when you use Docker for other purposes. The Lucibox(es) will be created on that Docker host.
 
-The communication with Zetta cloud in Luci is going throught the zetta-tools Docker container. When starting the 
-zetta-tools container it is sourcing   all *.sh files in $LUCI_CONFIG/zetta_config. To authenticate to Zetta it must
-define the following env variables:
-- ZETTA_DOMAIN_NAME
-- ZETTA_DOMAIN_ID
-- ZETTA_USERNAME
-- ZETTA_PASSWORD
+Alternatively you can specify a dockerHost in the configuration on a Lucibox. TODO test and document
 
-For example a file named credentials.sh with content:
-```
-ZETTA_DOMAIN_NAME=praqma
-ZETTA_DOMAIN_ID=807427196c02496ea86bc65a110472e6
-ZETTA_USERNAME=jas
-ZETTA_PASSWORD=mysecret
-```
+### Clone LUCI
 
-## Boot2docker Issues
+From https://github.com/Praqma/luci.git clone the gradle branch
 
-It seems to docker plugin for Jenkins assumes the docker host is available without tls on port 2375. If you use boot2docker the docker host is on port 2376 with tls. A workaround is to execute
-```
-$(docker run sequenceiq/socat)
-```
-see http://blog.sequenceiq.com/blog/2014/10/17/boot2docker-tls-workaround/ for details.
+### Build Images
 
-Alternatively TLS can be disabled in the boot2docker vm as described on https://github.com/boot2docker/boot2docker
+Luci provides a number of images. The intent is they will be push the  Docker hub, but currently you have to build them on the target Docker host.
+You build the images with the script bin/buildAllImages.sh. Note that script does not fail if one or more images fails to build.
 
-## Environment initialization on mac
+### Start and stop a Luci box
 
-````
-boot2docker up
-eval $(boot2docker shellinit)
-source luci-setup.sh
-````
+In the build.gradle file a few example Luciboxes are defined. If you want to spin up 'demo' you execute
+'''./gradlew luciUpDemo'''
 
-Dependencies for mac:
- - gnu coreutils `brew install coreutils`
+If you change the configuration you apply the changes by spinning it up again.
+
+To kill it you stop the containers.
+
+### Gradle Implementation notes
+
+The Luci Gradle plugin should be distributed as a standalone plugin, so you can make any number of Luci Gradle configuration files. But currently you build the plugin whenever you use Luci, that is making the development much more efficient.
+
+### Dependencies
+
+You must have the following installed on the box where you execute the gradle script:
+* Java
+* Docker
+* Docker machine: I'm not sure about this one, but it should be possible ot make it work without
