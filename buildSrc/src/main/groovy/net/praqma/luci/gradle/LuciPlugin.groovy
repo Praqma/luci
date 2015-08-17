@@ -32,6 +32,7 @@ class LuciPlugin implements Plugin<Project> {
             Task prepareTask = tasks.create("${taskNamePrefix}Prepare") {
                 group 'luci'
                 doFirst {
+                    box.preStart()
                     Context context = new Context(box: box, internalLuciboxIp: box.dockerHost.host)
                     dir.mkdirs()
                     new FileWriter(yaml).withWriter { Writer w ->
@@ -40,18 +41,10 @@ class LuciPlugin implements Plugin<Project> {
                 }
             }
 
-            Task preStartTask = tasks.create("${taskNamePrefix}PreStart") {
-                group 'luci'
-                dependsOn prepareTask
-                doFirst {
-                    box.preStart()
-                }
-            }
-
             Task upTask = tasks.create("${taskNamePrefix}Up") {
                 group 'luci'
                 description "Bring '${box.name}' up"
-                dependsOn preStartTask
+                dependsOn prepareTask
                 doFirst {
                     project.exec {
                         executable 'docker-compose'
