@@ -1,7 +1,7 @@
 # This script creates a Swarm on a local VirtualBox
 # Still in Beta...
 
-swarmId=$(docker-swarm c)
+swarmId=$(docker run swarm create)
 
 echo "swarmId = $swarmId"
 
