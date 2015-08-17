@@ -36,4 +36,5 @@ The Luci Gradle plugin should be distributed as a standalone plugin, so you can 
 You must have the following installed on the box where you execute the gradle script:
 * Java
 * Docker
+* Docker compose: Must be 1.4.0 or newer
 * Docker machine: I'm not sure about this one, but it should be possible ot make it work without
