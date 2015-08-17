@@ -7,15 +7,14 @@ luci {
   boxes {
     demo {
       socatForTlsHackPort = 2375
-
+      
       service ('jenkins') {
         staticSlave('default') {
           dockerImage = 'luci/java7:0.2'
         }
-      }
-
-      // Currently it doesn't work if all services isn't declared
-      service ('artifactory') {
+        staticSlave('anotherSlave') {
+          dockerImage = 'luci/java7:0.2'
+        }
       }
     }
       
@@ -45,6 +44,7 @@ luci {
       
       // configure the webfrontend service. It is alway present
       webfrontend {
+        // not implemented yet. This has no effect
         user 'luci', 'praqma'
       }
     }

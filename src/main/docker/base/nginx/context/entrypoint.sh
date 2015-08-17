@@ -17,14 +17,13 @@ export LUCIBOX_PORT=$port
 
 shift $((OPTIND-1))
 
-mkdir -p /luci/etc/nginx/conf.d
 
 for s in $services ; do
     ln -s /luci/etc/nginx/available.d/$s.conf /luci/etc/nginx/conf.d/
+    ln -s /luci/etc/nginx/upstreams.d/$s.conf /luci/etc/nginx/upstreamsconf.d/
 done
 
 /luci/bin/generateIndexHtml.sh $luciboxName $services > /luci/wwwroot/index.html
-/luci/bin/generateLuciConf.sh $port > /etc/nginx/conf.d/luci.conf
 
 # if `docker run` first argument start with `--` the user is passing nginx launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then

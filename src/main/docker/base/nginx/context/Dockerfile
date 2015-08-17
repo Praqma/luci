@@ -16,10 +16,12 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 VOLUME ["/var/cache/nginx"]
 
+COPY luci.conf           /etc/nginx/conf.d/
 COPY services/*.conf     /luci/etc/nginx/available.d/
+COPY upstreams/*.conf    /luci/etc/nginx/upstreams.d/
 COPY entrypoint.sh    /
 
-RUN mkdir /luci/wwwroot
+RUN mkdir -p /luci/wwwroot && mkdir -p /luci/etc/nginx/conf.d && mkdir -p /luci/etc/nginx/upstreamsconf.d
 #COPY wwwroot/* /luci/wwwroot/
 
 COPY bin/* /luci/bin/
