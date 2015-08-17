@@ -21,4 +21,12 @@ export DOCKER_MACHINE_NAME="lucibox"
         assert h.tls
         assert h.certPath == new File("/Users/jan/.docker/machine/machines/lucibox")
     }
+
+    @Test
+    void testBoundPorts() {
+        DockerHost h = DockerHost.fromVariables(DOCKER_HOST: 'tcp://localhost:2375')
+        h.boundPorts()
+    }
 }
+
+

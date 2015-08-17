@@ -6,7 +6,6 @@ luci {
 
   boxes {
     demo {
-      port = 80
       socatForTlsHackPort = 2375
 
       service ('jenkins') {
@@ -21,7 +20,7 @@ luci {
     }
       
     // Declare a new Lucibox named 'dummy'
-    dummy {
+    abc {
       port = 8090
       socatForTlsHackPort = 2374
       
@@ -31,8 +30,8 @@ luci {
       
       // Configure a declared serviced
       jenkins {
-        // Add a number of static slaves
-        (1..1).each {
+         // Add a number of static slaves
+        (1..2).each {
           staticSlave("worker$it") {
             dockerImage = 'luci/java7:0.2'
           }
