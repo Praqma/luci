@@ -16,6 +16,8 @@ From https://github.com/Praqma/luci.git clone the gradle branch
 Luci provides a number of images. The intent is they will be push the  Docker hub, but currently you have to build them on the target Docker host.
 You build the images with the script bin/buildAllImages.sh. Note that script does not fail if one or more images fails to build.
 
+Important: When you pull  be sure to rebuild images, there might be changes. 
+
 ### Start and stop a Luci box
 
 In the build.gradle file a few example Luciboxes are defined. If you want to spin up 'demo' you execute
