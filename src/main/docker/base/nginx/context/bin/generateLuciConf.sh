@@ -10,7 +10,7 @@ upstream docker-jenkins {
 }
 
 server {
-  listen $port;
+  listen 80;
   root /luci/wwwroot;
   
   include /luci/etc/nginx/conf.d/*.conf;
