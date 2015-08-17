@@ -9,7 +9,7 @@ class LuciboxModel {
     final String name
 
     /** Port on web frontend (nginx) */
-    int port
+    int port = 80
 
     private Map<ServiceEnum, ?> serviceMap = [:]
 
