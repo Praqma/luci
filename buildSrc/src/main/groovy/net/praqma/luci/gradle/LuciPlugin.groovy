@@ -55,8 +55,9 @@ class LuciPlugin implements Plugin<Project> {
                 doFirst {
                     project.exec {
                         executable 'docker-compose'
-                        args '-f', yaml.path, 'up'
+                        args '-f', yaml.path, 'up', '-d'
                     }
+                    println "Lucibox '${box.name}' starting at http://${box.dockerHost.host}:${box.port}"
                 }
             }
         }
