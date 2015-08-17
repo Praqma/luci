@@ -21,7 +21,7 @@ Important: When you pull  be sure to rebuild images, there might be changes.
 ### Start and stop a Luci box
 
 In the build.gradle file a few example Luciboxes are defined. If you want to spin up 'demo' you execute
-'''./gradlew luciUpDemo'''
+'''./gradlew luciDemoUp'''
 
 If you change the configuration you apply the changes by spinning it up again.
 
