@@ -4,7 +4,7 @@ set -e
 
 slaveAgentPort=50000
 
-while getopts "d:c:j:e:s:a:" arg; do
+while getopts "d:c:j:e:s:a:p:" arg; do
   case $arg in
     d) dataContainer=$OPTARG ;;  # Name of data container that is used by slaves
     c) dockerUrl=$OPTARG ;;      # Url for (non-TLS) docker host to run slaves in                    
@@ -12,6 +12,7 @@ while getopts "d:c:j:e:s:a:" arg; do
     e) adminEmail=$OPTARG ;;     # Admin email in jenkins configuration
     s) staticSlaves=$OPTARG ;;   # List of names of static slaves
     a) slaveAgentPort=$OPTARG ;; # Port for communicating with slave agent
+    p) plugins=$OPTARG ;;        # Plugins to install
   esac
 done
 
@@ -22,6 +23,9 @@ export JENKINS_SLAVE_AGENT_PORT=$slaveAgentPort
 # Generate configuragtion files
 /luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl $slaveAgentPort > /usr/share/jenkins/ref/config.xml
 /luci/bin/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
+
+echo "Installing plugins: $plugins"
+/luci/bin/addPlugin.sh $plugins
 
 # Copy files from /usr/share/jenkins/ref into /var/jenkins_home
 # So the initial JENKINS-HOME is set with expected content. 

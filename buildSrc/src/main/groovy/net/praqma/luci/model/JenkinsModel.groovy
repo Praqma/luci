@@ -10,6 +10,12 @@ class JenkinsModel extends BaseServiceModel {
 
     private Map<String, StaticSlaveModel> staticSlaves = [:]
 
+    private pluginList = []
+
+    void plugins(String ...plugins) {
+        pluginList.addAll(plugins)
+    }
+
     @Override
     void addToComposeMap(Map map, Context context) {
         super.addToComposeMap(map, context)
@@ -20,6 +26,9 @@ class JenkinsModel extends BaseServiceModel {
                        '-a', slaveAgentPort as String]
         if (staticSlaves.size() > 0) {
             map.command << '-s' << staticSlaves.keySet().join(' ')
+        }
+        if (pluginList.size() > 0) {
+            map.command << '-p' << pluginList.join(' ')
         }
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
