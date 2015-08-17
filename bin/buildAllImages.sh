@@ -2,13 +2,16 @@
 
 doPush='no'
 
+abspath=$(cd ${0%/*} && echo $PWD)
+luciRoot=$(dirname $abspath)
+
 function buildHelper {
     local path=$1
     local name=$2
     local ver=$3
     local fullName="luci/$name:$ver"
     echo "*** Building $path ***"
-    docker build -t $fullName $LUCI_ROOT/src/main/docker/$path/context
+    docker build -t $fullName $luciRoot/src/main/docker/$path/context
     local rc=$?
     if [ "$doPush" = 'yes' ] ; then
         echo "Pushing $fullName"
