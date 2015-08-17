@@ -6,7 +6,7 @@ import org.yaml.snakeyaml.Yaml
 
 class LuciboxModel {
 
-    private String name
+    final String name
 
     private Map<ServiceEnum, ?> serviceMap = [:]
 

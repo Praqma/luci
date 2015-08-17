@@ -1,6 +1,8 @@
 package net.praqma.luci.utils
 
+import groovy.transform.CompileStatic
 
+@CompileStatic
 class ExternalCommand {
 
     int execute(List<String> cmd, Closure output, Closure input = null) {

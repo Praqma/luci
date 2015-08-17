@@ -1,7 +1,9 @@
 package net.praqma.luci.model
 
+import groovy.transform.CompileStatic
 import net.praqma.luci.model.yaml.Context
 
+@CompileStatic
 abstract class BaseServiceModel {
 
     String dockerImage
@@ -14,9 +16,9 @@ abstract class BaseServiceModel {
 
     Map buildComposeMap(Context context) {
         Map answer = [
-                image: dockerImage,
-                extra_hosts: [lucibox: context.internalLuciboxIp],
-                container_name: "${box.name}_${serviceName}" as String
+                image         : dockerImage,
+                extra_hosts   : [lucibox: context.internalLuciboxIp],
+                container_name: containerName
         ]
         addToComposeMap(answer, context)
         return answer
@@ -34,4 +36,7 @@ abstract class BaseServiceModel {
 
     }
 
+    String getContainerName() {
+        return "${box.name}_${serviceName}"
+    }
 }

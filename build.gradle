@@ -15,11 +15,11 @@ luci {
       
       // Configure a declared serviced
       jenkins {
-        staticSlave('worker1') {
-          dockerImage = 'luci/java7:0.2'
-        }
-        staticSlave('worker2') {
-          dockerImage = 'luci/java7:0.2'
+        // Add a number of static slaves
+        (1..1).each {
+          staticSlave("worker$it") {
+            dockerImage = 'luci/java7:0.2'
+          }
         }
       }
       

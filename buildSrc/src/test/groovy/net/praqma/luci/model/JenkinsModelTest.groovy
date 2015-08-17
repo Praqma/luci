@@ -8,7 +8,7 @@ class JenkinsModelTest {
 
     @Test
     void testCreateDataContainer() {
-        LuciboxModel box = new LuciboxModel("test")
+        LuciboxModel box = new LuciboxModel("lucitest")
         box.dockerHost = DockerHost.fromDockerMachine('lucibox')
         box.service('jenkins') {
 

@@ -20,13 +20,13 @@ class JenkinsModel extends BaseServiceModel {
         }
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ['50000:50000'] // for slave connections
+        map.ports << '10080:8080' // Enter container without nginx, for debug
         map.volumes = ['/usr/local/bin/docker:/usr/local/bin/docker', '/var/run/docker.sock:/var/run/docker.sock']
     }
 
     void addServicesToMap(Map<String, ?> map, Context context) {
         staticSlaves.each { String name, StaticSlaveModel slave ->
-            String serviceName = "${ServiceEnum.JENKINS.name}Slave${name.capitalize()}"
-            map[serviceName] = slave.buildComposeMap(context)
+            map[slave.serviceName] = slave.buildComposeMap(context)
         }
     }
 
@@ -34,6 +34,7 @@ class JenkinsModel extends BaseServiceModel {
         StaticSlaveModel slave = new StaticSlaveModel()
         slave.with closure
         slave.slaveName = slaveName
+        slave.serviceName = "${ServiceEnum.JENKINS.name}${slaveName.capitalize()}"
         slave.box = box
         staticSlaves[slaveName] = slave
     }
@@ -42,7 +43,7 @@ class JenkinsModel extends BaseServiceModel {
      * Execute a cli command against jenkins
      */
     void cli(List<String> cmd, Closure input) {
-        new ExternalCommand().execute(["docker", "exec", "${box.name}_jenkins_1", *args], null, closure)
+        new ExternalCommand().execute(["docker", "exec", "${box.name}_jenkins_1", *cmd], null, input)
     }
 
     void preStart() {

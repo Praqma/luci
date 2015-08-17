@@ -31,7 +31,6 @@ class LuciPlugin implements Plugin<Project> {
             File yaml = project.file("${dir}/docker-compose.yml")
             Task prepareTask = tasks.create("${taskNamePrefix}Prepare") {
                 group 'luci'
-                description "Prepare '${box.name}' for spinning up"
                 doFirst {
                     Context context = new Context(box: box, internalLuciboxIp: box.dockerHost.host)
                     dir.mkdirs()
@@ -41,12 +40,19 @@ class LuciPlugin implements Plugin<Project> {
                 }
             }
 
-            Task upTask = tasks.create("${taskNamePrefix}Up") {
+            Task preStartTask = tasks.create("${taskNamePrefix}PreStart") {
                 group 'luci'
-                description "Bring '${box.name}' up"
                 dependsOn prepareTask
                 doFirst {
                     box.preStart()
+                }
+            }
+
+            Task upTask = tasks.create("${taskNamePrefix}Up") {
+                group 'luci'
+                description "Bring '${box.name}' up"
+                dependsOn preStartTask
+                doFirst {
                     project.exec {
                         executable 'docker-compose'
                         args '-f', yaml.path, 'up'
