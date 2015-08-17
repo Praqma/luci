@@ -24,12 +24,6 @@ RUN curl -fL http://mirrors.jenkins-ci.org/war-stable/$JENKINS_VERSION/jenkins.w
 
 ENV JENKINS_UC https://updates.jenkins-ci.org
 
-# for main web interface:
-EXPOSE 8080
-
-# will be used by attached slave agents:
-EXPOSE 50000
-
 ENV COPY_REFERENCE_FILE_LOG /var/log/copy_reference_file.log
 RUN touch $COPY_REFERENCE_FILE_LOG 
 
@@ -50,5 +44,10 @@ COPY slaves.conf /luci/etc/
 COPY cli.sh /usr/local/bin/
 
 COPY entrypoint.sh /entrypoint.sh
+
+
+# for main web interface:
+EXPOSE 8080
+
 ENTRYPOINT ["/entrypoint.sh"]
 

@@ -8,6 +8,13 @@ class LuciboxModel {
 
     final String name
 
+    /** Indicate if services should use a data container to store data, or if data should be stored in
+     * the container itself.
+     *
+     * The value can be overridden for specific containers
+     */
+    boolean useDataContainer = false
+
     /** Port on web frontend (nginx) */
     int port = 80
 

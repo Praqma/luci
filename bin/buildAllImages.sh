@@ -24,7 +24,7 @@ function build {
     local ver=$2
     buildHelper $path $name $ver | awk "\$0=\"$name:\t\"\$0"
 }
-
+build data 0.2 &
 build tools 0.2 &
 (
     build base 0.2
