@@ -2,20 +2,25 @@
 
 set -e
 
-while getopts "d:c:j:e:s:" arg; do
+slaveAgentPort=50000
+
+while getopts "d:c:j:e:s:a:" arg; do
   case $arg in
     d) dataContainer=$OPTARG ;;  # Name of data container that is used by slaves
     c) dockerUrl=$OPTARG ;;      # Url for (non-TLS) docker host to run slaves in                    
     j) jenkinsUrl=$OPTARG ;;     # Url to access jenkins with (from the outside)                     
     e) adminEmail=$OPTARG ;;     # Admin email in jenkins configuration
     s) staticSlaves=$OPTARG ;;   # List of names of static slaves
+    a) slaveAgentPort=$OPTARG ;; # Port for communicating with slave agent
   esac
 done
 
 shift $((OPTIND-1))
 
+export JENKINS_SLAVE_AGENT_PORT=$slaveAgentPort
+
 # Generate configuragtion files
-/luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl > /usr/share/jenkins/ref/config.xml
+/luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl $slaveAgentPort > /usr/share/jenkins/ref/config.xml
 /luci/bin/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
 
 # Copy files from /usr/share/jenkins/ref into /var/jenkins_home

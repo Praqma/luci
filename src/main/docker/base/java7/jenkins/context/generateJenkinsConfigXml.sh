@@ -3,6 +3,7 @@
 # define parameters which are passed in.
 dataContainer=$1
 dockerUrl=$2
+slaveAgentPort=$3
 
 #define the template.
 cat  << EOF
@@ -102,7 +103,7 @@ cat << EOF
     </hudson.model.AllView>
   </views>
   <primaryView>All</primaryView>
-  <slaveAgentPort>50000</slaveAgentPort>
+  <slaveAgentPort>$slaveAgentPort</slaveAgentPort>
   <label></label>
   <nodeProperties/>
   <globalNodeProperties/>

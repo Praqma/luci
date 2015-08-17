@@ -6,6 +6,8 @@ import net.praqma.luci.utils.ExternalCommand
 
 class JenkinsModel extends BaseServiceModel {
 
+    int slaveAgentPort = -1 // -1 => Let LUCI assing port
+
     private Map<String, StaticSlaveModel> staticSlaves = [:]
 
     @Override
@@ -14,13 +16,14 @@ class JenkinsModel extends BaseServiceModel {
         map.command = ['-d', 'luci-slave-data',
                        '-c', "http://${context.box.dockerHost.host}" as String,
                        '-j', "http://${context.box.dockerHost.host}/jenkins" as String,
-                       '-e', 'luci@praqma.net']
+                       '-e', 'luci@praqma.net',
+                       '-a', slaveAgentPort as String]
         if (staticSlaves.size() > 0) {
             map.command << '-s' << staticSlaves.keySet().join(' ')
         }
         map.command << '--' << '--prefix=/jenkins'
-        map.ports = ['50000:50000'] // for slave connections
-        map.ports << '10080:8080' // Enter container without nginx, for debug
+        map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
+        //map.ports << '10080:8080' // Enter container without nginx, for debug
         map.volumes = ['/usr/local/bin/docker:/usr/local/bin/docker', '/var/run/docker.sock:/var/run/docker.sock']
     }
 
@@ -47,6 +50,9 @@ class JenkinsModel extends BaseServiceModel {
     }
 
     void preStart() {
+        if (slaveAgentPort == -1) {
+            slaveAgentPort = assignSlaveAgentPort()
+        }
         // Create data container with slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
         DataContainer data = new DataContainer(box, 'jenkinsSlave')
@@ -63,4 +69,19 @@ class JenkinsModel extends BaseServiceModel {
     private void createSecretsContainer(String containerName) {
         "docker run luci/tools:0.2 "
     }
+
+    // Map of slave agent ports assigned to a lucibox
+    private static Map<String, Integer> assingedPorts = [:]
+    private int assignSlaveAgentPort() {
+        if (assingedPorts[box.name] != null) return assingedPorts[box.name]
+        Set<Integer> ports = assingedPorts.values() as Set
+        ports.addAll(box.dockerHost.boundPorts())
+        Integer port = (50000..50099).find { !ports.contains(it) }
+        if (port == null) {
+            throw new RuntimeException("No available slave agent port")
+        }
+        assingedPorts[box.name] = port
+        return port
+    }
+
 }

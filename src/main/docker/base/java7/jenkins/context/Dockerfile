@@ -3,6 +3,8 @@ FROM luci/java7:0.2
 RUN apt-get install -y wget git zip 
 
 ENV JENKINS_HOME /var/jenkins_home
+ENV JENKINS_VERSION 1.609.2
+ENV JENKINS_SHA 59215da16f9f8a781d185dde683c05fcf11450ef
 
 # Jenkins home directoy is a volume, so configuration and build history 
 # can be persisted and survive image upgrades
@@ -14,9 +16,6 @@ ENV JENKINS_HOME /var/jenkins_home
 RUN mkdir -p /usr/share/jenkins/ref/init.groovy.d
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
-
-ENV JENKINS_VERSION 1.609.2
-ENV JENKINS_SHA 59215da16f9f8a781d185dde683c05fcf11450ef
 
 # could use ADD but this one does not check Last-Modified header 
 # see https://github.com/docker/docker/issues/8331
