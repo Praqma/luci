@@ -8,6 +8,9 @@ class LuciboxModel {
 
     final String name
 
+    /** Port on web frontend (nginx) */
+    int port
+
     private Map<ServiceEnum, ?> serviceMap = [:]
 
     DockerHost dockerHost

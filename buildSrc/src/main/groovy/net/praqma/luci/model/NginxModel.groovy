@@ -18,10 +18,12 @@ class NginxModel extends BaseServiceModel {
     @Override
     void addToComposeMap(Map map, Context context) {
         super.addToComposeMap(map, context)
-        map.ports = [ '80:80']
-        map.links = [ 'jenkins:jenkins', 'artifactory:artifactory']
+        map.ports = [ "${box.port}:80" as String]
+        map.links = box.services.findAll { it.includeInWebfrontend }.collect { BaseServiceModel service ->
+            "${service.serviceName}:${service.serviceName}" as String
+        }
         def services = context.box.services.findAll { it.includeInWebfrontend }*.serviceName
-        map.command = ['-s', services.join(' '), '-n', box.name ]
+        map.command = ['-s', services.join(' '), '-n', box.name, '-p', box.port as String]
     }
 
 }

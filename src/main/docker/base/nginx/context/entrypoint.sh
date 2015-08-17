@@ -1,14 +1,19 @@
 #! /bin/bash
 
 luciboxName=unknown
+port=80
 
-while getopts "s:n:" arg; do
+while getopts "s:n:p:" arg; do
   case $arg in
       s) services=$OPTARG          ;;  # enabled services
       n) luciboxName=$OPTARG       ;;  # name of lucibox
+      p) port=$OPTARG              ;;  # The port where nginx is listning
   esac
 done
 echo "Services: $servies"
+
+export LUCIBOX_NAME=$lucibox_name
+export LUCIBOX_PORT=$port
 
 shift $((OPTIND-1))
 
@@ -19,6 +24,7 @@ for s in $services ; do
 done
 
 /luci/bin/generateIndexHtml.sh $luciboxName $services > /luci/wwwroot/index.html
+/luci/bin/generateLuciConf.sh $port > /etc/nginx/conf.d/luci.conf
 
 # if `docker run` first argument start with `--` the user is passing nginx launcher arguments
 if [[ $# -lt 1 ]] || [[ "$1" == "--"* ]]; then

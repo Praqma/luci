@@ -16,8 +16,6 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 VOLUME ["/var/cache/nginx"]
 
-COPY luci.conf /etc/nginx/conf.d/
-
 COPY services/*.conf     /luci/etc/nginx/available.d/
 COPY entrypoint.sh    /
 

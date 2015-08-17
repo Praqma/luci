@@ -5,13 +5,29 @@ apply plugin: net.praqma.luci.gradle.LuciPlugin
 luci {
 
   boxes {
+    demo {
+      port = 80
+      socatForTlsHackPort = 2375
+
+      service ('jenkins') {
+        staticSlave('default') {
+          dockerImage = 'luci/java7:0.2'
+        }
+      }
+
+      // Currently it doesn't work if all services isn't declared
+      service ('artifactory') {
+      }
+    }
+      
     // Declare a new Lucibox named 'dummy'
     dummy {
-      socatForTlsHackPort = 2375
+      port = 8090
+      socatForTlsHackPort = 2374
       
       // Declare one or more services. There is a pre-defined set of service names
       service 'jenkins'
-
+      
       
       // Configure a declared serviced
       jenkins {
@@ -25,15 +41,15 @@ luci {
       
       // Declare and configure a service
       service('artifactory') {
-
+        
       }
-
+      
       // configure the webfrontend service. It is alway present
       webfrontend {
         user 'luci', 'praqma'
       }
     }
   }
-  
+    
 }
 
