@@ -45,7 +45,7 @@ class JenkinsModel extends BaseServiceModel {
      * Execute a cli command against jenkins
      */
     void cli(List<String> cmd, Closure input) {
-        new ExternalCommand().execute(["docker", "exec", "${box.name}_jenkins_1", *cmd], null, input)
+        new ExternalCommand(dockerHost).execute(["docker", "exec", "${box.name}_jenkins_1", *cmd], null, input)
     }
 
     void preStart() {
@@ -54,13 +54,13 @@ class JenkinsModel extends BaseServiceModel {
         }
         // Create data container with slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
-        DataContainer data = new DataContainer(box, 'jenkinsSlave')
+        DataContainer data = new DataContainer(box, dockerHost, 'jenkinsSlave')
         DataContainer.Volume volume = data.volume('/luci/data/jenkinsSlave')
         data.create()
         Closure c = { InputStream inputStream ->
             volume.file('slave.jar').addStream(inputStream)
         }
-        int rc = new ExternalCommand().execute(['docker', 'run', '--rm', dockerImage, 'unzip', '-p', '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar'], c)
+        int rc = new ExternalCommand(dockerHost).execute(['docker', 'run', '--rm', dockerImage, 'unzip', '-p', '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar'], c)
         assert rc == 0
         volume.file('slaveConnect.sh').addResource('scripts/connectSlave.sh')
     }

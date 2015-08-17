@@ -2,11 +2,6 @@
 
 ## Running LUCI
 
-You need a Docker host to run Luci on. You setup your shell to point at any Docker host as you
-would when you use Docker for other purposes. The Lucibox(es) will be created on that Docker host.
-
-Alternatively you can specify a dockerHost in the configuration on a Lucibox. TODO test and document
-
 ### Clone LUCI
 
 From https://github.com/Praqma/luci.git clone the gradle branch
@@ -17,6 +12,13 @@ Luci provides a number of images. The intent is they will be push the  Docker hu
 You build the images with the script bin/buildAllImages.sh. Note that script does not fail if one or more images fails to build.
 
 Important: When you pull  be sure to rebuild images, there might be changes. 
+
+### Spefifying Docker host for the Lucibox
+
+As default the Lucibox will be created on the Docker host specified by the environment variables (DOCKER_HOST etc).
+It is possible to specify a Docker machine to create the Lucibox on. A default Docker machine can be
+specified by the Gradle Project Property 'dockerMachine'. E.g. with '-PdockerMachine=MyLuciHost' on the command line,
+see http://mrhaki.blogspot.dk/2010/09/gradle-goodness-different-ways-to-set.html for other possibilities.
 
 ### Start and stop a Luci box
 

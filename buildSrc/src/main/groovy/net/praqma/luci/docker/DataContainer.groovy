@@ -10,11 +10,12 @@ class DataContainer {
     private String name
     private LuciboxModel box
     private Set<String> volumes = [] as Set
-    private ExternalCommand ec = new ExternalCommand()
+    private ExternalCommand ec
 
-    DataContainer(LuciboxModel box, String name) {
+    DataContainer(LuciboxModel box, DockerHost host, String name) {
         this.box = box
         this.name = "${box.name}_data_${name}"
+        this.ec = new ExternalCommand(host)
     }
 
     Volume volume(String v) {

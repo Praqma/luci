@@ -68,12 +68,24 @@ class DockerHost {
 
     /**
      *
+     * @return Environment variables to set to access this host. Null values means "not set"
+     */
+    Map<String, String> getEnvVars() {
+        return [
+                DOCKER_HOST      : uri.toString(),
+                DOCKER_TLS_VERIFY: (tls ? '1' : null),
+                DOCKER_CERT_PATH : certPath?.path
+        ]
+    }
+
+    /**
+     *
      * @return All ports that a bound on the host
      */
     Collection<Integer> boundPorts() {
         // TODO execute on this host
         Collection<Integer> answer = [] as Set
-        new ExternalCommand().execute(['docker', 'ps', "--format='{{.Ports}}'"]) { InputStream stream ->
+        new ExternalCommand(this).execute(['docker', 'ps', "--format='{{.Ports}}'"]) { InputStream stream ->
             stream.eachLine { String line ->
                 answer.addAll(extractBoundPortsFromLine(line))
             }

@@ -26,14 +26,7 @@ class LuciboxModel {
 
     LuciboxModel(String name) {
         this.name = name
-        service 'webfrontend'
-    }
-
-    DockerHost getDockerHost() {
-        if (this.@dockerHost == null) {
-            this.@dockerHost = DockerHost.fromEnv()
-        }
-        return this.@dockerHost
+        service ServiceEnum.WEBFRONTEND.name
     }
 
     Collection<BaseServiceModel> getServices() {
@@ -86,7 +79,15 @@ class LuciboxModel {
         new Yaml().dump(map, out)
     }
 
-    void preStart() {
+    /**
+     * Call before starting the lucibox
+     *
+     * @param dockerHost If no docker host has been defined use this one for the lucibox
+     */
+    void preStart(DockerHost dockerHost) {
+        if (this.dockerHost == null) {
+            this.dockerHost = dockerHost
+        }
         createDataContainer()
         serviceMap.values().each { it.preStart() }
     }

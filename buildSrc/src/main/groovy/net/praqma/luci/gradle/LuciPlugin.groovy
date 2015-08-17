@@ -1,7 +1,9 @@
 package net.praqma.luci.gradle
 
+import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.model.yaml.Context
+import net.praqma.luci.utils.ExternalCommand
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -32,7 +34,7 @@ class LuciPlugin implements Plugin<Project> {
             Task prepareTask = tasks.create("${taskNamePrefix}Prepare") {
                 group 'luci'
                 doFirst {
-                    box.preStart()
+                    box.preStart(defaultDockerHost(project))
                     Context context = new Context(box: box, internalLuciboxIp: box.dockerHost.host)
                     dir.mkdirs()
                     new FileWriter(yaml).withWriter { Writer w ->
@@ -46,15 +48,25 @@ class LuciPlugin implements Plugin<Project> {
                 description "Bring '${box.name}' up"
                 dependsOn prepareTask
                 doFirst {
-                    project.exec {
-                        executable 'docker-compose'
-                        args '-f', yaml.path, 'up', '-d'
+                    new ExternalCommand(box.dockerHost).execute(['docker-compose', '-f', yaml.path, 'up', '-d']) {
+                        it.eachLine { print it }
                     }
                     println "Lucibox '${box.name}' starting at http://${box.dockerHost.host}:${box.port}"
                 }
             }
         }
-
     }
 
+    private DockerHost defaultDockerHost(Project project) {
+        DockerHost host = null
+        if (project.hasProperty('dockerMachine')) {
+            String dockerMachine = project['dockerMachine']
+            project.logger.lifecycle("Default dockerhost is '${dockerMachine}'")
+            host = DockerHost.fromDockerMachine(dockerMachine)
+        } else {
+            project.logger.lifecycle("Default dockerhost is defined by env vars")
+            host = DockerHost.fromEnv()
+        }
+        return host
+    }
 }

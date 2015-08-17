@@ -1,15 +1,24 @@
 package net.praqma.luci.utils
 
 import groovy.transform.CompileStatic
+import net.praqma.luci.docker.DockerHost
 
 @CompileStatic
 class ExternalCommand {
 
+    /** Docker commands are executed against this docker host */
+    private DockerHost dockerHost
+
     private static Map<String, String> bins = [
             // Needs some smarts to find binaries
-            docker: findBinary('docker', '/usr/local/bin/docker'),
-            'docker-machine': findBinary('docker-machine', '/usr/local/bin/docker-machine')
+            'docker'        : findBinary('docker', '/usr/local/bin/docker'),
+            'docker-machine': findBinary('docker-machine', '/usr/local/bin/docker-machine'),
+            'docker-compose': findBinary('docker-compose', '/usr/local/bin/docker-compose')
     ]
+
+    ExternalCommand(DockerHost dockerHost) {
+        this.dockerHost = dockerHost
+    }
 
     int execute(List<String> cmd, Closure output, Closure input = null) {
         String c = bins[cmd[0]]
@@ -18,6 +27,12 @@ class ExternalCommand {
         }
         ProcessBuilder pb = new ProcessBuilder(cmd)
                 .redirectErrorStream(true)
+        Map<String, String> env = pb.environment()
+        if (dockerHost == null) {
+            // Don't change env
+        } else {
+            env.putAll(dockerHost.envVars)
+        }
         Process process = pb.start()
         if (input) {
             Thread.start {
@@ -47,14 +62,14 @@ class ExternalCommand {
      * @param suggestions
      * @return
      */
-    private static String findBinary(String name, String ...suggestions) {
+    private static String findBinary(String name, String... suggestions) {
         // TODO handle windows
-        File file = (File)path.findResult { String pathElement ->
+        File file = (File) path.findResult { String pathElement ->
             File f = new File(pathElement, name)
             f.canExecute() ? f : null
         }
         if (file == null) {
-            file = (File)suggestions.findResult { String suggestion ->
+            file = (File) suggestions.findResult { String suggestion ->
                 File f = new File(suggestion)
                 f.canExecute() ? f : null
             }

@@ -1,9 +1,16 @@
 package net.praqma.luci.docker
 
+import org.gradle.api.Project
 import org.junit.Test
+
+import javax.inject.Inject
 
 
 class DockerHostTest {
+
+    static DockerHost getHost() {
+        return DockerHost.fromEnv()
+    }
 
     @Test
     void testParseEnvVar() {
@@ -24,7 +31,8 @@ export DOCKER_MACHINE_NAME="lucibox"
 
     @Test
     void testBoundPorts() {
-        DockerHost h = DockerHost.fromVariables(DOCKER_HOST: 'tcp://localhost:2375')
+        if (System.properties['lucitest'] == null) return
+        DockerHost h = host
         h.boundPorts()
     }
 }

@@ -1,6 +1,7 @@
 package net.praqma.luci.model
 
 import groovy.transform.CompileStatic
+import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 
 @CompileStatic
@@ -45,6 +46,10 @@ abstract class BaseServiceModel {
 
     void preStart() {
 
+    }
+
+    DockerHost getDockerHost() {
+        return box.dockerHost
     }
 
     String getContainerName() {
