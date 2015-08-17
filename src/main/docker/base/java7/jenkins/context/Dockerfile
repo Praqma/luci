@@ -46,7 +46,6 @@ COPY credentials.xml /usr/share/jenkins/ref/
 COPY generateJenkinsConfigXml.sh /luci/bin/
 COPY generateJenkinsLocateConfiguration.sh /luci/bin/
 COPY createStaticSlaves.sh /luci/bin/
-COPY connectSlave.sh /luci/bin/
 
 COPY slaves.conf /luci/etc/
 COPY cli.sh /usr/local/bin/
