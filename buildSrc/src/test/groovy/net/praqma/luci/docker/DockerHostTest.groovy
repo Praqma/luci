@@ -1,10 +1,6 @@
 package net.praqma.luci.docker
 
-import org.gradle.api.Project
 import org.junit.Test
-
-import javax.inject.Inject
-
 
 class DockerHostTest {
 
