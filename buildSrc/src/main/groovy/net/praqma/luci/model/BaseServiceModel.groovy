@@ -24,13 +24,14 @@ abstract class BaseServiceModel {
     Map buildComposeMap(Context context) {
         List<String> volumes_from = []
         if (useDataContainer == null ? box.useDataContainer : useDataContainer) {
-            volumes_from << ("${box.name}_data" as String)
+            volumes_from << ("${box.name}__data" as String)
         }
         Map answer = [
                 image         : dockerImage,
                 extra_hosts   : [lucibox: context.internalLuciboxIp],
                 container_name: containerName,
-                volumes_from  : volumes_from
+                volumes_from  : volumes_from,
+                labels        : ['net.praqma.lucibox.name': box.name as String, 'net.praqma.lucibox.kind': 'service']
         ]
         addToComposeMap(answer, context)
         return answer

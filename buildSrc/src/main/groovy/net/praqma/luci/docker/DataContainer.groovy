@@ -14,7 +14,8 @@ class DataContainer {
 
     DataContainer(LuciboxModel box, DockerHost host, String name) {
         this.box = box
-        this.name = "${box.name}_data_${name}"
+        this.name = "${box.name}__data_${name}"
+        // two underscored on purpose, used to distinguish service and data containers
         this.ec = new ExternalCommand(host)
     }
 
@@ -25,7 +26,10 @@ class DataContainer {
 
     void create() {
         List<String> v = volumes.collect { ['-v', it] }.flatten()
-        List<String> cmd = ['docker', 'create'] + v + ['--name', name, 'debian:jessie']
+        List<String> cmd = ['docker', 'create'] + v +
+                ['--name', name,
+                 '-l', 'net.praqma.lucibox.kind=data', '-l', "net.praqma.lucibox.name=${box.name}" as String,
+                 'debian:jessie']
         ec.execute(cmd, null)
     }
 
