@@ -1,9 +1,12 @@
 package net.praqma.luci.model
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import net.praqma.luci.docker.DataContainer
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
 
+@CompileStatic
 class JenkinsModel extends BaseServiceModel {
 
     int slaveAgentPort = -1 // -1 => Let LUCI assing port
@@ -13,13 +16,14 @@ class JenkinsModel extends BaseServiceModel {
 
     private Map<String, StaticSlaveModel> staticSlaves = [:]
 
-    private pluginList = []
+    private List<String> pluginList = []
 
     void plugins(String... plugins) {
         pluginList.addAll(plugins)
     }
 
     @Override
+    @CompileDynamic
     void addToComposeMap(Map map, Context context) {
         super.addToComposeMap(map, context)
         map.command = ['-d', 'luci-slave-data',
@@ -60,6 +64,7 @@ class JenkinsModel extends BaseServiceModel {
     /**
      * Execute a cli command against jenkins
      */
+    @CompileDynamic
     void cli(List<String> cmd, Closure input) {
         new ExternalCommand(dockerHost).execute(["docker", "exec", "${box.name}_${ServiceEnum.JENKINS.name}", *cmd], null, input)
     }
@@ -70,7 +75,7 @@ class JenkinsModel extends BaseServiceModel {
         }
         // Create data container with slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
-        DataContainer data = new DataContainer(box, dockerHost, 'jenkinsSlave')
+        DataContainer data = new DataContainer('debian:jessie', box, dockerHost, 'jenkinsSlave')
         DataContainer.Volume volume = data.volume('/luci/data/jenkinsSlave')
         data.create()
         Closure c = { InputStream inputStream ->
