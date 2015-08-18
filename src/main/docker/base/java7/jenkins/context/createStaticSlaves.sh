@@ -2,8 +2,10 @@
 
 nodesDir=${JENKINS_HOME:-/var/jenkins_home}/nodes/
 for s in "$@" ; do
-    echo "Creating node '$s'"
-    slaveName=$s
+    slave=(${s//:/ })
+    slaveName=${slave[0]}
+    executors=${slave[1]}
+    echo "Creating name node '$slaveName'"
     dir="$nodesDir/$slaveName"
     mkdir -p $dir
     cat > "$dir/config.xml" <<EOF
@@ -11,8 +13,8 @@ for s in "$@" ; do
 <slave>
   <name>$slaveName</name>
   <description></description>
-  <remoteFS></remoteFS>
-  <numExecutors>2</numExecutors>
+  <remoteFS>/var/jenkins</remoteFS>
+  <numExecutors>$executors</numExecutors>
   <mode>NORMAL</mode>
   <retentionStrategy class="hudson.slaves.RetentionStrategy\$Always"/>
   <launcher class="hudson.slaves.JNLPLauncher"/>

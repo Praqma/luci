@@ -7,13 +7,18 @@ luci {
   boxes {
     demo {
       // socatForTlsHackPort = 2375
+
+      // Use data container so service containers and be deleted without losing data.
+      // This can also be specified on individual services
+      useDataContainer = true
       
       service ('jenkins') {
         // List of plugins to install. Explicit version numbers or none for latest (or latest)
         // Hmmm, maybe I don't know what chucknorris is, but I don't see Chuck anywhere, but it is in the list of installed plugins
-        plugins 'chucknorris:0.5', 'greenballs'
+        // plugins 'chucknorris:0.5', 'greenballs' 
         
         staticSlave('default') {
+          executors = 3 // default is 2
           dockerImage = 'luci/java7:0.2'
         }
         staticSlave('anotherSlave') {
@@ -24,6 +29,7 @@ luci {
       
     // Declare a new Lucibox named 'dummy'
     abc {
+      
       port = 8090
       // socatForTlsHackPort = 2374
       
@@ -33,9 +39,13 @@ luci {
       
       // Configure a declared serviced
       jenkins {
+        // Set executors on Masters. Defautls is none
+        executors = 5
+        
          // Add a number of static slaves
         (1..2).each {
           staticSlave("worker$it") {
+            executors = 1 // no effect currently
             dockerImage = 'luci/java7:0.2'
           }
         }

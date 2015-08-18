@@ -12,6 +12,10 @@ class StaticSlaveModel extends BaseServiceModel {
 
     String slaveName
 
+    List<String> labels = []
+
+    int executors = 2
+
     void dockerImage(String image) {
         this.dockerImage = image
     }
@@ -23,7 +27,7 @@ class StaticSlaveModel extends BaseServiceModel {
         map.image = dockerImage
         map.links = ["${ServiceEnum.WEBFRONTEND.name}:nginx" as String, "${ServiceEnum.JENKINS.name}:master" as String]
         map.command = ['sh', '/luci/data/jenkinsSlave/slaveConnect.sh', slaveName]
-        map.volumes_from = ["${box.name}_data_jenkinsSlave" as String]
+        map.volumes_from = ["${box.name}__data_jenkinsSlave" as String]
     }
 
 }

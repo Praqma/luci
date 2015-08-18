@@ -15,7 +15,7 @@ class JenkinsModel extends BaseServiceModel {
 
     private pluginList = []
 
-    void plugins(String ...plugins) {
+    void plugins(String... plugins) {
         pluginList.addAll(plugins)
     }
 
@@ -26,9 +26,13 @@ class JenkinsModel extends BaseServiceModel {
                        '-c', "http://${context.box.dockerHost.host}" as String,
                        '-j', "http://${context.box.dockerHost.host}/jenkins" as String,
                        '-e', 'luci@praqma.net',
+                       '-x', executors as String,
                        '-a', slaveAgentPort as String]
         if (staticSlaves.size() > 0) {
-            map.command << '-s' << staticSlaves.keySet().join(' ')
+            // A slave is represented as <name>:<executors>
+            Collection<String> args = staticSlaves.values().collect { StaticSlaveModel m ->
+                "${m.slaveName}:${m.executors}"}
+            map.command << '-s' << args.join(' ')
         }
         if (pluginList.size() > 0) {
             map.command << '-p' << pluginList.join(' ')
@@ -79,6 +83,7 @@ class JenkinsModel extends BaseServiceModel {
 
     // Map of slave agent ports assigned to a lucibox
     private static Map<String, Integer> assingedPorts = [:]
+
     private int assignSlaveAgentPort() {
         if (assingedPorts[box.name] != null) return assingedPorts[box.name]
         Set<Integer> ports = assingedPorts.values() as Set
