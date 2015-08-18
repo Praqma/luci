@@ -54,7 +54,7 @@ class JenkinsModel extends BaseServiceModel {
      * Execute a cli command against jenkins
      */
     void cli(List<String> cmd, Closure input) {
-        new ExternalCommand(dockerHost).execute(["docker", "exec", "${box.name}_jenkins_1", *cmd], null, input)
+        new ExternalCommand(dockerHost).execute(["docker", "exec", "${box.name}_${ServiceEnum.JENKINS.name}", *cmd], null, input)
     }
 
     void preStart() {
@@ -72,10 +72,6 @@ class JenkinsModel extends BaseServiceModel {
         int rc = new ExternalCommand(dockerHost).execute(['docker', 'run', '--rm', dockerImage, 'unzip', '-p', '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar'], c)
         assert rc == 0
         volume.file('slaveConnect.sh').addResource('scripts/connectSlave.sh')
-    }
-
-    private void createSecretsContainer(String containerName) {
-        "docker run luci/tools:0.2 "
     }
 
     // Map of slave agent ports assigned to a lucibox
