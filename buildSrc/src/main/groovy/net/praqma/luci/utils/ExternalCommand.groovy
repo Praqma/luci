@@ -21,6 +21,7 @@ class ExternalCommand {
     }
 
     int execute(List<String> cmd, Closure output, Closure input = null) {
+        assert cmd.findAll { it == null }.empty
         String c = bins[cmd[0]]
         if (c) {
             cmd = ([c] + cmd[1..-1]) as List<String>
