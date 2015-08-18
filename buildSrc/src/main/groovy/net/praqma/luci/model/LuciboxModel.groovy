@@ -2,6 +2,7 @@ package net.praqma.luci.model
 
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
+import net.praqma.luci.utils.ExternalCommand
 import org.yaml.snakeyaml.Yaml
 
 class LuciboxModel {
@@ -93,6 +94,6 @@ class LuciboxModel {
     }
 
     private void createDataContainer() {
-
+        new ExternalCommand(dockerHost).execute(['docker', 'create', "--name=${name}__data" as String, "luci/data:0.2"], null)
     }
 }

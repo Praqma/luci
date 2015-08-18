@@ -8,6 +8,9 @@ class JenkinsModel extends BaseServiceModel {
 
     int slaveAgentPort = -1 // -1 => Let LUCI assing port
 
+    /** Number of executors for master */
+    int executors = 0
+
     private Map<String, StaticSlaveModel> staticSlaves = [:]
 
     private pluginList = []

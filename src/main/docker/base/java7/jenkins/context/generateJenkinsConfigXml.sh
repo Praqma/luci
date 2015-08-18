@@ -4,6 +4,7 @@
 dataContainer=$1
 dockerUrl=$2
 slaveAgentPort=$3
+executors=$4
 
 #define the template.
 cat  << EOF
@@ -11,7 +12,7 @@ cat  << EOF
 <hudson>
   <disabledAdministrativeMonitors/>
   <version>1.609.1</version>
-  <numExecutors>2</numExecutors>
+  <numExecutors>$executors</numExecutors>
   <mode>NORMAL</mode>
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.AuthorizationStrategy\$Unsecured"/>

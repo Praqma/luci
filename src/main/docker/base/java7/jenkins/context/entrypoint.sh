@@ -3,8 +3,9 @@
 set -e
 
 slaveAgentPort=50000
+executors=0
 
-while getopts "d:c:j:e:s:a:p:" arg; do
+while getopts "d:c:j:e:s:a:p:x:" arg; do
   case $arg in
     d) dataContainer=$OPTARG ;;  # Name of data container that is used by slaves
     c) dockerUrl=$OPTARG ;;      # Url for (non-TLS) docker host to run slaves in                    
@@ -13,6 +14,7 @@ while getopts "d:c:j:e:s:a:p:" arg; do
     s) staticSlaves=$OPTARG ;;   # List of names of static slaves
     a) slaveAgentPort=$OPTARG ;; # Port for communicating with slave agent
     p) plugins=$OPTARG ;;        # Plugins to install
+    x) executors=$OPTARG ;;      # Number of executors on masters
   esac
 done
 
@@ -21,7 +23,7 @@ shift $((OPTIND-1))
 export JENKINS_SLAVE_AGENT_PORT=$slaveAgentPort
 
 # Generate configuragtion files
-/luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl $slaveAgentPort > /usr/share/jenkins/ref/config.xml
+/luci/bin/generateJenkinsConfigXml.sh $dataContainer $dockerUrl $slaveAgentPort $executors > /usr/share/jenkins/ref/config.xml
 /luci/bin/generateJenkinsLocateConfiguration.sh $jenkinsUrl $adminEmail > /usr/share/jenkins/ref/jenkins.model.JenkinsLocationConfiguration.xml
 
 echo "Installing plugins: $plugins"
