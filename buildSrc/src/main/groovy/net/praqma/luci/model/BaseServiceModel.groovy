@@ -24,7 +24,7 @@ abstract class BaseServiceModel {
     Map buildComposeMap(Context context) {
         List<String> volumes_from = []
         if (useDataContainer == null ? box.useDataContainer : useDataContainer) {
-            volumes_from << ("${box.name}__data" as String)
+            volumes_from << ("${box.name}__data_storage" as String)
         }
         Map answer = [
                 image         : dockerImage,

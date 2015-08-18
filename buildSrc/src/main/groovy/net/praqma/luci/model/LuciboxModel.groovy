@@ -1,5 +1,6 @@
 package net.praqma.luci.model
 
+import net.praqma.luci.docker.DataContainer
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
@@ -94,6 +95,6 @@ class LuciboxModel {
     }
 
     private void createDataContainer() {
-        new ExternalCommand(dockerHost).execute(['docker', 'create', "--name=${name}__data" as String, "luci/data:0.2"], null)
+        new DataContainer('luci/data:0.2', this, dockerHost, 'storage').create()
     }
 }

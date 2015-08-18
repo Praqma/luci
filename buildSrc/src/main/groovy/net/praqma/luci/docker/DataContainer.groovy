@@ -2,17 +2,22 @@ package net.praqma.luci.docker
 
 import com.google.common.io.ByteStreams
 import com.google.common.io.Files
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
+@CompileStatic
 class DataContainer {
 
+    private String dockerImage
     private String name
     private LuciboxModel box
     private Set<String> volumes = [] as Set
     private ExternalCommand ec
 
-    DataContainer(LuciboxModel box, DockerHost host, String name) {
+    DataContainer(String dockerImage, LuciboxModel box, DockerHost host, String name) {
+        this.dockerImage = dockerImage
         this.box = box
         this.name = "${box.name}__data_${name}"
         // two underscored on purpose, used to distinguish service and data containers
@@ -24,13 +29,14 @@ class DataContainer {
         return new Volume(v)
     }
 
+    @CompileDynamic
     void create() {
         List<String> v = volumes.collect { ['-v', it] }.flatten()
         List<String> cmd = ['docker', 'create'] + v +
                 ['--name', name,
                  '-l', 'net.praqma.lucibox.kind=data', '-l', "net.praqma.lucibox.name=${box.name}" as String,
-                 'debian:jessie']
-        ec.execute(cmd, null)
+                 dockerImage]
+        ec.execute(cmd, null, null)
     }
 
     class Volume {
