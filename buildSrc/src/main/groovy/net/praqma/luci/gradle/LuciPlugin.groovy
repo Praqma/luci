@@ -45,13 +45,23 @@ class LuciPlugin implements Plugin<Project> {
 
             Task upTask = tasks.create("${taskNamePrefix}Up") {
                 group 'luci'
-                description "Bring '${box.name}' up"
+                description "Bring up '${box.name}'"
                 dependsOn prepareTask
                 doFirst {
                     new ExternalCommand(box.dockerHost).execute(['docker-compose', '-f', yaml.path, 'up', '-d']) {
-                        it.eachLine { print it }
+                        it.eachLine { println it }
                     }
-                    println "Lucibox '${box.name}' starting at http://${box.dockerHost.host}:${box.port}"
+                    println ""
+                    println "Lucibox '${box.name}' running at http://${box.dockerHost.host}:${box.port}"
+                    println "docker-compose yaml file is at ${yaml.toURL()}"
+                }
+            }
+
+            Task downTask = tasks.create("${taskNamePrefix}Down") {
+                group 'luci'
+                description "Take down '${box.name}'"
+                doFirst {
+                    // to be implemented
                 }
             }
         }
