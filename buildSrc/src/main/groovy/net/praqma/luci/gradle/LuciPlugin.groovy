@@ -53,7 +53,7 @@ class LuciPlugin implements Plugin<Project> {
                     }
                     println ""
                     println "Lucibox '${box.name}' running at http://${box.dockerHost.host}:${box.port}"
-                    println "docker-compose yaml file is at ${yaml.toURL()}"
+                    println "docker-compose yaml file is at ${yaml.toURI().toURL()}"
                 }
             }
 
