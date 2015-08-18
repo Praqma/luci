@@ -76,7 +76,7 @@ class ExternalCommand {
             }
         }
         if (file == null) {
-            throw new RuntimeException("Can find executable for '${name}'")
+            throw new RuntimeException("Cannot find executable for '${name}'")
         }
         return file?.path
     }
