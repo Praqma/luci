@@ -43,7 +43,7 @@ luci {
         
          // Add a number of static slaves
         (1..2).each { int index -> 
-          staticSlave("worker$it") {
+          staticSlave("worker$index") {
             // set executors on slaves 
             executors = index
             dockerImage = 'luci/java7:0.2'
