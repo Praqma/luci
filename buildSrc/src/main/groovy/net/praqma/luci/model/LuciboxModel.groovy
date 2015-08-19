@@ -1,10 +1,13 @@
 package net.praqma.luci.model
 
+import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DataContainer
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
 import org.yaml.snakeyaml.Yaml
+
+import java.awt.Container
 
 class LuciboxModel {
 
@@ -97,4 +100,62 @@ class LuciboxModel {
     private void createDataContainer() {
         new DataContainer('luci/data:0.2', this, dockerHost, 'storage').create()
     }
+
+    /**
+     * Bring up this Lucibox.
+     */
+    void bringUp(File workDir) {
+        preStart()
+        Context context = new Context(box: this, internalLuciboxIp: dockerHost.host)
+        workDir.mkdirs()
+        File yaml = new File(workDir, 'docker-compose.yml')
+        new FileWriter(yaml).withWriter { Writer w ->
+            generateDockerComposeYaml(context, w)
+        }
+        new ExternalCommand(dockerHost).execute(['docker-compose', '-f', yaml.path, 'up', '-d']) {
+            it.eachLine { println it }
+        }
+        println ""
+        println "Lucibox '${name}' running at http://${dockerHost.host}:${port}"
+        println "docker-compose yaml file is at ${yaml.toURI().toURL()}"
+    }
+
+    /**
+     * Take down the Lucibox.
+     * <p>
+     * That is stop and remove all service containers.
+     */
+    void takeDown() {
+        removeContainers(ContainerKind.SERVICE)
+    }
+
+    /**
+     * Destroy the Lucibox.
+     * <p>
+     * Stop and remove all containers (including data containers) related to this Lucibox.
+     */
+    void destroy() {
+        removeContainers()
+    }
+
+    private void removeContainers(ContainerKind...kinds) {
+        if (kinds.length == 0) {
+
+        }
+        List<String> ids = []
+        new ExternalCommand(dockerHost).execute([
+                'docker', 'ps', '-a', '--format=\'{{.ID}} {{.Label "net.praqma.lucibox.name"}} {{.Label "net.praqma.lucibox.kind"}}\'',
+                    "--filter='na   me=${name}'" as String], {
+            it.eachLine { String line ->
+                def (id, boxName, kind) = line.split(' ')
+                if (kinds.length == 0 || kinds.find { it.name().toLowerCase() == kind} != null) {
+                    if (boxName == name) {
+                        ids << id
+                    }
+                }
+            }
+        }, null)
+        dockerHost.removeContainers(ids)
+    }
+
 }

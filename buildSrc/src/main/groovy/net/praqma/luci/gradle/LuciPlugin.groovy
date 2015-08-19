@@ -26,42 +26,36 @@ class LuciPlugin implements Plugin<Project> {
     void createTasks(Project project) {
         TaskContainer tasks = project.tasks
         project.luci.boxes.each { LuciboxModel box ->
+            if (box.dockerHost == null) {
+                box.dockerHost = defaultDockerHost(project)
+            }
             // Task to generate docker-compose yaml and other things needed
             // to star the lucibox
             String taskNamePrefix = "luci${box.name.capitalize()}"
+            String taskGroup = "lucibox ${box.name.capitalize()}"
             File dir = project.file("${project.buildDir}/luciboxes/${box.name}")
-            File yaml = project.file("${dir}/docker-compose.yml")
-            Task prepareTask = tasks.create("${taskNamePrefix}Prepare") {
-                group 'luci'
-                doFirst {
-                    box.preStart(defaultDockerHost(project))
-                    Context context = new Context(box: box, internalLuciboxIp: box.dockerHost.host)
-                    dir.mkdirs()
-                    new FileWriter(yaml).withWriter { Writer w ->
-                        box.generateDockerComposeYaml(context, w)
-                    }
-                }
-            }
 
-            Task upTask = tasks.create("${taskNamePrefix}Up") {
-                group 'luci'
+            tasks.create("${taskNamePrefix}Up") {
+                group taskGroup
                 description "Bring up '${box.name}'"
-                dependsOn prepareTask
                 doFirst {
-                    new ExternalCommand(box.dockerHost).execute(['docker-compose', '-f', yaml.path, 'up', '-d']) {
-                        it.eachLine { println it }
-                    }
-                    println ""
-                    println "Lucibox '${box.name}' running at http://${box.dockerHost.host}:${box.port}"
-                    println "docker-compose yaml file is at ${yaml.toURI().toURL()}"
+                    box.bringUp(dir)
                 }
             }
 
-            Task downTask = tasks.create("${taskNamePrefix}Down") {
-                group 'luci'
+            tasks.create("${taskNamePrefix}Down") {
+                group taskGroup
                 description "Take down '${box.name}'"
                 doFirst {
-                    // to be implemented
+                    box.takeDown()
+                }
+            }
+
+            tasks.create("${taskNamePrefix}Destroy") {
+                group taskGroup
+                description "Destroy '${box.name}', delete all containers includeing data containers"
+                doFirst {
+                    box.destroy()
                 }
             }
         }

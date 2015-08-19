@@ -1,5 +1,7 @@
 package net.praqma.luci.docker
 
+import net.praqma.luci.gradle.LuciPlugin
+import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
 
@@ -83,7 +85,6 @@ class DockerHost {
      * @return All ports that a bound on the host
      */
     Collection<Integer> boundPorts() {
-        // TODO execute on this host
         Collection<Integer> answer = [] as Set
         new ExternalCommand(this).execute(['docker', 'ps', "--format='{{.Ports}}'"]) { InputStream stream ->
             stream.eachLine { String line ->
@@ -93,6 +94,9 @@ class DockerHost {
         return answer
     }
 
+    void removeContainers(List<String> ids) {
+        new ExternalCommand(this).execute(['docker', 'rm', '-fv', *ids], null)
+    }
     private Collection<Integer> extractBoundPortsFromLine(String line) {
         Collection<Integer> ports = []
         line.split(',').each { s ->
