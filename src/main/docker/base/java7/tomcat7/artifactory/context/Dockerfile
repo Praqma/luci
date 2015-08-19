@@ -1,4 +1,4 @@
-FROM luci/tomcat7:0.1
+FROM luci/tomcat7:0.2
 
 # To update, check https://bintray.com/jfrog/artifactory/artifactory/view
 ENV ARTIFACTORY_VERSION 3.9.2
