@@ -2,6 +2,7 @@
 
 doPush='no'
 
+# TODO This logic doesn't work with spaces in file names
 abspath=$(cd ${0%/*} && echo $PWD)
 luciRoot=$(dirname $abspath)
 
