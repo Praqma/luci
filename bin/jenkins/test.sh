@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 # Execute test on Jenkins
 
 LUCI_ROOT=$(realpath $1)
@@ -15,9 +17,9 @@ echo "--- end ---"
 
 $LUCI_ROOT/bin/buildAllImages.sh
 
-./gradlew luciDemoUp
+./gradlew luciDemoUp -s
 sleep 20
-./gradlew luciDemoDestroy
+./gradlew luciDemoDestroy -s
 
 echo "Containers after tests:"
 docker ps -a
