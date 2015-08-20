@@ -3,6 +3,7 @@ package net.praqma.luci.model
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import net.praqma.luci.docker.DataContainer
+import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
 
@@ -26,16 +27,21 @@ class JenkinsModel extends BaseServiceModel {
     @CompileDynamic
     void addToComposeMap(Map map, Context context) {
         super.addToComposeMap(map, context)
+
+
+        DockerHost h = context.box.dockerHost
+        String url = "http://${h.host}:${h.port}"
         map.command = ['-d', 'luci-slave-data',
-                       '-c', "http://${context.box.dockerHost.host}" as String,
-                       '-j', "http://${context.box.dockerHost.host}/jenkins" as String,
+                       '-c', "http://${h.host}:${h.port}" as String,
+                       '-j', "http://${h.host}:${box.port}/jenkins" as String,
                        '-e', 'luci@praqma.net',
                        '-x', executors as String,
                        '-a', slaveAgentPort as String]
         if (staticSlaves.size() > 0) {
-            // A slave is represented as <name>:<executors>
+            // A slave is represented as <name>:<executors>:label1:label2:...
             Collection<String> args = staticSlaves.values().collect { StaticSlaveModel m ->
-                "${m.slaveName}:${m.executors}"}
+                String labelString = m.labels.collect { ":${it}"}.join()
+                "${m.slaveName}:${m.executors}" + labelString }
             map.command << '-s' << args.join(' ')
         }
         if (pluginList.size() > 0) {
@@ -73,7 +79,7 @@ class JenkinsModel extends BaseServiceModel {
         if (slaveAgentPort == -1) {
             slaveAgentPort = assignSlaveAgentPort()
         }
-        // Create data container with slave.jar and slaveConnect.sh script
+        // Create mixin container java, and slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
         DataContainer data = new DataContainer('luci/mixin-java8:0.2', box, dockerHost, 'jenkinsSlave')
         DataContainer.Volume volume = data.volume('/luci/data/jenkinsSlave')
