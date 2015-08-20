@@ -14,6 +14,7 @@ class LuciPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        project.apply(plugin: 'base')
         project.extensions.create('luci', LuciExtension, project)
 
         def boxes = project.container(LuciboxModel)
