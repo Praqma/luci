@@ -12,16 +12,8 @@ class DockerHost {
         return fromEnvVarsString(s)
     }
 
-    static DockerHost fromBoot2docker(String name) {
-        assert false
-    }
-
-    static DockerHost localhost() {
-        assert false
-    }
-
     static DockerHost fromEnv() {
-        return (System.getenv("DOCKER_HOST")) ? fromVariables(System.getenv()) : null
+        return (System.getenv("DOCKER_HOST") != null) ? fromVariables(System.getenv()) : null
     }
 
     static DockerHost fromVariables(Map<String, String> map) {
@@ -37,6 +29,8 @@ class DockerHost {
         h.tls = dockerTlsVerify == "1"
         if (dockerCertPath) {
             h.certPath = new File(dockerCertPath).absoluteFile
+        } else {
+            h.certPath = null
         }
         return h
     }

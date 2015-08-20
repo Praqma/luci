@@ -25,8 +25,16 @@ class ExternalCommand {
         if (dockerHost == null) {
             // Don't change env
         } else {
-            env.putAll(dockerHost.envVars)
+            Map<String, String> m = dockerHost.envVars
+            m.each { key, value ->
+                if (value == null) {
+                    env.remove(key)
+                } else {
+                    env[key] = value
+                }
+            }
         }
+
         Process process = pb.start()
         if (input) {
             Thread.start {
