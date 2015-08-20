@@ -26,7 +26,7 @@ docker ps -a
 echo "--- end ---"
 
 echo "New Docker volumes"
-docker run --rm -v /var/lib/docker:/docker debian:jessie ls -1 /docker/volumes | grep -Fxv -f /tmp/luci-volumes.txt
+docker run --rm -v /var/lib/docker:/docker debian:jessie ls -1 /docker/volumes | grep -Fxv -f /tmp/luci-volumes.txt || true
 echo "--- end ---"
 
 exit $rc
