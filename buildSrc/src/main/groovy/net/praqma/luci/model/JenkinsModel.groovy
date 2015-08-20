@@ -75,9 +75,10 @@ class JenkinsModel extends BaseServiceModel {
         }
         // Create data container with slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
-        DataContainer data = new DataContainer('debian:jessie', box, dockerHost, 'jenkinsSlave')
+        DataContainer data = new DataContainer('luci/mixin-java8:0.2', box, dockerHost, 'jenkinsSlave')
         DataContainer.Volume volume = data.volume('/luci/data/jenkinsSlave')
         data.create()
+
         Closure c = { InputStream inputStream ->
             volume.file('slave.jar').addStream(inputStream)
         }

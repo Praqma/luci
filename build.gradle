@@ -46,7 +46,7 @@ luci {
           staticSlave("worker$index") {
             // set executors on slaves 
             executors = index
-            dockerImage = 'luci/java7:0.2'
+            dockerImage = 'debian:jessie'
           }
         }
       }

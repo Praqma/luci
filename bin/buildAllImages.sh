@@ -34,6 +34,7 @@ build data 0.2 &
 build tools 0.2 &
 (
     build base 0.2
+    build base/mixin-java8 0.2 &
     build base/nginx 0.2 &
     (
         build base/java7 0.2
