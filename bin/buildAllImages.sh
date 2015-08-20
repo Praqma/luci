@@ -5,6 +5,8 @@ doPush='no'
 abspath=$(cd ${0%/*} && echo $PWD)
 luciRoot=$(dirname $abspath)
 
+echo "luciRoot: $luciRoot"
+
 function buildHelper {
     local path=$1
     local name=$2
