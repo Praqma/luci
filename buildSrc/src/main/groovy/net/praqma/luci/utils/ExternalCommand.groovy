@@ -9,20 +9,13 @@ class ExternalCommand {
     /** Docker commands are executed against this docker host */
     private DockerHost dockerHost
 
-    private static Map<String, String> bins = [
-            // Needs some smarts to find binaries
-            'docker'        : findBinary('docker', '/usr/local/bin/docker'),
-            'docker-machine': findBinary('docker-machine', '/usr/local/bin/docker-machine'),
-            'docker-compose': findBinary('docker-compose', '/usr/local/bin/docker-compose')
-    ]
-
     ExternalCommand(DockerHost dockerHost) {
         this.dockerHost = dockerHost
     }
 
     int execute(List<String> cmd, Closure output, Closure input = null) {
         assert cmd.findAll { it == null }.empty
-        String c = bins[cmd[0]]
+        String c = Binary.known[cmd[0]]?.executable
         if (c) {
             cmd = ([c] + cmd[1..-1]) as List<String>
         }
@@ -75,9 +68,7 @@ class ExternalCommand {
                 f.canExecute() ? f : null
             }
         }
-        if (file == null) {
-            throw new RuntimeException("Cannot find executable for '${name}'")
-        }
         return file?.path
     }
+
 }

@@ -4,6 +4,7 @@ import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
+import net.praqma.luci.utils.SystemCheck
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -25,6 +26,18 @@ class LuciPlugin implements Plugin<Project> {
 
     void createTasks(Project project) {
         TaskContainer tasks = project.tasks
+
+        // General Luci tasks
+        tasks.create('luciSystemCheck') {
+            group 'luci'
+            description "Check the systems fitness for playing wiht Luci"
+
+            doFirst {
+                new SystemCheck(new PrintWriter(System.out)).perform()
+            }
+        }
+
+        // Box specific tasks
         project.luci.boxes.each { LuciboxModel box ->
             if (box.dockerHost == null) {
                 box.dockerHost = defaultDockerHost(project)
