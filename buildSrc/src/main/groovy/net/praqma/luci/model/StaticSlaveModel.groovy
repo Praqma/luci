@@ -20,6 +20,10 @@ class StaticSlaveModel extends BaseServiceModel {
         this.dockerImage = image
     }
 
+    void labels(String ...names) {
+        this.labels.addAll(names)
+    }
+
     @Override
     void addToComposeMap(Map map, Context context) {
         assert box != null

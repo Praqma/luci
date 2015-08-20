@@ -5,6 +5,7 @@ for s in "$@" ; do
     slave=(${s//:/ })
     slaveName=${slave[0]}
     executors=${slave[1]}
+    labels=${slave[@]:2}
     echo "Creating name node '$slaveName'"
     dir="$nodesDir/$slaveName"
     mkdir -p $dir
@@ -18,7 +19,7 @@ for s in "$@" ; do
   <mode>NORMAL</mode>
   <retentionStrategy class="hudson.slaves.RetentionStrategy\$Always"/>
   <launcher class="hudson.slaves.JNLPLauncher"/>
-  <label></label>
+  <label>$labels</label>
   <nodeProperties/>
   <userId>anonymous</userId>
 </slave>
