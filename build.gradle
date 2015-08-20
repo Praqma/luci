@@ -4,6 +4,8 @@ apply plugin: net.praqma.luci.gradle.LuciPlugin
 luci {
 
   boxes {
+
+    // A Lucibox name 'demo'
     demo {
       // socatForTlsHackPort = 2375
 
@@ -18,15 +20,17 @@ luci {
         
         staticSlave('default') {
           executors = 3 // default is 2
-          dockerImage = 'luci/java7:0.2'
+          dockerImage = 'debian:jessie'
+          labels 'one'
         }
         staticSlave('anotherSlave') {
-          dockerImage = 'luci/java7:0.2'
+          dockerImage = 'debian:jessie'
+          labels 'two', 'three'
         }
       }
     }
       
-    // Declare a new Lucibox named 'dummy'
+    // A Lucibox named 'showcase'
     showcase {
       
       port = 8090
