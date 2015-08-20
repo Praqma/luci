@@ -21,7 +21,7 @@ class DockerHost {
     }
 
     static DockerHost fromEnv() {
-        fromVariables(System.getenv())
+        return (System.getenv("DOCKER_HOST")) ? fromVariables(System.getenv()) : null
     }
 
     static DockerHost fromVariables(Map<String, String> map) {

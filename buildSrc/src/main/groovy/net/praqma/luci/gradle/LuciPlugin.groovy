@@ -81,7 +81,6 @@ class LuciPlugin implements Plugin<Project> {
             project.logger.lifecycle("Default dockerhost is '${dockerMachine}'")
             host = DockerHost.fromDockerMachine(dockerMachine)
         } else {
-            project.logger.lifecycle("Default dockerhost is defined by env vars")
             host = DockerHost.fromEnv()
         }
         return host
