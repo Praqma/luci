@@ -20,6 +20,13 @@ It is possible to specify a Docker machine to create the Lucibox on. A default D
 specified by the Gradle Project Property 'dockerMachine'. E.g. with '-PdockerMachine=MyLuciHost' on the command line,
 see http://mrhaki.blogspot.dk/2010/09/gradle-goodness-different-ways-to-set.html for other possibilities.
 
+### Check your environment
+
+You must have Java installed to execute the Gradle script.
+
+Execute './gradlew luciCheckSystem' to make Luci check if your system is ready for Luci. Make sure you have the
+required tools installed, and your version isn't too old.
+
 ### Start and stop a Luci box
 
 In the build.gradle file a few example Luciboxes are defined. If you want to spin up 'demo' you execute
