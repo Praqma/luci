@@ -6,7 +6,7 @@ RUN sed -i 's|session    required     pam_loginuid.so|session    optional     pa
 RUN mkdir -p /var/run/sshd
 
 RUN mkdir ~/.ssh && chmod 700 ~/.ssh
-RUN ln -s /data/server-keys/authorized_keys ~/.ssh/authorized_keys
+RUN ln -s /luci/data/jenkinsSlave/authorized_keys ~/.ssh/authorized_keys
 
 # Set new password for luci, for slave usage
 RUN echo "luci:praqma" | chpasswd

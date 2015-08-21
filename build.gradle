@@ -27,6 +27,10 @@ luci {
           dockerImage = 'debian:jessie'
           labels 'two', 'three'
         }
+
+        onDemandSlave('shell') {
+          dockerImage 'luci/slave-shell:0.2'
+        }
       }
     }
       
