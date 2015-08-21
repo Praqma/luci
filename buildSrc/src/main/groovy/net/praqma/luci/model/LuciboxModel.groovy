@@ -166,7 +166,6 @@ class LuciboxModel {
 
     private void removeContainers(ContainerKind... kinds) {
         Collection<ContainerInfo> containers = containers(kinds).values()
-        println "JHS " + containers
         if (containers.size() > 0) {
             dockerHost.removeContainers(containers*.id)
         }
