@@ -1,6 +1,8 @@
 package net.praqma.luci.model
 
 import groovy.transform.CompileStatic
+import net.praqma.luci.docker.ContainerInfo
+import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 
@@ -24,14 +26,16 @@ abstract class BaseServiceModel {
     Map buildComposeMap(Context context) {
         List<String> volumes_from = []
         if (useDataContainer == null ? box.useDataContainer : useDataContainer) {
-            volumes_from << ("${box.name}__data_storage" as String)
+            volumes_from << ("${context.containers.storage.name}" as String)
         }
         Map answer = [
                 image         : dockerImage,
                 extra_hosts   : [lucibox: context.internalLuciboxIp],
                 container_name: containerName,
                 volumes_from  : volumes_from,
-                labels        : ['net.praqma.lucibox.name': box.name as String, 'net.praqma.lucibox.kind': 'service']
+                labels        : [(ContainerInfo.BOX_NAME_LABEL)          : box.name,
+                                 (ContainerInfo.CONTAINER_KIND_LABEL)    : ContainerKind.SERVICE.name(),
+                                 (ContainerInfo.CONTAINER_LUCINAME_LABEL): serviceName]
         ]
         addToComposeMap(answer, context)
         return answer
@@ -45,7 +49,7 @@ abstract class BaseServiceModel {
 
     }
 
-    void preStart() {
+    void preStart(Context context) {
 
     }
 

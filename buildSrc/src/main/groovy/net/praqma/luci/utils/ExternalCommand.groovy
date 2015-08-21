@@ -55,6 +55,10 @@ class ExternalCommand {
         return process.exitValue()
     }
 
+    int execute(String ...cmd) {
+        return execute(cmd as List<String>, null, null)
+    }
+
     private static String[] path = System.getenv('PATH').split(File.pathSeparator)
     /**
      * Find a binary on the PATH and if not there look for the first

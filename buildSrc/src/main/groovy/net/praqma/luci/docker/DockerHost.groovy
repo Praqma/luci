@@ -88,7 +88,7 @@ class DockerHost {
         return answer
     }
 
-    void removeContainers(List<String> ids) {
+    void removeContainers(Collection<String> ids) {
         new ExternalCommand(this).execute(['docker', 'rm', '-fv', *ids], null)
     }
     private Collection<Integer> extractBoundPortsFromLine(String line) {

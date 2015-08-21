@@ -1,13 +1,12 @@
 package net.praqma.luci.model
 
+import net.praqma.luci.docker.Container
+import net.praqma.luci.docker.ContainerInfo
 import net.praqma.luci.docker.ContainerKind
-import net.praqma.luci.docker.DataContainer
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
 import org.yaml.snakeyaml.Yaml
-
-import java.awt.Container
 
 class LuciboxModel {
 
@@ -90,13 +89,40 @@ class LuciboxModel {
      * This is for example use to create data containers and other containers that
      * isn't defined in the docker-compose
      */
-    void preStart() {
-        createDataContainer()
-        serviceMap.values().each { it.preStart() }
+    void preStart(Context context) {
+        Container con = createDataContainer()
+        context.containers[con.luciName] = con
+        serviceMap.values().each { it.preStart(context) }
     }
 
-    private void createDataContainer() {
-        new DataContainer('luci/data:0.2', this, dockerHost, 'storage').create()
+    private Container createDataContainer() {
+        Container con = new net.praqma.luci.docker.Container('luci/data:0.2', this, dockerHost, ContainerKind.STORAGE, 'storage')
+        con.create()
+        return con
+    }
+
+    /**
+     * @return Containers belonging to this Lucibox
+     */
+    Map<String, ContainerInfo> containers(ContainerKind... kinds) {
+        Map<String, ContainerInfo> containers = [:]
+        // The format option for docker ps is not able to show name. It would be nice if it could
+        new ExternalCommand(dockerHost).execute([
+                'docker', 'ps', '-a', '--format=\'{{.Label "net.praqma.lucibox.name"}} {{.Label "net.praqma.lucibox.luciname"}} {{.Label "net.praqma.lucibox.kind"}} {{.ID}} {{.Status}}\'',
+                "--filter='na   me=${name}'" as String], {
+            it.eachLine { String line ->
+                def (boxName, luciName, kind, id, status) = line.split(' ')
+                if (kinds.length == 0 || kinds.find { it.name().toLowerCase() == kind } != null) {
+                    if (boxName == name) {
+                        def old = containers.put(luciName, new ContainerInfo(id, luciName, kind, status))
+                        if (old != null) {
+                            throw new IllegalStateException("Multiple container named '${luciName}' in box '${boxName}'")
+                        }
+                    }
+                }
+            }
+        }, null)
+        return containers
     }
 
     /**
@@ -106,8 +132,8 @@ class LuciboxModel {
         // Take down any containers that should happend to run, before bringing it up
         takeDown()
 
-        preStart()
         Context context = new Context(box: this, internalLuciboxIp: dockerHost.host)
+        preStart(context)
         workDir.mkdirs()
         File yaml = new File(workDir, 'docker-compose.yml')
         new FileWriter(yaml).withWriter { Writer w ->
@@ -139,24 +165,11 @@ class LuciboxModel {
         removeContainers()
     }
 
-    private void removeContainers(ContainerKind...kinds) {
-        if (kinds.length == 0) {
-
+    private void removeContainers(ContainerKind... kinds) {
+        Collection<String> containers = containers(kinds).values()
+        if (containers.size() > 0) {
+            dockerHost.removeContainers(containers*.id)
         }
-        List<String> ids = []
-        new ExternalCommand(dockerHost).execute([
-                'docker', 'ps', '-a', '--format=\'{{.ID}} {{.Label "net.praqma.lucibox.name"}} {{.Label "net.praqma.lucibox.kind"}}\'',
-                    "--filter='na   me=${name}'" as String], {
-            it.eachLine { String line ->
-                def (id, boxName, kind) = line.split(' ')
-                if (kinds.length == 0 || kinds.find { it.name().toLowerCase() == kind} != null) {
-                    if (boxName == name) {
-                        ids << id
-                    }
-                }
-            }
-        }, null)
-        dockerHost.removeContainers(ids)
     }
 
 }

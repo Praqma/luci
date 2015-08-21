@@ -2,7 +2,8 @@ package net.praqma.luci.model
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import net.praqma.luci.docker.DataContainer
+import net.praqma.luci.docker.Container
+import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
@@ -16,6 +17,8 @@ class JenkinsModel extends BaseServiceModel {
     int executors = 0
 
     private Map<String, StaticSlaveModel> staticSlaves = [:]
+
+    private Map<String, OnDemandSlaveModel> onDemandSlaves = [:]
 
     private List<String> pluginList = []
 
@@ -60,11 +63,19 @@ class JenkinsModel extends BaseServiceModel {
 
     void staticSlave(String slaveName, Closure closure) {
         StaticSlaveModel slave = new StaticSlaveModel()
-        slave.with closure
         slave.slaveName = slaveName
+        slave.with closure
         slave.serviceName = "${ServiceEnum.JENKINS.name}${slaveName.capitalize()}"
         slave.box = box
         staticSlaves[slaveName] = slave
+    }
+
+    void onDemandSlave(String slaveName, Closure closure) {
+        OnDemandSlaveModel slave = new OnDemandSlaveModel()
+        slave.slaveName = slaveName
+        slave.with closure
+        slave.box = box
+        onDemandSlaves[slaveName] = slave
     }
 
     /**
@@ -75,14 +86,15 @@ class JenkinsModel extends BaseServiceModel {
         new ExternalCommand(dockerHost).execute(["docker", "exec", "${box.name}_${ServiceEnum.JENKINS.name}", *cmd], null, input)
     }
 
-    void preStart() {
+    void preStart(Context context) {
         if (slaveAgentPort == -1) {
             slaveAgentPort = assignSlaveAgentPort()
         }
         // Create mixin container java, and slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
-        DataContainer data = new DataContainer('luci/mixin-java8:0.2', box, dockerHost, 'jenkinsSlave')
-        DataContainer.Volume volume = data.volume('/luci/data/jenkinsSlave')
+        Container data = new Container('luci/mixin-java8:0.2', box, dockerHost, ContainerKind.CACHE, 'jenkinsSlave')
+        context.containers['jenkinsSlave'] = data
+        Container.Volume volume = data.volume('/luci/data/jenkinsSlave')
         data.create()
 
         Closure c = { InputStream inputStream ->
@@ -91,6 +103,8 @@ class JenkinsModel extends BaseServiceModel {
         int rc = new ExternalCommand(dockerHost).execute(['docker', 'run', '--rm', dockerImage, 'unzip', '-p', '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar'], c)
         assert rc == 0
         volume.file('slaveConnect.sh').addResource('scripts/connectSlave.sh')
+
+        createSshKeysContainer()
     }
 
     // Map of slave agent ports assigned to a lucibox
@@ -108,4 +122,16 @@ class JenkinsModel extends BaseServiceModel {
         return port
     }
 
+    @CompileStatic
+    Container createSshKeysContainer(String containerName = 'sshkeys') {
+        // Create container with private/public keys for ssh
+        Container keys = new Container('busybox', box, dockerHost, ContainerKind.CACHE, containerName)
+        keys.remove()
+        Container.Volume volume = keys.volume '/luci/sshkeys'
+        keys.create()
+        new ExternalCommand(dockerHost).execute('docker', 'run', '--rm', '--volumes-from', keys.name, 'luci/tools:0.2',
+                                                 'ssh-keygen', '-t', 'rsa', '-b', '2048', '-C', 'jenkins@luci', '-f',
+                                                 '/luci/sshkeys/id_rsa', '-q', '-N', '')
+        return keys
+    }
 }

@@ -27,7 +27,6 @@ export DOCKER_MACHINE_NAME="lucibox"
 
     @Test
     void testBoundPorts() {
-        if (System.properties['lucitest'] == null) return
         DockerHost h = host
         h.boundPorts()
     }

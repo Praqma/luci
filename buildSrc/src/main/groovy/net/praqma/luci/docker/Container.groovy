@@ -7,21 +7,32 @@ import groovy.transform.CompileStatic
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
+/**
+ * Class to create classes that is not part of the docker-compose.
+ * <p>
+ * Only services containers are created with docker-compose
+ */
 @CompileStatic
-class DataContainer {
+class Container {
 
     private String dockerImage
-    private String name
+    final String luciName
+    private ContainerKind kind
     private LuciboxModel box
     private Set<String> volumes = [] as Set
     private ExternalCommand ec
 
-    DataContainer(String dockerImage, LuciboxModel box, DockerHost host, String name) {
+    Container(String dockerImage, LuciboxModel box, DockerHost host, ContainerKind kind, String name) {
         this.dockerImage = dockerImage
         this.box = box
-        this.name = "${box.name}__data_${name}"
+        this.luciName = name
+        this.kind = kind
         // two underscored on purpose, used to distinguish service and data containers
         this.ec = new ExternalCommand(host)
+    }
+
+    String getName() {
+        return "${box.name}__${luciName}"
     }
 
     Volume volume(String v) {
@@ -34,9 +45,18 @@ class DataContainer {
         List<String> v = volumes.collect { ['-v', it] }.flatten()
         List<String> cmd = ['docker', 'create'] + v +
                 ['--name', name,
-                 '-l', 'net.praqma.lucibox.kind=data', '-l', "net.praqma.lucibox.name=${box.name}" as String,
+                 '-l', "${ContainerInfo.CONTAINER_KIND_LABEL}=data" as String,
+                 '-l', "${ContainerInfo.BOX_NAME_LABEL}=${box.name}" as String,
+                 '-l', "${ContainerInfo.CONTAINER_LUCINAME_LABEL}=${luciName}" as String,
                  dockerImage]
         ec.execute(cmd, null, null)
+    }
+
+    /**
+     * Remove the underlying docker container if exists
+     */
+    void remove() {
+        ec.execute('docker', 'rm', '-fv', name)
     }
 
     class Volume {
@@ -79,7 +99,11 @@ class DataContainer {
         }
 
         void addResource(String resource) {
-            addStream getClass().classLoader.getResourceAsStream(resource)
+            InputStream stream = Thread.currentThread().contextClassLoader.getResourceAsStream(resource)
+            if (stream == null) {
+                throw new IllegalArgumentException("Unable to find resouces '${resource}'")
+            }
+            addStream(stream)
         }
 
     }
