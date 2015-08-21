@@ -86,13 +86,11 @@ class LuciboxModel {
 
     /**
      * Call before starting the lucibox
-     *
-     * @param dockerHost If no docker host has been defined use this one for the lucibox
+     * <p>
+     * This is for example use to create data containers and other containers that
+     * isn't defined in the docker-compose
      */
-    void preStart(DockerHost dockerHost) {
-        if (this.dockerHost == null) {
-            this.dockerHost = dockerHost
-        }
+    void preStart() {
         createDataContainer()
         serviceMap.values().each { it.preStart() }
     }
@@ -105,6 +103,9 @@ class LuciboxModel {
      * Bring up this Lucibox.
      */
     void bringUp(File workDir) {
+        // Take down any containers that should happend to run, before bringing it up
+        takeDown()
+
         preStart()
         Context context = new Context(box: this, internalLuciboxIp: dockerHost.host)
         workDir.mkdirs()
