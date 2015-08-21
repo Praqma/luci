@@ -9,13 +9,13 @@ class ExternalCommandTest {
     @Test
     void testExecute() {
         ExternalCommand cmd = new ExternalCommand()
-        int exitCode = cmd.execute(["wc", "-l"], null) { OutputStream stream ->
-            stream.withPrintWriter { PrintWriter writer ->
-                writer.println("one")
-                writer.println("two")
-            }
-            stream.close()
+        Closure input = { OutputStream os ->
+            os << "HelloWorld\n"
         }
+        Closure output = { InputStream is ->
+            assert is.readLines()[0] == '11'
+        }
+        int exitCode = cmd.execute('sh', '-c', 'read x ; echo $x | wc -c', in: input, out: output)
         assert exitCode == 0
     }
 }

@@ -8,14 +8,7 @@ class OnDemandSlaveModel extends BaseServiceModel {
 
     String slaveName
 
-    List<String> labels = []
-
     void dockerImage(String image) {
         this.dockerImage = image
     }
-
-    void labels(String ...names) {
-        this.labels.addAll(names)
-    }
-
 }

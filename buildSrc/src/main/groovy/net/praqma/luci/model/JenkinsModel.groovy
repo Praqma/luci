@@ -47,6 +47,12 @@ class JenkinsModel extends BaseServiceModel {
                 "${m.slaveName}:${m.executors}" + labelString }
             map.command << '-s' << args.join(' ')
         }
+        if (onDemandSlaves.size() > 0) {
+            // A slave is represented as <image>:<name>
+            Collection<String> args = onDemandSlaves.values().collect { OnDemandSlaveModel m ->
+                "${m.dockerImage}:${m.slaveName}" }
+            map.command << '-t' << args.join(' ')
+        }
         if (pluginList.size() > 0) {
             map.command << '-p' << pluginList.join(' ')
         }
@@ -100,7 +106,8 @@ class JenkinsModel extends BaseServiceModel {
         Closure c = { InputStream inputStream ->
             volume.file('slave.jar').addStream(inputStream)
         }
-        int rc = new ExternalCommand(dockerHost).execute(['docker', 'run', '--rm', dockerImage, 'unzip', '-p', '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar'], c)
+        int rc = new ExternalCommand(dockerHost).execute('docker', 'run', '--rm', dockerImage, 'unzip', '-p',
+                '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar', out: c, err: System.err)
         assert rc == 0
         volume.file('slaveConnect.sh').addResource('scripts/connectSlave.sh')
 

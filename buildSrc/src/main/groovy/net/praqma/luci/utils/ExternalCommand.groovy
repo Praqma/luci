@@ -1,5 +1,7 @@
 package net.praqma.luci.utils
 
+import com.google.common.io.ByteStreams
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import net.praqma.luci.docker.DockerHost
 
@@ -13,14 +15,18 @@ class ExternalCommand {
         this.dockerHost = dockerHost
     }
 
-    int execute(List<String> cmd, Closure output, Closure input = null) {
+    @CompileDynamic
+    int execute(String... cmd) {
+        return execute([:], *cmd)
+    }
+
+    int execute(Map mapArgs, String... cmd) {
         assert cmd.findAll { it == null }.empty
         String c = Binary.known[cmd[0]]?.executable
         if (c) {
-            cmd = ([c] + cmd[1..-1]) as List<String>
+            cmd = ([c] + cmd[1..-1])
         }
         ProcessBuilder pb = new ProcessBuilder(cmd)
-                .redirectErrorStream(true)
         Map<String, String> env = pb.environment()
         if (dockerHost == null) {
             // Don't change env
@@ -36,27 +42,50 @@ class ExternalCommand {
         }
 
         Process process = pb.start()
-        if (input) {
-            Thread.start {
-                def stream = new BufferedOutputStream(process.outputStream)
-                input(stream)
-                stream.flush()
-            }
-        }
-        if (output == null) {
-            output = { InputStream stream ->
-                stream.eachLine { String line -> println line }
-            }
-        }
-        if (output) {
-            output(process.inputStream)
-        }
+
+        Thread t1 = inThread(mapArgs.in ?: System.in, process.outputStream)
+        Thread t2 = outThread(mapArgs.out ?: System.out, process.inputStream)
+        Thread t3 = outThread(mapArgs.err ?: System.err, process.errorStream)
+
         process.waitFor()
+        // wait for t2 and t3 to finish, i.e. all output of the process has been processed
+        t2.join()
+        t3.join()
+        // t1 might still be running waiting for input to be consumed. Close the
+        // stream it is writing to
+        process.outputStream.close()
+
         return process.exitValue()
     }
 
-    int execute(String ...cmd) {
-        return execute(cmd as List<String>, null, null)
+    private Thread inThread(input, OutputStream outputStream) {
+        return Thread.start {
+            switch (input) {
+                case InputStream:
+                    ByteStreams.copy(input as InputStream, outputStream)
+                    break
+                case Closure:
+                    (input as Closure)(outputStream)
+                    break
+                default:
+                    throw new IllegalArgumentException()
+            }
+        }
+    }
+
+    private Thread outThread(output, InputStream inputStream) {
+        return Thread.start {
+            switch (output) {
+                case OutputStream:
+                    ByteStreams.copy(inputStream, output as OutputStream)
+                    break
+                case Closure:
+                    (output as Closure)(inputStream)
+                    break
+                default:
+                    throw new IllegalArgumentException()
+            }
+        }
     }
 
     private static String[] path = System.getenv('PATH').split(File.pathSeparator)

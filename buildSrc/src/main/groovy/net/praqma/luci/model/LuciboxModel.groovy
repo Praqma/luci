@@ -107,12 +107,12 @@ class LuciboxModel {
     Map<String, ContainerInfo> containers(ContainerKind... kinds) {
         Map<String, ContainerInfo> containers = [:]
         // The format option for docker ps is not able to show name. It would be nice if it could
-        new ExternalCommand(dockerHost).execute([
+        new ExternalCommand(dockerHost).execute(
                 'docker', 'ps', '-a', '--format=\'{{.Label "net.praqma.lucibox.name"}} {{.Label "net.praqma.lucibox.luciname"}} {{.Label "net.praqma.lucibox.kind"}} {{.ID}} {{.Status}}\'',
-                "--filter='na   me=${name}'" as String], {
+                "--filter='name=${name}'" as String, out: {
             it.eachLine { String line ->
                 def (boxName, luciName, kind, id, status) = line.split(' ')
-                if (kinds.length == 0 || kinds.find { it.name().toLowerCase() == kind } != null) {
+                if (kinds.length == 0 || kinds.find { it.name() == kind } != null) {
                     if (boxName == name) {
                         def old = containers.put(luciName, new ContainerInfo(id, luciName, kind, status))
                         if (old != null) {
@@ -121,7 +121,7 @@ class LuciboxModel {
                     }
                 }
             }
-        }, null)
+        })
         return containers
     }
 
@@ -139,9 +139,8 @@ class LuciboxModel {
         new FileWriter(yaml).withWriter { Writer w ->
             generateDockerComposeYaml(context, w)
         }
-        new ExternalCommand(dockerHost).execute(['docker-compose', '-f', yaml.path, 'up', '-d']) {
-            it.eachLine { println it }
-        }
+        new ExternalCommand(dockerHost).execute('docker-compose', '-f', yaml.path, 'up', '-d')
+
         println ""
         println "Lucibox '${name}' running at http://${dockerHost.host}:${port}"
         println "docker-compose yaml file is at ${yaml.toURI().toURL()}"
@@ -166,7 +165,8 @@ class LuciboxModel {
     }
 
     private void removeContainers(ContainerKind... kinds) {
-        Collection<String> containers = containers(kinds).values()
+        Collection<ContainerInfo> containers = containers(kinds).values()
+        println "JHS " + containers
         if (containers.size() > 0) {
             dockerHost.removeContainers(containers*.id)
         }

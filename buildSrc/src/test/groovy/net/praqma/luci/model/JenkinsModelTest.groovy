@@ -24,12 +24,7 @@ class JenkinsModelTest {
         // Verify the sshkeys container
         //new ExternalCommand(model.dockerHost).execute('docker', 'run ','--volumes-from', keys.name, 'debian:jessie', 'ls', '-l', '/luci/sshkeys')
 
-        new ExternalCommand(model.dockerHost).execute('docker', 'ps', '-a')
-
         def containers = box.containers()
-
-        println 'JHS'
-        println containers
 
         assert containers.sshkeys != null
 

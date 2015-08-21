@@ -1,10 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 # define parameters which are passed in.
 dataContainer=$1
 dockerUrl=$2
 slaveAgentPort=$3
 executors=$4
+dynamicSlaves=$5
 
 #define the template.
 cat  << EOF
@@ -32,9 +33,10 @@ cat << CLOUD_HEADER
       <name>LocalDocker</name>
       <templates>
 CLOUD_HEADER
-cat /luci/etc/slaves.conf | while read line ; do
-    slaveName=$(echo $line | awk '{ print $1 }')
-    slaveImage=$(echo $line | awk '{ print $2 }')
+for d in $dynamicSlaves ; do
+    ds=(${d//:/ })
+    slaveImage=${ds[0]}
+    slaveName=${ds[1]}
     cat << CLOUD_TEMPLATE
     <com.nirima.jenkins.plugins.docker.DockerTemplate>
       <configVersion>1</configVersion>

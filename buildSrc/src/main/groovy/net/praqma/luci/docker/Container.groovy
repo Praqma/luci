@@ -43,13 +43,11 @@ class Container {
     @CompileDynamic
     void create() {
         List<String> v = volumes.collect { ['-v', it] }.flatten()
-        List<String> cmd = ['docker', 'create'] + v +
-                ['--name', name,
-                 '-l', "${ContainerInfo.CONTAINER_KIND_LABEL}=data" as String,
+        ec.execute('docker', 'create', *v, '--name', name,
+                 '-l', "${ContainerInfo.CONTAINER_KIND_LABEL}=${kind.name()}" as String,
                  '-l', "${ContainerInfo.BOX_NAME_LABEL}=${box.name}" as String,
                  '-l', "${ContainerInfo.CONTAINER_LUCINAME_LABEL}=${luciName}" as String,
-                 dockerImage]
-        ec.execute(cmd, null, null)
+                 dockerImage)
     }
 
     /**
@@ -91,9 +89,7 @@ class Container {
             ByteStreams.copy(stream, new FileOutputStream(tempFile))
 
             String completePath = f.parent ? new File(new File(volume.path), f.parent).absolutePath : volume.path
-            ec.execute(['docker', 'cp', tempFile.absolutePath, "${name}:${completePath}" as String], null) { OutputStream out ->
-                ByteStreams.copy(stream, out)
-            }
+            ec.execute('docker', 'cp', tempFile.absolutePath, "${name}:${completePath}" as String)
             tempFile.delete()
             tempDir.delete()
         }

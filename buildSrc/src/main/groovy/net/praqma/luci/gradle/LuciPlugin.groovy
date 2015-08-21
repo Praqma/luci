@@ -47,12 +47,13 @@ class LuciPlugin implements Plugin<Project> {
             // to star the lucibox
             String taskNamePrefix = "luci${box.name.capitalize()}"
             String taskGroup = "lucibox ${box.name.capitalize()}"
-            File dir = project.file("${project.buildDir}/luciboxes/${box.name}")
 
             tasks.create("${taskNamePrefix}Up") {
                 group taskGroup
                 description "Bring up '${box.name}'"
                 doFirst {
+                    File dir = project.file("${project.buildDir}/luciboxes/${box.name}")
+                    dir.mkdirs()
                     box.bringUp(dir)
                 }
             }

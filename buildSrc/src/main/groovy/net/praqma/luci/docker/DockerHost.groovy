@@ -80,16 +80,16 @@ class DockerHost {
      */
     Collection<Integer> boundPorts() {
         Collection<Integer> answer = [] as Set
-        new ExternalCommand(this).execute(['docker', 'ps', "--format='{{.Ports}}'"]) { InputStream stream ->
+        new ExternalCommand(this).execute('docker', 'ps', "--format='{{.Ports}}'", out: { InputStream stream ->
             stream.eachLine { String line ->
                 answer.addAll(extractBoundPortsFromLine(line))
             }
-        }
+        })
         return answer
     }
 
     void removeContainers(Collection<String> ids) {
-        new ExternalCommand(this).execute(['docker', 'rm', '-fv', *ids], null)
+        new ExternalCommand(this).execute('docker', 'rm', '-fv', *ids)
     }
     private Collection<Integer> extractBoundPortsFromLine(String line) {
         Collection<Integer> ports = []
