@@ -1,9 +1,6 @@
 package net.praqma.luci.model
 
 import groovy.transform.CompileStatic
-import groovy.xml.MarkupBuilder
-import net.praqma.luci.model.yaml.Context
-
 
 @CompileStatic
 class StaticSlaveModel extends BaseServiceModel {

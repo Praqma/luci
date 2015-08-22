@@ -1,4 +1,4 @@
-package net.praqma.luci.model.yaml
+package net.praqma.luci.model
 
 import groovy.transform.Immutable
 import net.praqma.luci.docker.Container
@@ -14,7 +14,11 @@ class Context {
 
     Map<String, Container> containers = [:]
 
-
+    /**
+     *
+     * @param volumes
+     * @return
+     */
     String[] volumesFromArgs(String ...volumes) {
         return volumes.collect {
             ["--volumes-from", containers[it].name]

@@ -1,7 +1,6 @@
 package net.praqma.luci.model
 
 import groovy.transform.Immutable
-import net.praqma.luci.model.yaml.Context
 
 class NginxModel extends BaseServiceModel {
 

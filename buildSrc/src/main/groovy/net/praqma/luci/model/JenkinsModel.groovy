@@ -5,7 +5,6 @@ import groovy.transform.CompileStatic
 import net.praqma.luci.docker.Container
 import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
-import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
 
 @CompileStatic

@@ -8,7 +8,7 @@ import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
 /**
- * Class to create classes that is not part of the docker-compose.
+ * Class to represent containers.
  * <p>
  * Only services containers are created with docker-compose
  */

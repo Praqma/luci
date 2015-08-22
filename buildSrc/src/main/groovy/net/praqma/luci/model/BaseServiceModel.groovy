@@ -4,7 +4,6 @@ import groovy.transform.CompileStatic
 import net.praqma.luci.docker.ContainerInfo
 import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
-import net.praqma.luci.model.yaml.Context
 
 @CompileStatic
 abstract class BaseServiceModel {

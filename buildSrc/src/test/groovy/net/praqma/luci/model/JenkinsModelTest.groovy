@@ -1,7 +1,6 @@
 package net.praqma.luci.model
 
 import net.praqma.luci.docker.DockerHostTest
-import net.praqma.luci.model.yaml.Context
 import net.praqma.luci.utils.ExternalCommand
 import org.junit.Test
 
