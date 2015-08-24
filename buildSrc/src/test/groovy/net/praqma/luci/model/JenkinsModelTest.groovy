@@ -17,7 +17,7 @@ class JenkinsModelTest {
 
         }
         JenkinsModel model = box.properties.jenkins
-        Context ctx = new Context(box: box)
+        Context ctx = new Context('1.2.3.4', box)
         model.preStart(ctx)
 
         // Verify the sshkeys container
