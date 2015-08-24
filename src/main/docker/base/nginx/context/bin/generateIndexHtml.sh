@@ -12,7 +12,7 @@ cat <<EOF
     <h1>LUCIBOX $name</h1>
     <ul>
     $(for s in $services ; do
-      echo "<li><a href="/$s">$s</a></li>"
+      echo "<li><a href="/$s/">$s</a></li>"
     done)
     </ul>
   </body>
