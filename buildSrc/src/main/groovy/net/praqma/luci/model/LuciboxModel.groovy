@@ -90,7 +90,7 @@ class LuciboxModel {
      */
     void preStart(Context context) {
         Container con = createDataContainer()
-        context.containers[con.luciName] = con
+        context.addContainer(con)
         serviceMap.values().each { it.preStart(context) }
     }
 
@@ -131,7 +131,7 @@ class LuciboxModel {
         // Take down any containers that should happend to run, before bringing it up
         takeDown()
 
-        Context context = new Context(box: this, internalLuciboxIp: dockerHost.host)
+        Context context = new Context(dockerHost.host, this)
         preStart(context)
         workDir.mkdirs()
         File yaml = new File(workDir, 'docker-compose.yml')

@@ -27,7 +27,6 @@ class Container {
         this.box = box
         this.luciName = name
         this.kind = kind
-        // two underscored on purpose, used to distinguish service and data containers
         this.ec = new ExternalCommand(host)
     }
 

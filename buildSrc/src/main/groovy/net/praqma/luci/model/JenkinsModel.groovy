@@ -58,7 +58,7 @@ class JenkinsModel extends BaseServiceModel {
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
         //map.ports << '10080:8080' // Enter container without nginx, for debug
-        map.volumes_from << context.containers.sshkeys.name
+        map.volumes_from << context.containerName('sshkeys')
     }
 
     void addServicesToMap(Map<String, ?> map, Context context) {
@@ -101,7 +101,7 @@ class JenkinsModel extends BaseServiceModel {
         // Create mixin container java, and slave.jar and slaveConnect.sh script
         // used by static slaves to connect to master
         Container data = new Container('luci/mixin-java8:0.2', box, dockerHost, ContainerKind.CACHE, 'jenkinsSlave')
-        context.containers['jenkinsSlave'] = data
+        context.addContainer(data)
         Container.Volume volume = data.volume('/luci/data/jenkinsSlave')
         data.create()
 
