@@ -34,7 +34,7 @@ cat << CLOUD_HEADER
       <templates>
 CLOUD_HEADER
 for d in $dynamicSlaves ; do
-    ds=(${d//:/ })
+    ds=(${d//@/ })
     slaveImage=${ds[0]}
     slaveName=${ds[1]}
     cat << CLOUD_TEMPLATE

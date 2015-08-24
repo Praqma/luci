@@ -7,7 +7,7 @@ luci {
 
     // A Lucibox name 'demo'
     demo {
-      // socatForTlsHackPort = 2375
+      socatForTlsHackPort = 2375
 
       // Use data container so service containers and be deleted without losing data.
       // This can also be specified on individual services
@@ -17,6 +17,7 @@ luci {
         // List of plugins to install. Explicit version numbers or none for latest (or latest)
         // Hmmm, maybe I don't know what chucknorris is, but I don't see Chuck anywhere, but it is in the list of installed plugins
         // plugins 'chucknorris:0.5', 'greenballs' 
+
         
         staticSlave('default') {
           executors = 3 // default is 2
@@ -27,7 +28,7 @@ luci {
           dockerImage = 'debian:jessie'
           labels 'two', 'three'
         }
-
+        
         onDemandSlave('shell') {
           dockerImage 'luci/slave-shell:0.2'
         }

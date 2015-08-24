@@ -25,7 +25,7 @@ class LuciboxModel {
 
     DockerHost dockerHost
 
-    Integer socatForTlsHackPort
+    Integer socatForTlsHackPort = null
 
     LuciboxModel(String name) {
         this.name = name
@@ -41,12 +41,12 @@ class LuciboxModel {
         BaseServiceModel model = e.modelClass.newInstance()
         model.serviceName = serviceName
         model.box = this
-        model.dockerImage = e.dockerImage
+        model.dockerImage = e.dockerImage.imageString
         ServiceEnum old = serviceMap.put(e, model)
         if (old != null) {
             throw new RuntimeException("Double declaration of service '${serviceName}'")
         }
-        def m = this // Don't underthis it?!? Works when this is assigned to m, if using 'this' directly it doesn't
+        def m = this // Don't understand this?!? Works when this is assigned to m, if using 'this' directly it doesn't
         m.metaClass[serviceName] = { Closure c ->
             model.with c
         }

@@ -25,6 +25,18 @@ class JenkinsModel extends BaseServiceModel {
         pluginList.addAll(plugins)
     }
 
+    /**
+     *
+     * @return The port for the docker cloud
+     */
+    private int cloudPort() {
+        if (box.socatForTlsHackPort != null) {
+            return box.dockerHost.port
+        } else {
+            box.socatForTlsHackPort
+        }
+    }
+
     @Override
     @CompileDynamic
     void addToComposeMap(Map map, Context context) {
@@ -33,8 +45,8 @@ class JenkinsModel extends BaseServiceModel {
 
         DockerHost h = context.box.dockerHost
         String url = "http://${h.host}:${h.port}"
-        map.command = ['-d', 'luci-slave-data',
-                       '-c', "http://${h.host}:${h.port}" as String,
+        map.command = ['-d', context.jenkinsSlave(dockerHost).name,
+                       '-c', "http://${h.host}:${cloudPort()}" as String,
                        '-j', "http://${h.host}:${box.port}/jenkins" as String,
                        '-e', 'luci@praqma.net',
                        '-x', executors as String,
@@ -47,9 +59,9 @@ class JenkinsModel extends BaseServiceModel {
             map.command << '-s' << args.join(' ')
         }
         if (onDemandSlaves.size() > 0) {
-            // A slave is represented as <image>:<name>
+            // A slave is represented as <image>@<name>
             Collection<String> args = onDemandSlaves.values().collect { OnDemandSlaveModel m ->
-                "${m.dockerImage}:${m.slaveName}" }
+                "${m.dockerImage}@${m.slaveName}" }
             map.command << '-t' << args.join(' ')
         }
         if (pluginList.size() > 0) {
