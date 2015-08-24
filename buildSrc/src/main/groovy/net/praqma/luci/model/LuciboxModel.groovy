@@ -89,15 +89,7 @@ class LuciboxModel {
      * isn't defined in the docker-compose
      */
     void preStart(Context context) {
-        Container con = createDataContainer()
-        context.addContainer(con)
         serviceMap.values().each { it.preStart(context) }
-    }
-
-    private Container createDataContainer() {
-        Container con = new net.praqma.luci.docker.Container('luci/data:0.2', this, dockerHost, ContainerKind.STORAGE, 'storage')
-        con.create()
-        return con
     }
 
     /**

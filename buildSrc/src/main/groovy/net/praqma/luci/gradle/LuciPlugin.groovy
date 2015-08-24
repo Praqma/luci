@@ -32,13 +32,16 @@ class LuciPlugin implements Plugin<Project> {
 
             doFirst {
                 new SystemCheck(new PrintWriter(System.out)).perform()
+
+                println "Docker host: ${defaultDockerHost(project)}"
             }
         }
 
+        DockerHost defaultHost = defaultDockerHost(project)
         // Box specific tasks
         project.luci.boxes.each { LuciboxModel box ->
             if (box.dockerHost == null) {
-                box.dockerHost = defaultDockerHost(project)
+                box.dockerHost = defaultHost
             }
             // Task to generate docker-compose yaml and other things needed
             // to star the lucibox
@@ -80,7 +83,7 @@ class LuciPlugin implements Plugin<Project> {
             project.logger.lifecycle("Default dockerhost is '${dockerMachine}'")
             host = DockerHost.fromDockerMachine(dockerMachine)
         } else {
-            host = DockerHost.fromEnv()
+            host = DockerHost.getDefault()
         }
         return host
     }

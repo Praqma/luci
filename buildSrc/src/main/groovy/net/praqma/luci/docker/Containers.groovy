@@ -1,13 +1,14 @@
 package net.praqma.luci.docker
 
 import net.praqma.luci.model.LuciboxModel
+import net.praqma.luci.utils.ExternalCommand
 
 /**
  * Class to access and create on demand mixin containers
  */
 class Containers {
 
-    private Map<String, String> containers = [:]
+    private Map<String, Container> containers = [:]
 
     private LuciboxModel box
 
@@ -16,11 +17,11 @@ class Containers {
     }
 
     String get(String n) {
-        return containers[n]
+        return containers[n].name
     }
 
     void addContainer(Container con) {
-        containers[con.luciName] = con.name
+        containers[con.luciName] = con
     }
 
     /*
@@ -29,14 +30,80 @@ class Containers {
     }
     */
 
-    private mixin(DockerHost host, String mixinName, String image) {
-        String n = "mixin_${mixinName}"
-        if (containers[n] == null) {
-            Container container = new Container(image, box, host, ContainerKind.CACHE, n)
-            container.create()
-            containers[n] = container.name
+    /**
+     * Storage container for all services
+     */
+    Container storage(DockerHost host) {
+        return ensureContainerExists(host, 'storage', DockerImage.STORAGE, ContainerKind.CACHE)
+    }
+
+    Container sshKeys(DockerHost host) {
+        return ensureContainerExists(host, 'sshKeys', DockerImage.DATA,
+                ContainerKind.CACHE, volumes: '/luci/etc/sshkeys') { Container container ->
+            new ExternalCommand(host).execute('docker', 'run', '--rm', container.volumesFromArg, DockerImage.TOOLS.imageString,
+                    'ssh-keygen', '-t', 'rsa', '-b', '2048', '-C', 'jenkins@luci', '-f',
+                    '/luci/etc/sshkeys/id_rsa', '-q', '-N', '')
+
         }
-        return containers[n]
+    }
+
+    /**
+     * Data container for jenkins slaves
+     */
+    Container jenkinsSlave(DockerHost host) {
+        String vol = '/luci/data/jenkinsSlave'
+        Container con = ensureContainerExists(host, 'jenkinsSlave', DockerImage.MIXIN_JAVA8,
+                ContainerKind.CACHE, volumes: [vol]) { Container container ->
+            Container.Volume volume = container.volume(vol)
+
+            // Extract slave.jar from jenkins.war and store in the volume
+            Closure c = { InputStream inputStream ->
+                volume.file('slave.jar').addStream(inputStream)
+            }
+
+            def ec = new ExternalCommand(host)
+            int rc = ec.execute('docker', 'run', '--rm', DockerImage.SERVICE_JENKINS.imageString, 'unzip', '-p',
+                    '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar', out: c, err: System.err)
+            assert rc == 0
+
+            // Add slaveConnect script to container. Use for the slave to connect to master
+            volume.file('slaveConnect.sh').addResource('scripts/connectSlave.sh')
+
+            // Copy public key to jenkinsSlave as authorized keys
+            // so Jenkins master can ssh to the slaves
+            rc = ec.execute('docker', 'run', '--rm',
+                    sshKeys().volumesFromArg, container.volumesFromArg,
+                    DockerImage.TOOLS.imageString, 'cp', '/luci/etc/sshkeys/id_rsa.pub', '/luci/data/jenkinsSlave/authorized_keys')
+            assert rc == 0
+        }
+
+        return con
+    }
+
+    private Container ensureContainerExists(DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+        return ensureContainerExists([:], host, luciName, image, kind, initBlock)
+    }
+
+    private Container ensureContainerExists(Map<String, ?> args, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+        if (containers[luciName] == null) {
+            Container container = new Container(image, box, host, kind, luciName)
+            if (args.volumes) {
+                if (args.volumes instanceof String) {
+                    container.volume(args.volumes)
+                } else {
+                    args.volumes.each { String vol ->
+                        container.volume(vol)
+                    }
+                }
+            }
+            container.create()
+            if (initBlock != null) {
+                initBlock(container)
+            }
+            containers[luciName] = container
+        }
+        return containers[luciName]
 
     }
+
 }

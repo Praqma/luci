@@ -15,14 +15,14 @@ import net.praqma.luci.utils.ExternalCommand
 @CompileStatic
 class Container {
 
-    private String dockerImage
+    private DockerImage dockerImage
     final String luciName
     private ContainerKind kind
     private LuciboxModel box
     private Set<String> volumes = [] as Set
     private ExternalCommand ec
 
-    Container(String dockerImage, LuciboxModel box, DockerHost host, ContainerKind kind, String name) {
+    Container(DockerImage dockerImage, LuciboxModel box, DockerHost host, ContainerKind kind, String name) {
         this.dockerImage = dockerImage
         this.box = box
         this.luciName = name
@@ -43,10 +43,10 @@ class Container {
     void create() {
         List<String> v = volumes.collect { ['-v', it] }.flatten()
         ec.execute('docker', 'create', *v, '--name', name,
-                 '-l', "${ContainerInfo.CONTAINER_KIND_LABEL}=${kind.name()}" as String,
-                 '-l', "${ContainerInfo.BOX_NAME_LABEL}=${box.name}" as String,
-                 '-l', "${ContainerInfo.CONTAINER_LUCINAME_LABEL}=${luciName}" as String,
-                 dockerImage)
+                '-l', "${ContainerInfo.CONTAINER_KIND_LABEL}=${kind.name()}" as String,
+                '-l', "${ContainerInfo.BOX_NAME_LABEL}=${box.name}" as String,
+                '-l', "${ContainerInfo.CONTAINER_LUCINAME_LABEL}=${luciName}" as String,
+                dockerImage.imageString)
     }
 
     /**
@@ -66,6 +66,10 @@ class Container {
         VolumeFile file(String filePath) {
             return new VolumeFile(this, filePath)
         }
+    }
+
+    String getVolumesFromArg() {
+        return "--volumes-from=${name}"
     }
 
     class VolumeFile {

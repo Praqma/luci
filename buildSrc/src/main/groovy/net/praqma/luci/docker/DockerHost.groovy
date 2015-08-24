@@ -1,15 +1,28 @@
 package net.praqma.luci.docker
 
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import net.praqma.luci.gradle.LuciPlugin
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
-
+@CompileStatic
 class DockerHost {
 
     static DockerHost fromDockerMachine(String name) {
-        String s = "docker-machine env ${name}".execute().text
-        return fromEnvVarsString(s)
+        StringBuffer out = "" << ""
+        int rc = new ExternalCommand().execute('docker-machine', 'env', name, out: out)
+        assert rc == 0
+        return fromEnvVarsString(out.toString())
+    }
+
+    static DockerHost getDefault() {
+        String dockerMachine = System.properties['net.praqma.luci.dockerMachine']
+        if (dockerMachine != null) {
+            return fromDockerMachine(dockerMachine)
+        } else {
+            return fromEnv()
+        }
     }
 
     static DockerHost fromEnv() {
@@ -35,6 +48,7 @@ class DockerHost {
         return h
     }
 
+    @CompileDynamic
     static DockerHost fromEnvVarsString(String s) {
         Map<String, String> m = [:]
         s.readLines().each { String line ->
@@ -88,12 +102,14 @@ class DockerHost {
         return answer
     }
 
+    @CompileDynamic
     void removeContainers(Collection<String> ids) {
         new ExternalCommand(this).execute('docker', 'rm', '-fv', *ids)
     }
+
     private Collection<Integer> extractBoundPortsFromLine(String line) {
         Collection<Integer> ports = []
-        line.split(',').each { s ->
+        line.split(',').each { String s ->
             int arrayIndex = s.indexOf('->')
             int colonIndex = s.indexOf(':')
             if (arrayIndex && colonIndex > 0 && arrayIndex > colonIndex) {

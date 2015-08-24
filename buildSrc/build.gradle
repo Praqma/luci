@@ -20,4 +20,6 @@ test {
     testLogging {
         showStandardStreams = true
     }
+    // Pass on all luci properties to the test tasks
+    systemProperties System.properties.findAll { String key, value -> key.startsWith('net.praqma.luci')}
 }

@@ -11,7 +11,7 @@ class ExternalCommand {
     /** Docker commands are executed against this docker host */
     private DockerHost dockerHost
 
-    ExternalCommand(DockerHost dockerHost) {
+    ExternalCommand(DockerHost dockerHost = null) {
         this.dockerHost = dockerHost
     }
 
@@ -43,9 +43,9 @@ class ExternalCommand {
 
         Process process = pb.start()
 
-        Thread t1 = inThread(mapArgs.in ?: System.in, process.outputStream)
-        Thread t2 = outThread(mapArgs.out ?: System.out, process.inputStream)
-        Thread t3 = outThread(mapArgs.err ?: System.err, process.errorStream)
+        Thread t1 = inThread(mapArgs.in != null ? mapArgs.in : System.in, process.outputStream)
+        Thread t2 = outThread(mapArgs.out != null ? mapArgs.out : System.out, process.inputStream)
+        Thread t3 = outThread(mapArgs.err != null ? mapArgs.err : System.err, process.errorStream)
 
         process.waitFor()
         // wait for t2 and t3 to finish, i.e. all output of the process has been processed
@@ -68,7 +68,7 @@ class ExternalCommand {
                     (input as Closure)(outputStream)
                     break
                 default:
-                    throw new IllegalArgumentException()
+                    throw new IllegalArgumentException("Don't know how to read process input from '${input}'")
             }
         }
     }
@@ -76,6 +76,12 @@ class ExternalCommand {
     private Thread outThread(output, InputStream inputStream) {
         return Thread.start {
             switch (output) {
+                case StringBuffer:
+                    StringBuffer buffer = (StringBuffer) output
+                    inputStream.eachLine { String line ->
+                        buffer << line << "\n"
+                    }
+                    break
                 case OutputStream:
                     ByteStreams.copy(inputStream, output as OutputStream)
                     break
@@ -83,7 +89,7 @@ class ExternalCommand {
                     (output as Closure)(inputStream)
                     break
                 default:
-                    throw new IllegalArgumentException()
+                    throw new IllegalArgumentException("Don't know how to add process output to '${output}'")
             }
         }
     }

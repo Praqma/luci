@@ -13,29 +13,12 @@ class Context {
 
     LuciboxModel box
 
-    private Containers containers
+    @Delegate
+    final Containers containers
 
     Context(String internalLuciboxIp, LuciboxModel box) {
         this.internalLuciboxIp = internalLuciboxIp
         this.box = box
         this.containers = new Containers(box)
-    }
-/**
-     *
-     * @param volumes
-     * @return
-     */
-    String[] volumesFromArgs(String ...volumes) {
-        return volumes.collect {
-            ["--volumes-from", containerName(it)]
-        }.flatten()
-    }
-
-    void addContainer(Container con) {
-        this.containers.addContainer(con)
-    }
-
-    String containerName(String luciName) {
-        return this.containers[luciName]
     }
 }

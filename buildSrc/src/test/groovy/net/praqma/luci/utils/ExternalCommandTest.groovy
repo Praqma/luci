@@ -13,9 +13,24 @@ class ExternalCommandTest {
             os << "HelloWorld\n"
         }
         Closure output = { InputStream is ->
-            assert is.readLines()[0] == '11'
+            String firstLine = is.readLines()[0].trim()
+            assert firstLine == '11'
         }
         int exitCode = cmd.execute('sh', '-c', 'read x ; echo $x | wc -c', in: input, out: output)
         assert exitCode == 0
+    }
+
+    @Test
+    void testDockerComposeIsOnPath() {
+        int rc = new ExternalCommand().execute('docker-compose', '--version')
+        assert rc == 0
+    }
+
+    @Test
+    void testWriteToStringBuffer() {
+        StringBuffer buffer = "" << ""
+        new ExternalCommand().execute("echo", "abc", out: buffer)
+        assert buffer.toString().trim() == 'abc'
+
     }
 }

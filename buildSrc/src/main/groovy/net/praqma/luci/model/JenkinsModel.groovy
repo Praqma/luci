@@ -58,7 +58,7 @@ class JenkinsModel extends BaseServiceModel {
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
         //map.ports << '10080:8080' // Enter container without nginx, for debug
-        map.volumes_from << context.containerName('sshkeys')
+        map.volumes_from << context.sshKeys(dockerHost).name
     }
 
     void addServicesToMap(Map<String, ?> map, Context context) {
@@ -97,30 +97,6 @@ class JenkinsModel extends BaseServiceModel {
         if (slaveAgentPort == -1) {
             slaveAgentPort = assignSlaveAgentPort()
         }
-        context.addContainer(createSshKeysContainer())
-        // Create mixin container java, and slave.jar and slaveConnect.sh script
-        // used by static slaves to connect to master
-        Container data = new Container('luci/mixin-java8:0.2', box, dockerHost, ContainerKind.CACHE, 'jenkinsSlave')
-        context.addContainer(data)
-        Container.Volume volume = data.volume('/luci/data/jenkinsSlave')
-        data.create()
-
-        Closure c = { InputStream inputStream ->
-            volume.file('slave.jar').addStream(inputStream)
-        }
-
-        def ec = new ExternalCommand(dockerHost)
-        int rc = ec.execute('docker', 'run', '--rm', dockerImage, 'unzip', '-p',
-                '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar', out: c, err: System.err)
-        assert rc == 0
-        volume.file('slaveConnect.sh').addResource('scripts/connectSlave.sh')
-
-        // Copy public key to jenkinsSlave as authorized keys
-        // so Jenkins master can ssh to the slaves
-        rc = ec.execute('docker', 'run', '--rm',
-                *context.volumesFromArgs('sshkeys', 'jenkinsSlave'),
-                'debian:jessie', 'cp', '/luci/etc/sshkeys/id_rsa.pub', '/luci/data/jenkinsSlave/authorized_keys')
-        assert rc == 0
     }
 
     // Map of slave agent ports assigned to a lucibox
@@ -136,18 +112,5 @@ class JenkinsModel extends BaseServiceModel {
         }
         assingedPorts[box.name] = port
         return port
-    }
-
-    @CompileStatic
-    Container createSshKeysContainer(String containerName = 'sshkeys') {
-        // Create container with private/public keys for ssh
-        Container keys = new Container('busybox', box, dockerHost, ContainerKind.CACHE, containerName)
-        keys.remove()
-        Container.Volume volume = keys.volume '/luci/etc/sshkeys'
-        keys.create()
-        new ExternalCommand(dockerHost).execute('docker', 'run', '--rm', '--volumes-from', keys.name, 'luci/tools:0.2',
-                                                 'ssh-keygen', '-t', 'rsa', '-b', '2048', '-C', 'jenkins@luci', '-f',
-                                                 '/luci/etc/sshkeys/id_rsa', '-q', '-N', '')
-        return keys
     }
 }
