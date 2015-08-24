@@ -4,12 +4,11 @@ import groovy.transform.CompileStatic
 import net.praqma.luci.docker.ContainerInfo
 import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
-import net.praqma.luci.docker.DockerImage
 
 @CompileStatic
 abstract class BaseServiceModel {
 
-    DockerImage dockerImage
+    String dockerImage
 
     String serviceName
 
@@ -29,7 +28,7 @@ abstract class BaseServiceModel {
             volumes_from << context.storage(dockerHost).name
         }
         Map answer = [
-                image         : dockerImage.imageString,
+                image         : dockerImage,
                 extra_hosts   : [lucibox: context.internalLuciboxIp],
                 container_name: containerName,
                 volumes_from  : volumes_from,
