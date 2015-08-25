@@ -16,7 +16,7 @@ luci {
       service ('jenkins') {
         // List of plugins to install. Explicit version numbers or latest
         // Hmmm, maybe I don't know what chucknorris is, but I don't see Chuck anywhere, but it is in the list of installed plugins
-        plugins chucknorris: '0.5', greenballs: 'latest' 
+        // plugins chucknorris: '0.5', greenballs: 'latest' TODO is broken, jenkins fails to start
 
         
         staticSlave('default') {
