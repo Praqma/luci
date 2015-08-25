@@ -1,5 +1,7 @@
 #! /bin/bash
 
+[ -f /luci/mixins/java/luci-init.sh ] && source /luci/mixins/java/luci-init.sh
+
 set -e
 
 slaveAgentPort=50000

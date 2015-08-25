@@ -47,6 +47,10 @@ class Containers {
         }
     }
 
+    Container java8mixin(DockerHost host) {
+        return ensureContainerExists(host, 'mixin-java8', DockerImage.MIXIN_JAVA8, ContainerKind.CACHE, volumes: '/luci/mixins/java')
+    }
+
     /**
      * Data container for jenkins slaves
      */

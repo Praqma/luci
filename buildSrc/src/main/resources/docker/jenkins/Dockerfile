@@ -1,6 +1,6 @@
-FROM luci/java7:0.2
+FROM luci/base:0.2
 
-RUN apt-get install -y wget git zip 
+RUN apt-get update && apt-get install -y wget git zip
 
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_VERSION 1.609.2
@@ -44,7 +44,7 @@ COPY cli.sh /usr/local/bin/
 
 COPY entrypoint.sh /entrypoint.sh
 
-
+RUN mkdir -p /luci/mixins/
 # for main web interface:
 EXPOSE 8080
 

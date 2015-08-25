@@ -73,7 +73,7 @@ class JenkinsModel extends BaseServiceModel {
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
         //map.ports << '10080:8080' // Enter container without nginx, for debug
-        map.volumes_from << context.sshKeys(dockerHost).name
+        map.volumes_from << context.sshKeys(dockerHost).name << context.java8mixin(dockerHost).name
     }
 
     void addServicesToMap(Map<String, ?> map, Context context) {
