@@ -42,11 +42,20 @@ class Container {
     @CompileDynamic
     void create() {
         List<String> v = volumes.collect { ['-v', it] }.flatten()
-        ec.execute('docker', 'create', *v, '--name', name,
+        StringBuffer out = "" << ""
+        int rc = ec.execute('docker', 'create', *v, '--name', name,
                 '-l', "${ContainerInfo.CONTAINER_KIND_LABEL}=${kind.name()}" as String,
                 '-l', "${ContainerInfo.BOX_NAME_LABEL}=${box.name}" as String,
                 '-l', "${ContainerInfo.CONTAINER_LUCINAME_LABEL}=${luciName}" as String,
-                dockerImage.imageString)
+                dockerImage.imageString, err: out)
+        if (rc != 0) {
+            if (out.toString().indexOf('is already in use by container') > 0) {
+                println "Using existing container '${name}'"
+            } else {
+                println out.toString()
+                throw new RuntimeException("Failed to create container: '${name}'")
+            }
+        }
     }
 
     /**
