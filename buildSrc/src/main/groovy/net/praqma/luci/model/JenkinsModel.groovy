@@ -19,10 +19,13 @@ class JenkinsModel extends BaseServiceModel {
 
     private Map<String, OnDemandSlaveModel> onDemandSlaves = [:]
 
-    private List<String> pluginList = []
+    /**
+     * Map plugin key to version
+     */
+    private Map<String, String> pluginMap = [:]
 
-    void plugins(String... plugins) {
-        pluginList.addAll(plugins)
+    void plugins(Map<String, String> map) {
+        pluginMap.putAll(map)
     }
 
     /**
@@ -64,8 +67,8 @@ class JenkinsModel extends BaseServiceModel {
                 "${m.dockerImage}@${m.slaveName}" }
             map.command << '-t' << args.join(' ')
         }
-        if (pluginList.size() > 0) {
-            map.command << '-p' << pluginList.join(' ')
+        if (pluginMap.size() > 0) {
+            map.command << '-p' << pluginMap.collect { key, version -> "${key}:${version}" }.join(' ')
         }
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections

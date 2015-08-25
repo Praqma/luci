@@ -1,3 +1,5 @@
+package docker.jenkins
+
 import hudson.model.*;
 import jenkins.model.*;
 

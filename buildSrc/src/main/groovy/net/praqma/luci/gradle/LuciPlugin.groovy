@@ -1,8 +1,11 @@
 package net.praqma.luci.gradle
 
+import net.praqma.luci.dev.BuildAllImages
+import net.praqma.luci.dev.DockerImageBuilder
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.SystemCheck
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskContainer
@@ -24,6 +27,7 @@ class LuciPlugin implements Plugin<Project> {
 
     void createTasks(Project project) {
         TaskContainer tasks = project.tasks
+        DockerHost defaultHost = defaultDockerHost(project)
 
         // General Luci tasks
         tasks.create('luciSystemCheck') {
@@ -37,7 +41,18 @@ class LuciPlugin implements Plugin<Project> {
             }
         }
 
-        DockerHost defaultHost = defaultDockerHost(project)
+        tasks.create('luciBuildAllImages') {
+            group 'luci'
+            description 'Build all images needed for Luci'
+
+            doFirst {
+                boolean sucess = new BuildAllImages().build(defaultHost)
+                if (!sucess) {
+                    throw new GradleException("Error building images")
+                }
+            }
+        }
+
         // Box specific tasks
         project.luci.boxes.each { LuciboxModel box ->
             if (box.dockerHost == null) {
