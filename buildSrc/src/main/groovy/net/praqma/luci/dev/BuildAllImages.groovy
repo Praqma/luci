@@ -2,14 +2,14 @@ package net.praqma.luci.dev
 
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.docker.DockerHostImpl
+import net.praqma.luci.utils.ClasspathResources
+import org.apache.tools.ant.util.ResourceUtils
 
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Build all docker images for Luci
- * <p>
- * Note this is only working if executed with a sourcetree, not if execute with a packaged jar.
  */
 class BuildAllImages {
 
@@ -26,21 +26,7 @@ class BuildAllImages {
         if (System.properties['net.praqma.luci.projectRoot'] != null) {
             versionsFile = new File(System.properties['net.praqma.luci.projectRoot'], 'buildSrc/src/main/resources/docker/imageVersions.properties')
         } else {
-            String resource = 'docker/imageVersions.properties'
-            URL url = Thread.currentThread().contextClassLoader.getResource(resource)
-            if (url == null) {
-                throw new RuntimeException("Resource '${resource}' not found")
-            }
-            if (url.protocol != 'file') {
-                throw new RuntimeException("Protocal must be 'file' for '${url}'")
-            }
-
-            // See https://weblogs.java.net/blog/kohsuke/archive/2007/04/how_to_convert.html
-            try {
-                versionsFile = new File(url.toURI())
-            } catch (URISyntaxException e) {
-                versionsFile = new File(url.path)
-            }
+            versionsFile = new ClasspathResources().resourceAsFile('docker/imageVersions.properties')
         }
 
         assert versionsFile.exists()

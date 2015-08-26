@@ -1,5 +1,6 @@
 package net.praqma.luci.docker
 
+import net.praqma.luci.model.JenkinsModel
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
@@ -47,6 +48,18 @@ class Containers {
         }
     }
 
+    Container jenkinsConfig(JenkinsModel jenkins) {
+        DockerHost host = jenkins.dockerHost
+        String jenkinsHome = '/var/jenkins_home'
+        return createNewContainer(host, 'jenkinsConfig', DockerImage.DATA, ContainerKind.CACHE,
+                volumes: ["${jenkinsHome}/init.groovy.d"]) { Container con ->
+            jenkins.initFiles.each { File file ->
+                new ExternalCommand(host).execute('docker', 'cp', file.path, "${con.name}:/${jenkinsHome}/init.groovy.d")
+            }
+
+        }
+    }
+
     Container java8mixin(DockerHost host) {
         return ensureContainerExists(host, 'mixin-java8', DockerImage.MIXIN_JAVA8, ContainerKind.CACHE, volumes: '/luci/mixins/java')
     }
@@ -84,11 +97,24 @@ class Containers {
         return con
     }
 
+    private Container createNewContainer(Map<String, ?> args, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+        return createContainerHelper(args, true, host, luciName, image, kind, initBlock)
+    }
+
     private Container ensureContainerExists(DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
         return ensureContainerExists([:], host, luciName, image, kind, initBlock)
     }
 
     private Container ensureContainerExists(Map<String, ?> args, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+        return createContainerHelper(args, false, host, luciName, image, kind, initBlock)
+    }
+
+    private Container createContainerHelper(Map<String, ?> args, boolean createNew, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+        if (createNew) {
+            Container container = new Container(image, box, host, kind, luciName)
+            container.remove()
+            containers.remove(luciName)
+        }
         if (containers[luciName] == null) {
             Container container = new Container(image, box, host, kind, luciName)
             if (args.volumes) {

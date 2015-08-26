@@ -1,4 +1,4 @@
-package docker.jenkins
+package scripts
 
 import hudson.model.*;
 import jenkins.model.*;

@@ -5,6 +5,7 @@ import groovy.transform.CompileStatic
 import net.praqma.luci.docker.Container
 import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
+import net.praqma.luci.utils.ClasspathResources
 import net.praqma.luci.utils.ExternalCommand
 
 @CompileStatic
@@ -18,6 +19,8 @@ class JenkinsModel extends BaseServiceModel {
     private Map<String, StaticSlaveModel> staticSlaves = [:]
 
     private Map<String, OnDemandSlaveModel> onDemandSlaves = [:]
+
+    private Collection<File> initFiles = []
 
     /**
      * Map plugin key to version
@@ -40,6 +43,20 @@ class JenkinsModel extends BaseServiceModel {
         }
     }
 
+    Collection<File> getInitFiles() {
+        return this.initFiles
+    }
+
+    void initFiles(File...files) {
+        initFiles(files.toList())
+    }
+
+    @CompileDynamic
+    void initFiles(Iterable<File> files) {
+        initFiles.addAll(files as List)
+    }
+
+
     @Override
     @CompileDynamic
     void addToComposeMap(Map map, Context context) {
@@ -57,14 +74,16 @@ class JenkinsModel extends BaseServiceModel {
         if (staticSlaves.size() > 0) {
             // A slave is represented as <name>:<executors>:label1:label2:...
             Collection<String> args = staticSlaves.values().collect { StaticSlaveModel m ->
-                String labelString = m.labels.collect { ":${it}"}.join()
-                "${m.slaveName}:${m.executors}" + labelString }
+                String labelString = m.labels.collect { ":${it}" }.join()
+                "${m.slaveName}:${m.executors}" + labelString
+            }
             map.command << '-s' << args.join(' ')
         }
         if (onDemandSlaves.size() > 0) {
             // A slave is represented as <image>@<name>
             Collection<String> args = onDemandSlaves.values().collect { OnDemandSlaveModel m ->
-                "${m.dockerImage}@${m.slaveName}" }
+                "${m.dockerImage}@${m.slaveName}"
+            }
             map.command << '-t' << args.join(' ')
         }
         if (pluginMap.size() > 0) {
@@ -73,7 +92,10 @@ class JenkinsModel extends BaseServiceModel {
         map.command << '--' << '--prefix=/jenkins'
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
         //map.ports << '10080:8080' // Enter container without nginx, for debug
-        map.volumes_from << context.sshKeys(dockerHost).name << context.java8mixin(dockerHost).name
+        map.volumes_from <<
+                context.sshKeys(dockerHost).name <<
+                context.java8mixin(dockerHost).name <<
+                context.jenkinsConfig(this).name
     }
 
     void addServicesToMap(Map<String, ?> map, Context context) {
@@ -109,6 +131,7 @@ class JenkinsModel extends BaseServiceModel {
 
     @CompileDynamic
     void preStart(Context context) {
+        initFiles(new ClasspathResources().resourceAsFile('scripts/luci-init.groovy') as File)
         if (slaveAgentPort == -1) {
             slaveAgentPort = assignSlaveAgentPort()
         }

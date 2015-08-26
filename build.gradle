@@ -45,6 +45,9 @@ luci {
         onDemandSlave('shell') {
           dockerImage 'luci/slave-shell:0.2'
         }
+
+        // Add files in the jenkinsInit.d dir to the jenkins init.d dir
+        initFiles fileTree(dir: 'jenkinsInit.d', include: '**/*.groovy')
       }
     }
       
