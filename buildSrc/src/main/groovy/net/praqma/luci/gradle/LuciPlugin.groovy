@@ -3,17 +3,21 @@ package net.praqma.luci.gradle
 import net.praqma.luci.dev.BuildAllImages
 import net.praqma.luci.dev.DockerImageBuilder
 import net.praqma.luci.docker.DockerHost
+import net.praqma.luci.model.JenkinsModel
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.SystemCheck
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.CopySpec
 import org.gradle.api.tasks.TaskContainer
 
 class LuciPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
+        extendJenkinsModel(project)
+
         project.apply(plugin: 'base')
         project.extensions.create('luci', LuciExtension, project)
 
@@ -26,6 +30,7 @@ class LuciPlugin implements Plugin<Project> {
         project.afterEvaluate {
             createTasks(project)
         }
+
     }
 
     void createTasks(Project project) {
@@ -94,4 +99,26 @@ class LuciPlugin implements Plugin<Project> {
         }
     }
 
+    /**
+     * Extend the JenkinsModel (that doesn't know about Gradle)
+     * with some Gradle friendly methods
+     *
+     * @param project
+     */
+    private void extendJenkinsModel(Project project) {
+        JenkinsModel.metaClass.initFiles = { Closure copySpec ->
+            JenkinsModel model = delegate
+            Closure action = {
+                CopySpec spec = project.copySpec(copySpec)
+                File workDir = new File(project.buildDir, "luciboxes/${model.box.name}/initFiles${new Random().nextInt()}${System.nanoTime()}")
+                workDir.mkdirs()
+                project.copy {
+                    into workDir
+                    with spec
+                }
+                model.initFiles project.fileTree(dir: workDir)
+            }
+            model.addPreStartAction(action)
+        }
+    }
 }

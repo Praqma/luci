@@ -1,6 +1,5 @@
 apply plugin: net.praqma.luci.gradle.LuciPlugin
 
-
 luci {
 
   /*
@@ -46,8 +45,20 @@ luci {
           dockerImage 'luci/slave-shell:0.2'
         }
 
-        // Add files in the jenkinsInit.d dir to the jenkins init.d dir
+        // Add groovy files in the jenkinsInit.d dir to the jenkins init.d dir
         initFiles fileTree(dir: 'jenkinsInit.d', include: '**/*.groovy')
+
+        // You can also specify files with a Gradle CopySpec
+        // See https://docs.gradle.org/current/userguide/working_with_files.html for some examples
+        initFiles {  
+          // Copy all templates files from jenkinsInit.d
+          from 'jenkinsInit.d'
+          include '*.template'
+          // Change extension from .template to  .groovy
+          rename '(.*)\\.template', '$1\\.groovy'
+          // Insert the project name in templates
+          expand(name: name)
+        }
       }
     }
       

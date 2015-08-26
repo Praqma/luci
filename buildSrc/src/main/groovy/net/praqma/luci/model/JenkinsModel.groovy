@@ -7,6 +7,8 @@ import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.utils.ClasspathResources
 import net.praqma.luci.utils.ExternalCommand
+import org.gradle.api.Project
+import org.gradle.api.file.CopySpec
 
 @CompileStatic
 class JenkinsModel extends BaseServiceModel {
@@ -26,6 +28,8 @@ class JenkinsModel extends BaseServiceModel {
      * Map plugin key to version
      */
     private Map<String, String> pluginMap = [:]
+
+    private List<Closure> actions = []
 
     void plugins(Map<String, String> map) {
         pluginMap.putAll(map)
@@ -56,12 +60,14 @@ class JenkinsModel extends BaseServiceModel {
         initFiles.addAll(files as List)
     }
 
+    void addPreStartAction(Closure c) {
+        actions << c
+    }
 
     @Override
     @CompileDynamic
     void addToComposeMap(Map map, Context context) {
         super.addToComposeMap(map, context)
-
 
         DockerHost h = context.box.dockerHost
         String url = "http://${h.host}:${h.port}"
@@ -131,6 +137,9 @@ class JenkinsModel extends BaseServiceModel {
 
     @CompileDynamic
     void preStart(Context context) {
+        actions.each {
+            it()
+        }
         initFiles(new ClasspathResources().resourceAsFile('scripts/luci-init.groovy') as File)
         if (slaveAgentPort == -1) {
             slaveAgentPort = assignSlaveAgentPort()
