@@ -1,6 +1,7 @@
 package net.praqma.luci.dev
 
 import net.praqma.luci.docker.DockerHost
+import net.praqma.luci.docker.DockerHostImpl
 
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,7 +20,7 @@ class BuildAllImages {
 
     boolean build(DockerHost dockerHost = null) {
         if (dockerHost == null) {
-            dockerHost = DockerHost.getDefault()
+            dockerHost = DockerHostImpl.getDefault()
         }
         File versionsFile
         if (System.properties['net.praqma.luci.projectRoot'] != null) {

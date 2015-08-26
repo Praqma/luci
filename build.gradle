@@ -3,6 +3,19 @@ apply plugin: net.praqma.luci.gradle.LuciPlugin
 
 luci {
 
+  /*
+  hosts {
+     lucibox {
+      // Fails if docker macine lucibox doesn't exists
+      // TODO implement other settings, like explicit url
+      dockerMachine 'lucibox'
+    }
+    
+  }
+  
+  defaultHost = hosts.lucibox
+  */
+  
   boxes {
 
     // A Lucibox name 'demo'

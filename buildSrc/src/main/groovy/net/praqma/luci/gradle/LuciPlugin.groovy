@@ -18,7 +18,10 @@ class LuciPlugin implements Plugin<Project> {
         project.extensions.create('luci', LuciExtension, project)
 
         def boxes = project.container(LuciboxModel)
+        def hosts = project.container(GradleDockerHost)
+
         project.luci.extensions.boxes = boxes
+        project.luci.extensions.hosts = hosts
 
         project.afterEvaluate {
             createTasks(project)
@@ -27,7 +30,7 @@ class LuciPlugin implements Plugin<Project> {
 
     void createTasks(Project project) {
         TaskContainer tasks = project.tasks
-        DockerHost defaultHost = defaultDockerHost(project)
+        DockerHost defaultHost = project.luci.defaultHost
 
         // General Luci tasks
         tasks.create('luciSystemCheck') {
@@ -91,15 +94,4 @@ class LuciPlugin implements Plugin<Project> {
         }
     }
 
-    private DockerHost defaultDockerHost(Project project) {
-        DockerHost host = null
-        if (project.hasProperty('dockerMachine')) {
-            String dockerMachine = project['dockerMachine']
-            project.logger.lifecycle("Default dockerhost is '${dockerMachine}'")
-            host = DockerHost.fromDockerMachine(dockerMachine)
-        } else {
-            host = DockerHost.getDefault()
-        }
-        return host
-    }
 }
