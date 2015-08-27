@@ -18,13 +18,15 @@ VOLUME ["/var/cache/nginx"]
 
 COPY luci.conf           /etc/nginx/conf.d/
 COPY services/*.conf     /luci/etc/nginx/available.d/
-COPY upstreams/*.conf    /luci/etc/nginx/upstreams.d/
-COPY entrypoint.sh    /
+COPY entrypoint.sh       /
 
-RUN mkdir -p /luci/wwwroot && mkdir -p /luci/etc/nginx/conf.d && mkdir -p /luci/etc/nginx/upstreamsconf.d
+RUN mkdir -p /luci/wwwroot && mkdir -p /luci/etc/nginx/conf.d
 #COPY wwwroot/* /luci/wwwroot/
 
 COPY bin/* /luci/bin/
+
+COPY certs/server.key /luci/etc/nginx/certs/server.key
+COPY certs/server.crt /luci/etc/nginx/certs/server.crt
 
 EXPOSE 80 443
 

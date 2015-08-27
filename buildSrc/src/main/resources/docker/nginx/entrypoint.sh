@@ -10,17 +10,15 @@ while getopts "s:n:p:" arg; do
       p) port=$OPTARG              ;;  # The port where nginx is listning
   esac
 done
-echo "Services: $servies"
+echo "Services: $services"
 
-export LUCIBOX_NAME=$lucibox_name
+export LUCIBOX_NAME=$luciboxName
 export LUCIBOX_PORT=$port
 
 shift $((OPTIND-1))
 
-
 for s in $services ; do
     ln -s /luci/etc/nginx/available.d/$s.conf /luci/etc/nginx/conf.d/
-    ln -s /luci/etc/nginx/upstreams.d/$s.conf /luci/etc/nginx/upstreamsconf.d/
 done
 
 /luci/bin/generateIndexHtml.sh $luciboxName $services > /luci/wwwroot/index.html
