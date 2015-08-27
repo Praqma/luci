@@ -39,5 +39,5 @@ RUN mkdir -p /luci/mixins/
 # for main web interface:
 EXPOSE 8080
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/tini", "--", "/entrypoint.sh"]
 

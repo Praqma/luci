@@ -30,5 +30,5 @@ COPY certs/server.crt /luci/etc/nginx/certs/server.crt
 
 EXPOSE 80 443
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/tini", "--", "/entrypoint.sh"]
 
