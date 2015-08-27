@@ -54,6 +54,7 @@ class LuciPlugin implements Plugin<Project> {
             description 'Build all images needed for Luci'
 
             doFirst {
+                logger.lifecycle("Build images on ${defaultHost.uri}")
                 boolean sucess = new BuildAllImages().build(defaultHost)
                 if (!sucess) {
                     throw new GradleException("Error building images")
