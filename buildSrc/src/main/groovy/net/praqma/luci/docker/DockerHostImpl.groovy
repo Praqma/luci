@@ -20,6 +20,7 @@ class DockerHostImpl implements DockerHost {
     static DockerHostImpl getDefault() {
         String dockerMachine = System.properties['net.praqma.luci.dockerMachine']
         if (dockerMachine != null) {
+            println "Using ${dockerMachine} as default host. Specified as system property"
             return fromDockerMachine(dockerMachine)
         } else {
             return fromEnv()
