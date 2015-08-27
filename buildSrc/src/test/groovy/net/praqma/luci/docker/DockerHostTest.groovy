@@ -5,7 +5,7 @@ import org.junit.Test
 class DockerHostTest {
 
     static DockerHost getHost() {
-        return DockerHost.getDefault()
+        return DockerHostImpl.getDefault()
     }
 
     @Test
@@ -18,7 +18,7 @@ export DOCKER_MACHINE_NAME="lucibox"
 # Run this command to configure your shell:
 
 """
-        DockerHost h = DockerHost.fromEnvVarsString(s)
+        DockerHost h = DockerHostImpl.fromEnvVarsString(s)
         assert h.host == "192.168.99.108"
         assert h.port == 2376
         assert h.tls
