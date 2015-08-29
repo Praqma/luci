@@ -1,5 +1,6 @@
 package net.praqma.luci.docker
 
+import groovy.transform.Memoized
 import net.praqma.luci.model.JenkinsModel
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
@@ -88,13 +89,24 @@ class Containers {
 
             // Copy public key to jenkinsSlave as authorized keys
             // so Jenkins master can ssh to the slaves
-            rc = ec.execute('docker', 'run', '--rm',
-                    sshKeys().volumesFromArg, container.volumesFromArg,
-                    DockerImage.TOOLS.imageString, 'cp', '/luci/etc/sshkeys/id_rsa.pub', '/luci/data/jenkinsSlave/authorized_keys')
+            rc = ec.execute('docker', 'run', '--rm', container.volumesFromArg, DockerImage.TOOLS.imageString,
+                    'sh', '-c', "echo '${jenkinsPublicKey}' > /luci/data/jenkinsSlave/authorized_keys")
             assert rc == 0
         }
 
         return con
+    }
+
+    @Memoized
+    String getJenkinsPublicKey() {
+        // Assume jenkins is on the default host of the lucibox
+        DockerHost host = box.dockerHost
+        Container sshKeyContainer = sshKeys(host)
+        StringBuffer out = "" << ""
+        int rc = new ExternalCommand(host).execute('docker', 'run', '--rm', sshKeyContainer.volumesFromArg, DockerImage.TOOLS.imageString,
+                'cat', '/luci/etc/sshkeys/id_rsa.pub', out: out)
+        assert rc == 0
+        return out.toString()
     }
 
     private Container createNewContainer(Map<String, ?> args, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
