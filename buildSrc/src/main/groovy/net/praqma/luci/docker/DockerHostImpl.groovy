@@ -14,7 +14,7 @@ class DockerHostImpl implements DockerHost {
         if (rc != 0) {
             throw new RuntimeException(err.toString())
         }
-        return fromEnvVarsString(out.toString())
+        return fromEnvVarsString(out.toString()).orig("machine: ${name}")
     }
 
     static DockerHostImpl getDefault() {
@@ -28,7 +28,7 @@ class DockerHostImpl implements DockerHost {
     }
 
     static DockerHostImpl fromEnv() {
-        return (System.getenv("DOCKER_HOST") != null) ? fromVariables(System.getenv()) : null
+        return (System.getenv("DOCKER_HOST") != null) ? fromVariables(System.getenv()).orig("env vars") : null
     }
 
     static DockerHostImpl fromVariables(Map<String, String> map) {
@@ -64,5 +64,10 @@ class DockerHostImpl implements DockerHost {
             }
         }
         return fromVariables(m)
+    }
+
+    DockerHostImpl orig(String s) {
+        origination = s
+        return this
     }
 }

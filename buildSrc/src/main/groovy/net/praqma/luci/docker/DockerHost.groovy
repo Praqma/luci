@@ -12,6 +12,9 @@ trait DockerHost {
     boolean tls
     File certPath
 
+    /** A text describe where this hos is originaiton form, e.g. if it is a docker mahcine or env vars */
+    String origination = '<unknown>'
+
     String getHost() {
         return uri.host
     }
@@ -63,5 +66,9 @@ trait DockerHost {
             }
         }
         return ports
+    }
+
+    String toString() {
+        return "${uri}[${origination}]"
     }
 }

@@ -21,6 +21,6 @@ class GradleDockerHost implements DockerHost {
         this.uri = dh.uri
         this.certPath = dh.certPath
         this.tls = dh.tls
-
+        this.origination = dh.origination
     }
 }
