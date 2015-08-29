@@ -2,18 +2,17 @@ apply plugin: net.praqma.luci.gradle.LuciPlugin
 
 luci {
 
-  /*
   hosts {
-     lucibox {
+    lucibox {
       // Fails if docker macine lucibox doesn't exists
       // TODO implement other settings, like explicit url
       dockerMachine 'lucibox'
     }
+    slaves {
+      dockerMachine 'slaves'
+    }
     
   }
-  
-  defaultHost = hosts.lucibox
-  */
   
   boxes {
 
@@ -37,13 +36,14 @@ luci {
           labels 'one'
         }
         staticSlave('anotherSlave') {
+          dockerHost = hosts.slaves
           dockerImage = 'debian:jessie'
           labels 'two', 'three'
         }
         
-        onDemandSlave('shell') {
+        /* onDemandSlave('shell') {
           dockerImage 'luci/slave-shell:0.2'
-        }
+          } */
 
         // Add groovy files in the jenkinsInit.d dir to the jenkins init.d dir
         initFiles fileTree(dir: 'jenkinsInit.d', include: '**/*.groovy')
@@ -58,6 +58,12 @@ luci {
           rename '(.*)\\.template', '$1\\.groovy'
           // Insert the project name in templates
           expand(name: name)
+        }
+
+        // Generate a Jobdsl seed job (and execute it)
+        seedJob.with {
+          name = "{project.name}_Seed_Job"
+          jobDslFile = file('jenkinsConfig/jobDsl.groovy')
         }
       }
     }

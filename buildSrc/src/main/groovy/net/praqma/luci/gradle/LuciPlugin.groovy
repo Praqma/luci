@@ -45,7 +45,7 @@ class LuciPlugin implements Plugin<Project> {
             doFirst {
                 new SystemCheck(new PrintWriter(System.out)).perform()
 
-                println "Docker host: ${defaultDockerHost(project)}"
+                println "Docker host: ${project.luci.defaultHost}"
             }
         }
 
@@ -77,7 +77,6 @@ class LuciPlugin implements Plugin<Project> {
                 description "Bring up '${box.name}'"
                 doFirst {
                     File dir = project.file("${project.buildDir}/luciboxes/${box.name}")
-                    dir.mkdirs()
                     box.bringUp(dir)
                 }
             }
@@ -95,6 +94,15 @@ class LuciPlugin implements Plugin<Project> {
                 description "Destroy '${box.name}', delete all containers includeing data containers"
                 doFirst {
                     box.destroy()
+                }
+            }
+
+            tasks.create("${taskNamePrefix}Info") {
+                group taskGroup
+                description "Miscellaneous information about '${box.name}'"
+                doFirst {
+                    File dir = project.file("${project.buildDir}/luciboxes/${box.name}")
+                    box.printInformation(dir)
                 }
             }
         }
