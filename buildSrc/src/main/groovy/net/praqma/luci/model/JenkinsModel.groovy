@@ -13,7 +13,7 @@ import org.gradle.api.file.CopySpec
 @CompileStatic
 class JenkinsModel extends BaseServiceModel {
 
-    int slaveAgentPort = -1 // -1 => Let LUCI assing port
+    int slaveAgentPort = -1 // -1 => Let LUCI assign port
 
     /** Number of executors for master */
     int executors = 0
@@ -23,6 +23,9 @@ class JenkinsModel extends BaseServiceModel {
     private Map<String, OnDemandSlaveModel> onDemandSlaves = [:]
 
     private Collection<File> initFiles = []
+
+    @Lazy
+    JenkinsSeedJob seedJob = new JenkinsSeedJob()
 
     /**
      * Map plugin key to version
@@ -36,7 +39,6 @@ class JenkinsModel extends BaseServiceModel {
     }
 
     /**
-     *
      * @return The port for the docker cloud
      */
     private int cloudPort() {
@@ -104,12 +106,6 @@ class JenkinsModel extends BaseServiceModel {
                 context.jenkinsConfig(this).name
     }
 
-    void addServicesToMap(Map<String, ?> map, Context context) {
-        staticSlaves.each { String name, StaticSlaveModel slave ->
-            map[slave.serviceName] = slave.buildComposeMap(context)
-        }
-    }
-
     void staticSlave(String slaveName, Closure closure) {
         StaticSlaveModel slave = new StaticSlaveModel()
         slave.slaveName = slaveName
@@ -135,8 +131,13 @@ class JenkinsModel extends BaseServiceModel {
         new ExternalCommand(dockerHost).execute(["docker", "exec", "${box.name}_${ServiceEnum.JENKINS.name}", *cmd], null, input)
     }
 
+    @Override
     @CompileDynamic
     void preStart(Context context) {
+        staticSlaves.values().each {
+            context.auxServices << it
+            it.preStart(context)
+        }
         actions.each {
             it()
         }
@@ -152,7 +153,7 @@ class JenkinsModel extends BaseServiceModel {
     private int assignSlaveAgentPort() {
         if (assingedPorts[box.name] != null) return assingedPorts[box.name]
         Set<Integer> ports = assingedPorts.values() as Set
-        ports.addAll(box.dockerHost.boundPorts())
+        ports.addAll(dockerHost.boundPorts())
         Integer port = (50000..50099).find { !ports.contains(it) }
         if (port == null) {
             throw new RuntimeException("No available slave agent port")
@@ -160,4 +161,9 @@ class JenkinsModel extends BaseServiceModel {
         assingedPorts[box.name] = port
         return port
     }
+}
+
+class JenkinsSeedJob {
+    String name
+    File jobDslFile
 }

@@ -3,7 +3,7 @@ package net.praqma.luci.model
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class StaticSlaveModel extends BaseServiceModel {
+class StaticSlaveModel extends BaseServiceModel implements AuxServiceModel {
 
     String dockerImage
 

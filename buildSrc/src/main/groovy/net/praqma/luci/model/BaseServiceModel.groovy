@@ -14,6 +14,8 @@ abstract class BaseServiceModel {
 
     LuciboxModel box
 
+    DockerHost dockerHost
+
     /**
      * Indicate if the data for the service should be stored in a data container.
      * If the value is <code>null</code> the value defined in the lucibox is used.
@@ -44,16 +46,12 @@ abstract class BaseServiceModel {
 
     }
 
-    void addServicesToMap(Map<String, ?> map, Context context) {
-
-    }
-
     void preStart(Context context) {
 
     }
 
     DockerHost getDockerHost() {
-        return box.dockerHost
+        return this.@dockerHost ?: box.dockerHost
     }
 
     String getContainerName() {

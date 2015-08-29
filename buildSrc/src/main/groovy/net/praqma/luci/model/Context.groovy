@@ -13,6 +13,8 @@ class Context {
 
     LuciboxModel box
 
+    final Collection<AuxServiceModel> auxServices = []
+
     @Delegate
     final Containers containers
 
@@ -21,4 +23,6 @@ class Context {
         this.box = box
         this.containers = new Containers(box)
     }
+
+
 }

@@ -65,7 +65,6 @@ class LuciboxModel {
         serviceMap.each { ServiceEnum service, BaseServiceModel model ->
             String s = service.getName()
             m[s] = model.buildComposeMap(context)
-            model.addServicesToMap(m, context)
         }
         if (socatForTlsHackPort && dockerHost.tls) {
             m['dockerHttp'] = [
@@ -130,6 +129,13 @@ class LuciboxModel {
         new FileWriter(yaml).withWriter { Writer w ->
             generateDockerComposeYaml(context, w)
         }
+
+        Collection<DockerHost> auxHosts = context.auxServices*.dockerHost
+        Map<DockerHost, Context> ctxMap = auxHosts.collectEntries { [ it, new Context(it, this)]}
+        context.auxServices.each {AuxServiceModel aux ->
+            aux.startService(ctxMap[aux.host])
+        }
+
         new ExternalCommand(dockerHost).execute('docker-compose', '-f', yaml.path, 'up', '-d')
 
         println ""
@@ -162,4 +168,20 @@ class LuciboxModel {
         }
     }
 
+    void printInformation(File workDir) {
+        // TODO look at code duplication with bringUp.
+        // No arg should be needed in this method
+        Context context = new Context(dockerHost.host, this)
+        preStart(context)
+
+        String header = "Lucibox: ${name}"
+        println "\n${header}\n${'=' * header.length()}"
+        println "Primary host: ${dockerHost}"
+
+        println "Aux services:"
+        context.auxServices.each { AuxServiceModel aux ->
+            println "\t${aux.serviceName} @ ${aux.dockerHost}"
+        }
+    }
 }
+
