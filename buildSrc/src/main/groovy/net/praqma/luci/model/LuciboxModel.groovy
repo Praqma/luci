@@ -32,6 +32,10 @@ class LuciboxModel {
         service ServiceEnum.WEBFRONTEND.name
     }
 
+    BaseServiceModel getService(ServiceEnum service) {
+        return serviceMap[service]
+    }
+
     Collection<BaseServiceModel> getServices() {
         return serviceMap.values()
     }
@@ -122,7 +126,7 @@ class LuciboxModel {
         // Take down any containers that should happend to run, before bringing it up
         takeDown()
 
-        Context context = new Context(dockerHost.host, this)
+        Context context = new Context(this, dockerHost)
         preStart(context)
         workDir.mkdirs()
         File yaml = new File(workDir, 'docker-compose.yml')
@@ -131,9 +135,10 @@ class LuciboxModel {
         }
 
         Collection<DockerHost> auxHosts = context.auxServices*.dockerHost
-        Map<DockerHost, Context> ctxMap = auxHosts.collectEntries { [ it, new Context(it, this)]}
+        Map<DockerHost, Context> ctxMap = auxHosts.collectEntries { [ it, new Context(this, it)]}
         context.auxServices.each {AuxServiceModel aux ->
-            aux.startService(ctxMap[aux.host])
+            println "Setting up aux service: ${aux.serviceName} on ${aux.dockerHost}"
+            aux.startService(ctxMap[aux.dockerHost])
         }
 
         new ExternalCommand(dockerHost).execute('docker-compose', '-f', yaml.path, 'up', '-d')
@@ -171,7 +176,7 @@ class LuciboxModel {
     void printInformation(File workDir) {
         // TODO look at code duplication with bringUp.
         // No arg should be needed in this method
-        Context context = new Context(dockerHost.host, this)
+        Context context = new Context(this, dockerHost)
         preStart(context)
 
         String header = "Lucibox: ${name}"

@@ -18,6 +18,13 @@ class BuildAllImages {
      */
     private File dockerImagesDir
 
+    boolean build(Collection<DockerHost> hosts) {
+        hosts.each {
+            println "***\n*** Building on ${it}\n***\n"
+            build(it)
+        }
+    }
+
     boolean build(DockerHost dockerHost = null) {
         if (dockerHost == null) {
             dockerHost = DockerHostImpl.getDefault()

@@ -50,7 +50,7 @@ class Container {
                 dockerImage.imageString, err: out)
         if (rc != 0) {
             if (out.toString().indexOf('is already in use by container') > 0) {
-                println "Using existing container '${name}'"
+                println "Using existing container '${name}' on ${ec.dockerHost}"
             } else {
                 println out.toString()
                 throw new RuntimeException("Failed to create container: '${name}'")

@@ -3,6 +3,7 @@ package net.praqma.luci.gradle
 import net.praqma.luci.dev.BuildAllImages
 import net.praqma.luci.dev.DockerImageBuilder
 import net.praqma.luci.docker.DockerHost
+import net.praqma.luci.docker.DockerImage
 import net.praqma.luci.model.JenkinsModel
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.SystemCheck
@@ -51,11 +52,11 @@ class LuciPlugin implements Plugin<Project> {
 
         tasks.create('luciBuildAllImages') {
             group 'luci'
-            description 'Build all images needed for Luci'
+            description 'Build all images needed for Luci. They are built on all defined hosts.'
 
             doFirst {
                 logger.lifecycle("Build images on ${defaultHost.uri}")
-                boolean sucess = new BuildAllImages().build(defaultHost)
+                boolean sucess = new BuildAllImages().build(project.luci.hosts)
                 if (!sucess) {
                     throw new GradleException("Error building images")
                 }
@@ -130,4 +131,5 @@ class LuciPlugin implements Plugin<Project> {
             model.addPreStartAction(action)
         }
     }
+
 }

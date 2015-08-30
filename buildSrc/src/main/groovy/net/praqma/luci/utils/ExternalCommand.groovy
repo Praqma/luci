@@ -9,7 +9,7 @@ import net.praqma.luci.docker.DockerHost
 class ExternalCommand {
 
     /** Docker commands are executed against this docker host */
-    private DockerHost dockerHost
+    final DockerHost dockerHost
 
     ExternalCommand(DockerHost dockerHost = null) {
         this.dockerHost = dockerHost

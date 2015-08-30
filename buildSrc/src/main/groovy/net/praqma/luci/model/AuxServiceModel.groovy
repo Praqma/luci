@@ -18,21 +18,25 @@ trait AuxServiceModel {
     }
 
     void startService(Context context) {
+        BaseServiceModel me = this
         def map = prepareService(context)
-        List<String> startCmd = ['docker', 'run']
+        List<String> startCmd = ['docker', 'run', '-d']
         map.ports.each {
             startCmd << '-p' << it
         }
-        map.volumesFrom.each {
-            startCmd << '--volumes_from' << it
+        map.volumes_from.each {
+            startCmd << '--volumes-from' << it
         }
         startCmd << '--name' << map.container_name
         map.extra_hosts.each { name, ip ->
             startCmd << '--add-host' << "${name}:${ip}".toString()
         }
         map.labels.each { name, value ->
-            startCmd << '-l' << "${name}:${ip}".toString()
+            startCmd << '-l' << "'${name}=${value}'".toString()
         }
+        startCmd << me.dockerImage
+
+        startCmd.addAll(map.command)
 
         new ExternalCommand(dockerHost).execute(startCmd as String[])
     }

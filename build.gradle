@@ -19,6 +19,7 @@ luci {
     // A Lucibox name 'demo'
     demo {
       socatForTlsHackPort = 2375
+      dockerHost = hosts.lucibox
 
       // Use data container so service containers and be deleted without losing data.
       // This can also be specified on individual services
@@ -35,12 +36,13 @@ luci {
           dockerImage = 'debian:jessie'
           labels 'one'
         }
+        /*
         staticSlave('anotherSlave') {
-          dockerHost = hosts.slaves
+          //          dockerHost = hosts.slaves
           dockerImage = 'debian:jessie'
           labels 'two', 'three'
         }
-        
+        */
         /* onDemandSlave('shell') {
           dockerImage 'luci/slave-shell:0.2'
           } */

@@ -6,7 +6,9 @@ import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.ExternalCommand
 
 /**
- * Class to access and create on demand mixin containers
+ * Class to access and create on demand mixin containers.
+ * <p>
+ * A single Containers instance manage for one docker host
  */
 class Containers {
 
