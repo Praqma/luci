@@ -32,7 +32,7 @@ trait AuxServiceModel {
             startCmd << '--add-host' << "${name}:${ip}".toString()
         }
         map.labels.each { name, value ->
-            startCmd << '-l' << "'${name}=${value}'".toString()
+            startCmd << '-l' << "${name}=${value}".toString()
         }
         startCmd << me.dockerImage
 
