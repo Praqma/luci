@@ -36,13 +36,13 @@ luci {
           dockerImage = 'debian:jessie'
           labels 'one'
         }
-        /*
+
         staticSlave('anotherSlave') {
-          //          dockerHost = hosts.slaves
+          dockerHost = hosts.slaves
           dockerImage = 'debian:jessie'
           labels 'two', 'three'
         }
-        */
+        
         /* onDemandSlave('shell') {
           dockerImage 'luci/slave-shell:0.2'
           } */
