@@ -13,6 +13,9 @@ class Context {
 
     final Collection<AuxServiceModel> auxServices = []
 
+    /** All hosts for the lucibox */
+    final Collection<DockerHost> hosts = [] as Set
+
     @Delegate
     final Containers containers
 
@@ -31,6 +34,10 @@ class Context {
      */
     DockerHost serviceHost(ServiceEnum service) {
         return box.getService(service).dockerHost
+    }
+
+    void addHost(DockerHost host) {
+        if (host != null) hosts << host
     }
 
 }

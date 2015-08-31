@@ -134,6 +134,7 @@ class JenkinsModel extends BaseServiceModel {
     @Override
     @CompileDynamic
     void preStart(Context context) {
+        super.preStart(context)
         staticSlaves.values().each {
             context.auxServices << it
             it.preStart(context)

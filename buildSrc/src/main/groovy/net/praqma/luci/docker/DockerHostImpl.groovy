@@ -2,23 +2,17 @@ package net.praqma.luci.docker
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import net.praqma.luci.utils.ExternalCommand
+import net.praqma.luci.docker.net.praqma.luci.docker.hosts.DockerMachineHost
 
 @CompileStatic
 class DockerHostImpl implements DockerHost {
 
-    static DockerHostImpl fromDockerMachine(String name) {
-        StringBuffer out = "" << ""
-        StringBuffer err = "" << ""
-        int rc = new ExternalCommand().execute('docker-machine', 'env', name, out: out, err: err)
-        if (rc != 0) {
-            throw new RuntimeException(err.toString())
-        }
-        return fromEnvVarsString(out.toString()).orig("machine: ${name}")
+    static DockerHost fromDockerMachine(String name) {
+        return new DockerMachineHost(name)
     }
 
-    static DockerHostImpl getDefault() {
-        String dockerMachine = System.properties['net.praqma.luci.dockerMachine']
+    static DockerHost getDefault() {
+        String dockerMachine = System.properties['net.praqma.luci.dockerMachine'] as String
         if (dockerMachine != null) {
             println "Using ${dockerMachine} as default host. Specified as system property"
             return fromDockerMachine(dockerMachine)
@@ -28,7 +22,11 @@ class DockerHostImpl implements DockerHost {
     }
 
     static DockerHostImpl fromEnv() {
-        return (System.getenv("DOCKER_HOST") != null) ? fromVariables(System.getenv()).orig("env vars") : null
+        if (System.getenv("DOCKER_HOST") != null) {
+            return fromVariables(System.getenv()).orig("env vars") as DockerHostImpl
+        } else {
+            return null
+        }
     }
 
     static DockerHostImpl fromVariables(Map<String, String> map) {
@@ -47,6 +45,7 @@ class DockerHostImpl implements DockerHost {
         } else {
             h.certPath = null
         }
+        h.initialize()
         return h
     }
 
@@ -66,8 +65,5 @@ class DockerHostImpl implements DockerHost {
         return fromVariables(m)
     }
 
-    DockerHostImpl orig(String s) {
-        origination = s
-        return this
-    }
+
 }

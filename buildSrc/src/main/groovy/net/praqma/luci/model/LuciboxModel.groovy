@@ -92,6 +92,7 @@ class LuciboxModel {
      * isn't defined in the docker-compose
      */
     void preStart(Context context) {
+        context.addHost(dockerHost)
         serviceMap.values().each { it.preStart(context) }
     }
 
@@ -99,6 +100,8 @@ class LuciboxModel {
      * @return Containers belonging to this Lucibox
      */
     Map<String, ContainerInfo> containers(ContainerKind... kinds) {
+        dockerHost.initialize()
+
         Map<String, ContainerInfo> containers = [:]
         // The format option for docker ps is not able to show name. It would be nice if it could
         new ExternalCommand(dockerHost).execute(
@@ -128,6 +131,9 @@ class LuciboxModel {
 
         Context context = new Context(this, dockerHost)
         preStart(context)
+
+        context.hosts.each { it.initialize() }
+
         workDir.mkdirs()
         File yaml = new File(workDir, 'docker-compose.yml')
         new FileWriter(yaml).withWriter { Writer w ->
@@ -167,6 +173,7 @@ class LuciboxModel {
     }
 
     private void removeContainers(ContainerKind... kinds) {
+        // TODO only containers on main host is removed
         Collection<ContainerInfo> containers = containers(kinds).values()
         if (containers.size() > 0) {
             dockerHost.removeContainers(containers*.id)

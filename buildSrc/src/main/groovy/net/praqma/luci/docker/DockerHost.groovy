@@ -12,8 +12,34 @@ trait DockerHost {
     boolean tls
     File certPath
 
-    /** A text describe where this hos is originaiton form, e.g. if it is a docker mahcine or env vars */
+    boolean isInitialized = false
+
+    /** A text describe where this hos is origination form, e.g. if it is a docker mahcine or env vars */
     String origination = '<unknown>'
+
+    URI getUri() {
+        if (isInitialized) {
+            return this.@uri
+        } else {
+            throw new RuntimeException('Host not initialized')
+        }
+    }
+
+    boolean isTls() {
+        if (isInitialized) {
+            return this.@tls
+        } else {
+            throw new RuntimeException('Host not initialized')
+        }
+    }
+
+    File getCertPath() {
+        if (isInitialized) {
+            return this.@certPath
+        } else {
+            throw new RuntimeException('Host not initialized')
+        }
+    }
 
     String getHost() {
         return uri.host
@@ -69,6 +95,29 @@ trait DockerHost {
     }
 
     String toString() {
-        return "${uri}[${origination}]"
+        if (isInitialized) {
+            return "${uri}[${origination}]"
+        } else {
+            return "<uninitialized>[${origination}]"
+        }
     }
+
+    void initialize() {
+        isInitialized = true
+    }
+
+    void initFrom(DockerHost dh) {
+        this.uri = dh.uri
+        this.certPath = dh.certPath
+        this.tls = dh.tls
+        this.origination = dh.origination
+        this.isInitialized = true
+    }
+
+    DockerHost orig(String s) {
+        origination = s
+        return this
+    }
+
+
 }

@@ -5,22 +5,19 @@ import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.docker.DockerHostImpl
 
 @CompileStatic
-class GradleDockerHost implements DockerHost {
+class GradleDockerHost {
 
     String name
+
+    @Delegate
+    DockerHost dockerHost
 
     GradleDockerHost(String name) {
         this.name = name
     }
 
     void dockerMachine(String name) {
-        copyFrom(DockerHostImpl.fromDockerMachine(name))
+        dockerHost = DockerHostImpl.fromDockerMachine(name)
     }
 
-    private copyFrom(DockerHost dh) {
-        this.uri = dh.uri
-        this.certPath = dh.certPath
-        this.tls = dh.tls
-        this.origination = dh.origination
-    }
 }
