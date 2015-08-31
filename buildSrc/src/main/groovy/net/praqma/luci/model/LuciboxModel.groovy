@@ -188,11 +188,11 @@ class LuciboxModel {
 
         String header = "Lucibox: ${name}"
         println "\n${header}\n${'=' * header.length()}"
-        println "Primary host: ${dockerHost}"
+        println "Primary host: ${dockerHost.asString()}"
 
         println "Aux services:"
         context.auxServices.each { AuxServiceModel aux ->
-            println "\t${aux.serviceName} @ ${aux.dockerHost}"
+            println "\t${aux.serviceName} @ ${aux.dockerHost.asString()}"
         }
     }
 }

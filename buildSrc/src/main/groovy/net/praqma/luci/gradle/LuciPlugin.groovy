@@ -4,6 +4,7 @@ import net.praqma.luci.dev.BuildAllImages
 import net.praqma.luci.dev.DockerImageBuilder
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.docker.DockerImage
+import net.praqma.luci.docker.DockerMachineFactory
 import net.praqma.luci.model.JenkinsModel
 import net.praqma.luci.model.LuciboxModel
 import net.praqma.luci.utils.SystemCheck
@@ -24,9 +25,11 @@ class LuciPlugin implements Plugin<Project> {
 
         def boxes = project.container(LuciboxModel)
         def hosts = project.container(GradleDockerHost)
+        def factories = project.container(DockerMachineFactory)
 
         project.luci.extensions.boxes = boxes
         project.luci.extensions.hosts = hosts
+        project.luci.extensions.machineFactories = factories
 
         project.afterEvaluate {
             createTasks(project)

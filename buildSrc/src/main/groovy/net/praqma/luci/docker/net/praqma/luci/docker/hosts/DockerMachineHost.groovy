@@ -33,6 +33,12 @@ class DockerMachineHost implements DockerHost {
         StringBuffer err = "" << ""
         int rc = ec.execute('docker-machine', 'env', machineName, out: out, err: err)
         if (rc != 0) {
+            String errString = err.toString()
+            if (factory != null && errString.contains("Host does not exist")) {
+                factory.getOrCreate(machineName)
+                initWithCountDown(n - 1)
+                return
+            }
             if (err.toString().contains("is not running.")) {
                 println "Starting machine: ${machineName}"
                 rc = ec.execute('docker-machine', 'start', machineName)

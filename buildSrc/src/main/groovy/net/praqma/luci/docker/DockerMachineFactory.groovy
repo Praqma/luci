@@ -2,6 +2,7 @@ package net.praqma.luci.docker
 
 import groovy.text.SimpleTemplateEngine
 import groovy.text.TemplateEngine
+import net.praqma.luci.docker.net.praqma.luci.docker.hosts.DockerMachineHost
 import net.praqma.luci.utils.ExternalCommand
 
 /**
@@ -20,7 +21,7 @@ class DockerMachineFactory {
         this.name = name
     }
 
-    DockerHostImpl getOrCreate(String machineName) {
+    DockerHost getOrCreate(String machineName) {
         List cmd = ['docker-machine', 'create']
         Map<String, String> bindings = [ name: machineName]
         TemplateEngine engine = new SimpleTemplateEngine()
@@ -29,14 +30,13 @@ class DockerMachineFactory {
             cmd << expanded
         }
         StringBuffer err = "" << ""
-        println "JHS " + cmd
         println "Attempting to create machine: '${machineName}'"
-        int rc = new ExternalCommand().execute(cmd, err: err)
+        int rc = new ExternalCommand().execute(*cmd, err: err)
         if (rc == 0) {
-            return DockerHost.fromDockerMachine(machineName)
+            return new DockerMachineHost(machineName)
         } else {
             // TODO check if exist
-            throw new RuntimeException(err.toString(0))
+            throw new RuntimeException(err.toString())
         }
     }
 

@@ -2,25 +2,32 @@ apply plugin: net.praqma.luci.gradle.LuciPlugin
 
 luci {
 
+  machineFactories {
+    virtualBox {
+      // Arguments passed to 'docker-machine create'. $name is expaned to the
+      // machine name
+      createArgs = ['-d', 'virtualbox', '$name']
+    }
+  }
+  
   hosts {
-    lucibox {
-      // Fails if docker macine lucibox doesn't exists
+    boxone {
+      // Fails if docker machine lucibox doesn't exists
       // TODO implement other settings, like explicit url
-      dockerMachine 'lucibox'
+      dockerMachine factory: machineFactories.virtualBox
     }
     slaves {
-      dockerMachine 'slaves'
+      dockerMachine(name: 'slaves', factory: machineFactories.virtualBox)
     }
-    
   }
   
   boxes {
-
+    
     // A Lucibox name 'demo'
     demo {
       socatForTlsHackPort = 2375
-      dockerHost = hosts.lucibox
-
+      dockerHost = hosts.boxone
+      
       // Use data container so service containers and be deleted without losing data.
       // This can also be specified on individual services
       useDataContainer = true
@@ -29,14 +36,14 @@ luci {
         // List of plugins to install. Explicit version numbers or latest
         // Hmmm, maybe I don't know what chucknorris is, but I don't see Chuck anywhere, but it is in the list of installed plugins
         // plugins chucknorris: '0.5', greenballs: 'latest' TODO is broken, jenkins fails to start
-
+        
         
         staticSlave('default') {
           executors = 3 // default is 2
           dockerImage = 'debian:jessie'
           labels 'one'
         }
-
+        
         staticSlave('anotherSlave') {
           dockerHost = hosts.slaves
           dockerImage = 'debian:jessie'
@@ -44,12 +51,12 @@ luci {
         }
         
         /* onDemandSlave('shell') {
-          dockerImage 'luci/slave-shell:0.2'
-          } */
-
+           dockerImage 'luci/slave-shell:0.2'
+           } */
+        
         // Add groovy files in the jenkinsInit.d dir to the jenkins init.d dir
         initFiles fileTree(dir: 'jenkinsInit.d', include: '**/*.groovy')
-
+        
         // You can also specify files with a Gradle CopySpec
         // See https://docs.gradle.org/current/userguide/working_with_files.html for some examples
         initFiles {  
@@ -61,7 +68,7 @@ luci {
           // Insert the project name in templates
           expand(name: name)
         }
-
+        
         // Generate a Jobdsl seed job (and execute it)
         seedJob.with {
           name = "{project.name}_Seed_Job"
@@ -85,7 +92,7 @@ luci {
         // Set executors on Masters. Defautls is none
         executors = 5
         
-         // Add a number of static slaves
+        // Add a number of static slaves
         (1..2).each { int index -> 
           staticSlave("worker$index") {
             // set executors on slaves 
@@ -107,5 +114,6 @@ luci {
       }
     }
   }
-    
 }
+
+  

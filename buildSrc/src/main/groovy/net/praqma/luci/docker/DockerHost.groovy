@@ -102,6 +102,10 @@ trait DockerHost {
         }
     }
 
+    String asString() {
+        return toString()
+    }
+
     void initialize() {
         isInitialized = true
     }
