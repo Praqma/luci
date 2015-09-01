@@ -15,11 +15,13 @@ class ContainerInfo {
     final String luciName
     final ContainerKind kind
     final String status
+    final DockerHost host
 
-    ContainerInfo(String id, String luciName, String kind, String status) {
+    ContainerInfo(String id, String luciName, String kind, String status, DockerHost host) {
         this.id = id
         this.luciName = luciName
         this.kind = ContainerKind.from(kind)
         this.status = status
+        this.host = host
     }
 }

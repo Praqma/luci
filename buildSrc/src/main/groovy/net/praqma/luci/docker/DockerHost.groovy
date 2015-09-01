@@ -94,6 +94,31 @@ trait DockerHost {
         return ports
     }
 
+    /**
+     * @return Containers on this docker host belonging to the given Lucibox
+     */
+    Map<String, ContainerInfo> containers(LuciboxModel box, ContainerKind... kinds) {
+        Map<String, ContainerInfo> containers = [:]
+        // The format option for docker ps is not able to show name. It would be nice if it could
+        new ExternalCommand(this).execute(
+                'docker', 'ps', '-a', '--format=\'{{.Label "net.praqma.lucibox.name"}} {{.Label "net.praqma.lucibox.luciname"}} {{.Label "net.praqma.lucibox.kind"}} {{.ID}} {{.Status}}\'',
+                "--filter='name=${box.name}'" as String, out: {
+            it.eachLine { String line ->
+                def (boxName, luciName, kind, id, status) = line.split(' ')
+                if (kinds.length == 0 || kinds.find { it.name() == kind } != null) {
+                    if (boxName == box.name) {
+                        def old = containers.put(luciName, new ContainerInfo(id, luciName, kind, status, this))
+                        if (old != null) {
+                            throw new IllegalStateException("Multiple container named '${luciName}' in box '${boxName}'")
+                        }
+                    }
+                }
+            }
+        })
+        return containers
+    }
+
+
     String toString() {
         if (isInitialized) {
             return "${uri}[${origination}]"

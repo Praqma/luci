@@ -1,11 +1,16 @@
 package net.praqma.luci.model
 
-import net.praqma.luci.docker.Container
+import groovy.transform.Memoized
+import groovyx.gpars.GParsPool
+import groovyx.gpars.dataflow.DataflowQueue
+import groovyx.gpars.dataflow.Promise
 import net.praqma.luci.docker.ContainerInfo
 import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.utils.ExternalCommand
 import org.yaml.snakeyaml.Yaml
+
+import static groovyx.gpars.dataflow.Dataflow.task
 
 class LuciboxModel {
 
@@ -21,7 +26,10 @@ class LuciboxModel {
     /** Port on web frontend (nginx) */
     int port = 80
 
-    private Map<ServiceEnum, ?> serviceMap = [:]
+    /**
+     * Mapping luciname of service to the model class
+     */
+    private Map<String, BaseServiceModel> serviceMap = [:]
 
     DockerHost dockerHost
 
@@ -33,11 +41,20 @@ class LuciboxModel {
     }
 
     BaseServiceModel getService(ServiceEnum service) {
-        return serviceMap[service]
+        return getService(service.name)
+    }
+
+    BaseServiceModel getService(String luciName) {
+        return serviceMap[luciName]
     }
 
     Collection<BaseServiceModel> getServices() {
         return serviceMap.values()
+    }
+
+    void addService(BaseServiceModel service) {
+        assert serviceMap[service.serviceName] == null
+        serviceMap[service.serviceName] = service
     }
 
     void service(String serviceName, Closure closure) {
@@ -46,7 +63,7 @@ class LuciboxModel {
         model.serviceName = serviceName
         model.box = this
         model.dockerImage = e.dockerImage.imageString
-        ServiceEnum old = serviceMap.put(e, model)
+        ServiceEnum old = serviceMap.put(e.name, model)
         if (old != null) {
             throw new RuntimeException("Double declaration of service '${serviceName}'")
         }
@@ -66,8 +83,7 @@ class LuciboxModel {
 
     private Map buildYamlMap(Context context) {
         Map m = [:]
-        serviceMap.each { ServiceEnum service, BaseServiceModel model ->
-            String s = service.getName()
+        serviceMap.each { String s, BaseServiceModel model ->
             m[s] = model.buildComposeMap(context)
         }
         if (socatForTlsHackPort && dockerHost.tls) {
@@ -100,26 +116,23 @@ class LuciboxModel {
      * @return Containers belonging to this Lucibox
      */
     Map<String, ContainerInfo> containers(ContainerKind... kinds) {
-        dockerHost.initialize()
-
-        Map<String, ContainerInfo> containers = [:]
-        // The format option for docker ps is not able to show name. It would be nice if it could
-        new ExternalCommand(dockerHost).execute(
-                'docker', 'ps', '-a', '--format=\'{{.Label "net.praqma.lucibox.name"}} {{.Label "net.praqma.lucibox.luciname"}} {{.Label "net.praqma.lucibox.kind"}} {{.ID}} {{.Status}}\'',
-                "--filter='name=${name}'" as String, out: {
-            it.eachLine { String line ->
-                def (boxName, luciName, kind, id, status) = line.split(' ')
-                if (kinds.length == 0 || kinds.find { it.name() == kind } != null) {
-                    if (boxName == name) {
-                        def old = containers.put(luciName, new ContainerInfo(id, luciName, kind, status))
-                        if (old != null) {
-                            throw new IllegalStateException("Multiple container named '${luciName}' in box '${boxName}'")
-                        }
-                    }
-                }
+        DataflowQueue queue = new DataflowQueue<>()
+        Map<String, ContainerInfo> answer = [:].asSynchronized()
+        allHosts.each { DockerHost host ->
+            task {
+                host.initialize()
+                return host.containers(this, kinds)
+            }.whenBound { queue << it }
+        }
+        allHosts.size().times {
+            def val = queue.val
+            if (val instanceof Throwable) {
+                throw val
+            } else {
+                answer.putAll(val)
             }
-        })
-        return containers
+        }
+        return answer
     }
 
     /**
@@ -149,6 +162,7 @@ class LuciboxModel {
 
         new ExternalCommand(dockerHost).execute('docker-compose', '-f', yaml.path, 'up', '-d')
 
+        println "Lucibox '${name} will use docker hosts: ${allHosts*.asString()}"
         println ""
         println "Lucibox '${name}' running at http://${dockerHost.host}:${port}"
         println "docker-compose yaml file is at ${yaml.toURI().toURL()}"
@@ -173,10 +187,11 @@ class LuciboxModel {
     }
 
     private void removeContainers(ContainerKind... kinds) {
-        // TODO only containers on main host is removed
         Collection<ContainerInfo> containers = containers(kinds).values()
-        if (containers.size() > 0) {
-            dockerHost.removeContainers(containers*.id)
+        GParsPool.withPool {
+            containers.eachParallel { ContainerInfo ci ->
+                ci.host.removeContainers([ci.id])
+            }
         }
     }
 
@@ -194,6 +209,11 @@ class LuciboxModel {
         context.auxServices.each { AuxServiceModel aux ->
             println "\t${aux.serviceName} @ ${aux.dockerHost.asString()}"
         }
+    }
+
+    @Memoized
+    Collection<DockerHost> getAllHosts() {
+        return services*.dockerHost as Set
     }
 }
 
