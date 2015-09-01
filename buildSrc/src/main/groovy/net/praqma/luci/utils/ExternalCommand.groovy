@@ -26,6 +26,9 @@ class ExternalCommand {
         if (c) {
             cmd = ([c] + cmd[1..-1])
         }
+        if (mapArgs.log) {
+            println "CMD: ${cmd.join(' ')}"
+        }
         ProcessBuilder pb = new ProcessBuilder(cmd)
         Map<String, String> env = pb.environment()
         if (dockerHost == null) {
@@ -55,7 +58,11 @@ class ExternalCommand {
         // stream it is writing to
         process.outputStream.close()
 
-        return process.exitValue()
+        int exitValue = process.exitValue()
+        if (mapArgs.log) {
+            println "CMD: ${cmd.join(' ')}, exit value: ${exitValue}"
+        }
+        return exitValue
     }
 
     private Thread inThread(input, OutputStream outputStream) {
