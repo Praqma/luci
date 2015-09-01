@@ -1,9 +1,7 @@
 package net.praqma.luci.gradle
 
 import net.praqma.luci.dev.BuildAllImages
-import net.praqma.luci.dev.DockerImageBuilder
 import net.praqma.luci.docker.DockerHost
-import net.praqma.luci.docker.DockerImage
 import net.praqma.luci.docker.DockerMachineFactory
 import net.praqma.luci.model.JenkinsModel
 import net.praqma.luci.model.LuciboxModel
@@ -39,7 +37,6 @@ class LuciPlugin implements Plugin<Project> {
 
     void createTasks(Project project) {
         TaskContainer tasks = project.tasks
-        DockerHost defaultHost = project.luci.defaultHost
 
         // General Luci tasks
         tasks.create('luciSystemCheck') {
@@ -58,8 +55,14 @@ class LuciPlugin implements Plugin<Project> {
             description 'Build all images needed for Luci. They are built on all defined hosts.'
 
             doFirst {
+                DockerHost defaultHost = project.luci.defaultHost
+                if (defaultHost == null) {
+                    throw new GradleException("No default docker host found")
+                }
+
                 logger.lifecycle("Build images on ${defaultHost.uri}")
-                boolean sucess = new BuildAllImages().build(project.luci.hosts)
+                boolean doPush = false
+                boolean sucess = new BuildAllImages().build(defaultHost, doPush)
                 if (!sucess) {
                     throw new GradleException("Error building images")
                 }
@@ -69,7 +72,7 @@ class LuciPlugin implements Plugin<Project> {
         // Box specific tasks
         project.luci.boxes.each { LuciboxModel box ->
             if (box.dockerHost == null) {
-                box.dockerHost = defaultHost
+                box.dockerHost =  project.luci.defaultHost
             }
             // Task to generate docker-compose yaml and other things needed
             // to star the lucibox

@@ -1,12 +1,12 @@
 package net.praqma.luci.dev
 
+import groovyx.gpars.dataflow.DataflowVariable
+import groovyx.gpars.dataflow.Promise
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.docker.DockerHostImpl
 import net.praqma.luci.utils.ClasspathResources
-import org.apache.tools.ant.util.ResourceUtils
 
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicBoolean
+import static groovyx.gpars.dataflow.Dataflow.task
 
 /**
  * Build all docker images for Luci
@@ -25,7 +25,7 @@ class BuildAllImages {
         }
     }
 
-    boolean build(DockerHost dockerHost = null) {
+    boolean build(DockerHost dockerHost = null, boolean doPush = false) {
         if (dockerHost == null) {
             dockerHost = DockerHostImpl.getDefault()
         }
@@ -45,47 +45,66 @@ class BuildAllImages {
             props.load(it)
         }
 
-        Map<String, DockerImageBuilder> builders = props.collectEntries { String key, String version ->
+        /**
+         * Mapping (full) image name to the exit code for the build of that image
+         */
+        Map<String, DataflowVariable<Integer>> buildResults = ([:].withDefault {
+            new DataflowVariable<Integer>()
+        }).asSynchronized()
+
+
+        Collection<DockerImage> images = props.collect { String key, String version ->
             File dir = new File(dockerDir, key)
             assert dir.exists()
-            ["luci/${key}:${version}" as String, new DockerImageBuilder(dir, version)]
+            new DockerImage(dir, version)
         }
+        Collection<String> imageNames = images*.fullImageName
 
-        builders.values().each { DockerImageBuilder builder ->
-            String baseImage = builder.baseImage
-            if (baseImage.startsWith('luci/')) {
-                DockerImageBuilder baseBuilder = builders[baseImage]
-                if (baseBuilder == null) {
-                    println "WARNING: '${builder.name}' has base '${baseImage}' which is not part of build. Did you forget to update version?"
+        Collection<Promise> tasks = []
+        images.each { DockerImage image ->
+            Promise<Integer> buildTask = task {
+                String baseImage = image.baseImage
+                if (baseImage.startsWith('luci/')) {
+                    if (!imageNames.contains(baseImage)) {
+                        println "WARNING: '${image.name}' has base '${baseImage}' which is not part of build. Did you forget to update version?"
+                    }
                 } else {
-                    baseBuilder.addDependant(builder)
+                    baseImage = 'none'
+                }
+                int rc = 1
+                try {
+                    // Get rc for base image.
+                    DataflowVariable<Integer> rcVar = buildResults[baseImage]
+                    assert rcVar != null
+                    if (rcVar.val == 0) {
+                        println "Building image ${image.fullImageName} with base ${baseImage}"
+                        rc = image.build(dockerHost)
+                    } else {
+                        println "Skipping ${image.name}. Base image is not built"
+                    }
+                } finally {
+                    buildResults[image.fullImageName] << rc
+                    println "Finish '${image.fullImageName}' with rc: ${rc}"
+                    return rc
                 }
             }
-        }
-
-        builders.values().each { DockerImageBuilder builder ->
-            builder.latch = new CountDownLatch(builder.initialLatchCount)
-        }
-
-        Collection<Thread> threads = []
-        AtomicBoolean allSuccess = new AtomicBoolean(true)
-        builders.values().each { DockerImageBuilder builder ->
-            threads << Thread.start {
-                boolean success = builder.executeBuild(dockerHost)
-                synchronized (allSuccess) {
-                    allSuccess.set(allSuccess.get() && success)
+            tasks << buildTask
+            if (doPush) {
+                Promise<Integer> push = buildTask.then { int rc -> // return code from build task
+                    if (rc == 0) {
+                        rc = image.push(dockerHost)
+                    }
+                    return rc
                 }
+                tasks << push
             }
         }
-
-        threads.each { it.join() }
-        println "DONE. Built all images"
-        return allSuccess.get()
+        // Set build result for 'none' to 0, so build begins for images that doesn't depend on luci images
+        buildResults['none'] << 0
+        tasks.each { it.get() }
+        boolean answer = tasks.every { it.get() == 0}
+        println "DONE. Built all images ${tasks.size()}"
+        return answer
     }
-
-    static void main(String[] args) {
-        new BuildAllImages().build()
-    }
-
 
 }
