@@ -2,6 +2,7 @@ package net.praqma.luci.utils
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.Memoized
 
 import java.util.regex.Matcher
 
@@ -17,12 +18,6 @@ class Binary {
 
     String name
     String minVersion
-
-    @Lazy
-    String actualVersion = detectActualVersion()
-
-    @Lazy
-    String versionOutput = getVersionLine()
 
     /** Is this binary critical for Luci to work? */
     boolean critical = true
@@ -62,7 +57,8 @@ class Binary {
         return file?.path
     }
 
-    String getVersionLine() {
+    @Memoized
+    private String getVersionLine() {
         if (executable == null) {
             throw new RuntimeException("No executable found for '${name}'")
         }
@@ -73,23 +69,23 @@ class Binary {
     void report(PrintWriter out) {
         out.println("${name}:")
         if (!executable) {
-            out.println "\tno exectuable found"
+            out.println "\tno executable found"
         } else {
             out.println("\tExecutable: ${executable}")
             if (actualVersion) {
-                out.println "\tVersion: ${actualVersion} (output: '${versionOutput}')"
+                out.println "\tVersion: ${actualVersion} (output: '${versionLine}')"
             } else {
-                out.println "\tUnable to detect version from: ${versionOutput}"
+                out.println "\tUnable to detect version from: ${versionLine}"
             }
             out.println "\tMinimum required version: ${minVersion}"
         }
         out.flush()
     }
 
-    @CompileDynamic
-    private String detectActualVersion() {
+    @Memoized @CompileDynamic
+    private String getActualVersion() {
         if (executable) {
-            Matcher matcher = versionOutput =~ extractVersionPattern
+            Matcher matcher = versionLine =~ extractVersionPattern
             if (matcher.matches()) {
                 return matcher[0][1]
             } else {
@@ -105,7 +101,7 @@ class Binary {
             path.addAll(pathToList(luciPath))
         }
         path.addAll(pathToList(System.getenv('PATH')))
-        return path.collect { new File(it)}
+        return path.collect { new File(it) }
     }
 
     private static List<String> pathToList(String pathString) {
