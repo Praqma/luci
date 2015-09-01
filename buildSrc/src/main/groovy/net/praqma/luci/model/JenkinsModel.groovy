@@ -42,7 +42,7 @@ class JenkinsModel extends BaseServiceModel {
      * @return The port for the docker cloud
      */
     private int cloudPort() {
-        if (box.socatForTlsHackPort != null) {
+        if (box.socatForTlsHackPort == null) {
             return box.dockerHost.port
         } else {
             box.socatForTlsHackPort
