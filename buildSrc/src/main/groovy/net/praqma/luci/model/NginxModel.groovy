@@ -6,10 +6,6 @@ class NginxModel extends BaseServiceModel {
 
     private Collection<User> users = []
 
-    NginxModel() {
-        this.includeInWebfrontend = false
-    }
-
     def user(String name, String password) {
         users << new User(name, password)
     }

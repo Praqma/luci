@@ -22,7 +22,7 @@ abstract class BaseServiceModel {
      */
     Boolean useDataContainer
 
-    boolean includeInWebfrontend = true
+    boolean includeInWebfrontend = false
 
     Map buildComposeMap(Context context) {
         List<String> volumes_from = []

@@ -3,7 +3,7 @@ package net.praqma.luci.model
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class ArtifactoryModel extends BaseServiceModel{
+class ArtifactoryModel extends BaseServiceModel implements WebfrontendService {
 
 
     @Override

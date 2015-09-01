@@ -2,16 +2,12 @@ package net.praqma.luci.model
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
-import net.praqma.luci.docker.Container
-import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.utils.ClasspathResources
 import net.praqma.luci.utils.ExternalCommand
-import org.gradle.api.Project
-import org.gradle.api.file.CopySpec
 
 @CompileStatic
-class JenkinsModel extends BaseServiceModel {
+class JenkinsModel extends BaseServiceModel implements WebfrontendService {
 
     int slaveAgentPort = -1 // -1 => Let LUCI assign port
 
@@ -113,6 +109,7 @@ class JenkinsModel extends BaseServiceModel {
         slave.serviceName = "${ServiceEnum.JENKINS.name}${slaveName.capitalize()}"
         slave.box = box
         staticSlaves[slaveName] = slave
+        box.addService(slave)
     }
 
     void onDemandSlave(String slaveName, Closure closure) {
