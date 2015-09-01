@@ -40,13 +40,14 @@ luci {
         
         staticSlave('default') {
           executors = 3 // default is 2
-          dockerImage = 'debian:jessie'
+          // Use java tools image by Luci. But you can use any image you like
+          dockerImage = 'luci/staticslave-javatools:0.2'
           labels 'one'
         }
         
         staticSlave('anotherSlave') {
           dockerHost = hosts.slaves
-          dockerImage = 'debian:jessie'
+          dockerImage = 'luci/staticslave-javatools:0.2'
           labels 'two', 'three'
         }
         
