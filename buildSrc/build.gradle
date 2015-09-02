@@ -12,7 +12,7 @@ dependencies {
     compile "org.codehaus.groovy:groovy-all:${groovy.lang.GroovySystem.version}"
     compile 'org.yaml:snakeyaml:1.14'
     compile 'com.google.guava:guava:19.0-rc1'
-    compile 'org.codehaus.gpars:gpars:1.2.0'
+    compile 'org.codehaus.gpars:gpars:1.2.1'
 }
 
 test {
