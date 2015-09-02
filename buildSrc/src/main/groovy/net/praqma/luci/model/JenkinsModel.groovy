@@ -130,11 +130,11 @@ class JenkinsModel extends BaseServiceModel implements WebfrontendService {
 
     @Override
     @CompileDynamic
-    void preStart(Context context) {
-        super.preStart(context)
+    void prepare(Context context) {
+        super.prepare(context)
         staticSlaves.values().each {
             context.auxServices << it
-            it.preStart(context)
+            it.prepare(context)
         }
         actions.each {
             it()

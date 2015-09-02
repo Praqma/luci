@@ -3,7 +3,6 @@ package net.praqma.luci.model
 import groovy.transform.Memoized
 import groovyx.gpars.GParsPool
 import groovyx.gpars.dataflow.DataflowQueue
-import groovyx.gpars.dataflow.Promise
 import net.praqma.luci.docker.ContainerInfo
 import net.praqma.luci.docker.ContainerKind
 import net.praqma.luci.docker.DockerHost
@@ -107,9 +106,9 @@ class LuciboxModel {
      * This is for example use to create data containers and other containers that
      * isn't defined in the docker-compose
      */
-    void preStart(Context context) {
+    void prepare(Context context) {
         context.addHost(dockerHost)
-        serviceMap.values().each { it.preStart(context) }
+        serviceMap.values().each { it.prepare(context) }
     }
 
     /**
@@ -143,7 +142,7 @@ class LuciboxModel {
         takeDown()
 
         Context context = new Context(this, dockerHost)
-        preStart(context)
+        prepare(context)
 
         context.hosts.each { it.initialize() }
 
@@ -196,10 +195,8 @@ class LuciboxModel {
     }
 
     void printInformation(File workDir) {
-        // TODO look at code duplication with bringUp.
-        // No arg should be needed in this method
         Context context = new Context(this, dockerHost)
-        preStart(context)
+        prepare(context)
 
         String header = "Lucibox: ${name}"
         println "\n${header}\n${'=' * header.length()}"

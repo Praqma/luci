@@ -46,7 +46,7 @@ abstract class BaseServiceModel {
 
     }
 
-    void preStart(Context context) {
+    void prepare(Context context) {
         context.addHost(dockerHost)
     }
 

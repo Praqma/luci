@@ -1,6 +1,5 @@
 package net.praqma.luci.model
 
-import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.utils.ExternalCommand
 
 /**
@@ -13,7 +12,7 @@ trait AuxServiceModel {
 
     def prepareService(Context context) {
         BaseServiceModel me = this as BaseServiceModel
-        me.preStart(context)
+        me.prepare(context)
         return me.buildComposeMap(context)
     }
 
