@@ -45,6 +45,7 @@ class DockerHostImpl implements DockerHost {
         } else {
             h.certPath = null
         }
+        // Initialize is a noop for this host. So mark it now, no harm in that
         h.initialize()
         return h
     }
