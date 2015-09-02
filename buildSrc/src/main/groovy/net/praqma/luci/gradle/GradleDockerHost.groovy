@@ -28,4 +28,8 @@ class GradleDockerHost {
         DockerMachineFactory factory = map.factory as DockerMachineFactory
         dockerHost = new DockerMachineHost(machineName, factory)
     }
+
+    String toString() {
+        return dockerHost ? dockerHost.toString() : super.toString()
+    }
 }
