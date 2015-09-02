@@ -15,14 +15,14 @@ import net.praqma.luci.utils.ExternalCommand
 @CompileStatic
 class Container {
 
-    private DockerImage dockerImage
+    private Images dockerImage
     final String luciName
     private ContainerKind kind
     private LuciboxModel box
     private Set<String> volumes = [] as Set
     private ExternalCommand ec
 
-    Container(DockerImage dockerImage, LuciboxModel box, DockerHost host, ContainerKind kind, String name) {
+    Container(Images dockerImage, LuciboxModel box, DockerHost host, ContainerKind kind, String name) {
         this.dockerImage = dockerImage
         this.box = box
         this.luciName = name

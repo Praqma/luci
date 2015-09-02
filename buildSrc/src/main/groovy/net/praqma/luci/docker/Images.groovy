@@ -1,14 +1,13 @@
 package net.praqma.luci.docker
 
 import groovy.transform.Memoized
-import net.praqma.luci.model.ArtifactoryModel
-import net.praqma.luci.model.JenkinsModel
-import net.praqma.luci.model.NginxModel
 
 /**
  * Constants for docker images
+ *
+ * Version numbers are read from imageVerions.properties
  */
-enum DockerImage {
+enum Images {
 
     DATA('debian:jessie'),
     STORAGE('luci/data'),
@@ -23,7 +22,7 @@ enum DockerImage {
 
     final String imageString
 
-    DockerImage(String imageString) {
+    Images(String imageString) {
         this.imageString = ensureVersion(imageString)
     }
 

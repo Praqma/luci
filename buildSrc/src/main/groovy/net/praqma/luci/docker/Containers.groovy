@@ -38,13 +38,13 @@ class Containers {
      * Storage container for all services
      */
     Container storage(DockerHost host) {
-        return ensureContainerExists(host, 'storage', DockerImage.STORAGE, ContainerKind.CACHE)
+        return ensureContainerExists(host, 'storage', Images.STORAGE, ContainerKind.CACHE)
     }
 
     Container sshKeys(DockerHost host) {
-        return ensureContainerExists(host, 'sshKeys', DockerImage.DATA,
+        return ensureContainerExists(host, 'sshKeys', Images.DATA,
                 ContainerKind.CACHE, volumes: '/luci/etc/sshkeys') { Container container ->
-            new ExternalCommand(host).execute('docker', 'run', '--rm', container.volumesFromArg, DockerImage.TOOLS.imageString,
+            new ExternalCommand(host).execute('docker', 'run', '--rm', container.volumesFromArg, Images.TOOLS.imageString,
                     'ssh-keygen', '-t', 'rsa', '-b', '2048', '-C', 'jenkins@luci', '-f',
                     '/luci/etc/sshkeys/id_rsa', '-q', '-N', '')
 
@@ -54,7 +54,7 @@ class Containers {
     Container jenkinsConfig(JenkinsModel jenkins) {
         DockerHost host = jenkins.dockerHost
         String jenkinsHome = '/var/jenkins_home'
-        return createNewContainer(host, 'jenkinsConfig', DockerImage.DATA, ContainerKind.CACHE,
+        return createNewContainer(host, 'jenkinsConfig', Images.DATA, ContainerKind.CACHE,
                 volumes: ["${jenkinsHome}/init.groovy.d"]) { Container con ->
             jenkins.initFiles.each { File file ->
                 new ExternalCommand(host).execute('docker', 'cp', file.path, "${con.name}:/${jenkinsHome}/init.groovy.d")
@@ -64,7 +64,7 @@ class Containers {
     }
 
     Container java8mixin(DockerHost host) {
-        return ensureContainerExists(host, 'mixin-java8', DockerImage.MIXIN_JAVA8, ContainerKind.CACHE, volumes: '/luci/mixins/java')
+        return ensureContainerExists(host, 'mixin-java8', Images.MIXIN_JAVA8, ContainerKind.CACHE, volumes: '/luci/mixins/java')
     }
 
     /**
@@ -72,7 +72,7 @@ class Containers {
      */
     Container jenkinsSlave(DockerHost host) {
         String vol = '/luci/data/jenkinsSlave'
-        Container con = ensureContainerExists(host, 'jenkinsSlave', DockerImage.MIXIN_JAVA8,
+        Container con = ensureContainerExists(host, 'jenkinsSlave', Images.MIXIN_JAVA8,
                 ContainerKind.CACHE, volumes: [vol]) { Container container ->
             Container.Volume volume = container.volume(vol)
 
@@ -82,7 +82,7 @@ class Containers {
             }
 
             def ec = new ExternalCommand(host)
-            int rc = ec.execute('docker', 'run', '--rm', DockerImage.SERVICE_JENKINS.imageString, 'unzip', '-p',
+            int rc = ec.execute('docker', 'run', '--rm', Images.SERVICE_JENKINS.imageString, 'unzip', '-p',
                     '/usr/share/jenkins/jenkins.war', 'WEB-INF/slave.jar', out: c, err: System.err)
             assert rc == 0
 
@@ -91,7 +91,7 @@ class Containers {
 
             // Copy public key to jenkinsSlave as authorized keys
             // so Jenkins master can ssh to the slaves
-            rc = ec.execute('docker', 'run', '--rm', container.volumesFromArg, DockerImage.TOOLS.imageString,
+            rc = ec.execute('docker', 'run', '--rm', container.volumesFromArg, Images.TOOLS.imageString,
                     'sh', '-c', "echo '${jenkinsPublicKey}' > /luci/data/jenkinsSlave/authorized_keys")
             assert rc == 0
         }
@@ -105,25 +105,25 @@ class Containers {
         DockerHost host = box.dockerHost
         Container sshKeyContainer = sshKeys(host)
         StringBuffer out = "" << ""
-        int rc = new ExternalCommand(host).execute('docker', 'run', '--rm', sshKeyContainer.volumesFromArg, DockerImage.TOOLS.imageString,
+        int rc = new ExternalCommand(host).execute('docker', 'run', '--rm', sshKeyContainer.volumesFromArg, Images.TOOLS.imageString,
                 'cat', '/luci/etc/sshkeys/id_rsa.pub', out: out)
         assert rc == 0
         return out.toString()
     }
 
-    private Container createNewContainer(Map<String, ?> args, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+    private Container createNewContainer(Map<String, ?> args, DockerHost host, String luciName, Images image, ContainerKind kind, Closure initBlock = null) {
         return createContainerHelper(args, true, host, luciName, image, kind, initBlock)
     }
 
-    private Container ensureContainerExists(DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+    private Container ensureContainerExists(DockerHost host, String luciName, Images image, ContainerKind kind, Closure initBlock = null) {
         return ensureContainerExists([:], host, luciName, image, kind, initBlock)
     }
 
-    private Container ensureContainerExists(Map<String, ?> args, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+    private Container ensureContainerExists(Map<String, ?> args, DockerHost host, String luciName, Images image, ContainerKind kind, Closure initBlock = null) {
         return createContainerHelper(args, false, host, luciName, image, kind, initBlock)
     }
 
-    private Container createContainerHelper(Map<String, ?> args, boolean createNew, DockerHost host, String luciName, DockerImage image, ContainerKind kind, Closure initBlock = null) {
+    private Container createContainerHelper(Map<String, ?> args, boolean createNew, DockerHost host, String luciName, Images image, ContainerKind kind, Closure initBlock = null) {
         if (createNew) {
             Container container = new Container(image, box, host, kind, luciName)
             container.remove()

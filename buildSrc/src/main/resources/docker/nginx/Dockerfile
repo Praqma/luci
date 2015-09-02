@@ -6,9 +6,10 @@ RUN echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/a
 ENV NGINX_VERSION 1.9.4-1~jessie
 
 RUN apt-get update && \
-    apt-get install -y ca-certificates nginx=${NGINX_VERSION} && \
-    rm -rf /var/lib/apt/lists/*
-    
+    apt-get install -y ca-certificates nginx=${NGINX_VERSION}
+
+RUN apt-get install -y apache2-utils
+
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
 

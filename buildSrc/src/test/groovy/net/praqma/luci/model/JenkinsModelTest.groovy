@@ -1,7 +1,7 @@
 package net.praqma.luci.model
 
 import net.praqma.luci.docker.DockerHostTest
-import net.praqma.luci.docker.DockerImage
+import net.praqma.luci.docker.Images
 import net.praqma.luci.utils.ExternalCommand
 import org.junit.Test
 
@@ -22,7 +22,7 @@ class JenkinsModelTest {
 
         // Verify the sshkeys container
         new ExternalCommand(model.dockerHost).execute('docker', 'run', '--rm', ctx.sshKeys(model.dockerHost).volumesFromArg,
-                DockerImage.TOOLS.imageString, 'ls', '/luci/etc/sshkeys')
+                Images.TOOLS.imageString, 'ls', '/luci/etc/sshkeys')
 
         box.destroy()
     }
