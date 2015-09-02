@@ -4,8 +4,6 @@ import groovy.transform.Memoized
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.utils.ExternalCommand
 
-import java.util.concurrent.CountDownLatch
-
 /**
  * Helper class to build a single docker image
  */
@@ -44,9 +42,14 @@ class DockerImage {
     }
 
     int build(DockerHost host) {
+        Closure c = { InputStream stream ->
+            stream.eachLine { String line ->
+                println "${name}:\t${line}"
+            }
+        }
         ExternalCommand ec = new ExternalCommand(host)
         StringBuffer err = "" << ""
-        int rc = ec.execute('docker', 'build', '-t', fullImageName, dockerFile.parent, err: err)
+        int rc = ec.execute('docker', 'build', '-t', fullImageName, dockerFile.parent, err: err, out: c)
         if (rc != 0) {
             println "ERROR in ${name}"
             println "Error: " + err.toString()

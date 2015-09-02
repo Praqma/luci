@@ -1,12 +1,12 @@
 package net.praqma.luci.dev
 
+import groovyx.gpars.GParsPool
 import groovyx.gpars.dataflow.DataflowVariable
+import groovyx.gpars.dataflow.Dataflows
 import groovyx.gpars.dataflow.Promise
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.docker.DockerHostImpl
 import net.praqma.luci.utils.ClasspathResources
-
-import static groovyx.gpars.dataflow.Dataflow.task
 
 /**
  * Build all docker images for Luci
@@ -37,6 +37,8 @@ class BuildAllImages {
         }
 
         assert versionsFile.exists()
+
+        // Directory containing directory for each image to build
         File dockerDir = versionsFile.parentFile
         println "Build images in directory: ${dockerDir}"
 
@@ -45,25 +47,25 @@ class BuildAllImages {
             props.load(it)
         }
 
-        /**
-         * Mapping (full) image name to the exit code for the build of that image
-         */
-        Map<String, DataflowVariable<Integer>> buildResults = ([:].withDefault {
-            new DataflowVariable<Integer>()
-        }).asSynchronized()
-
-
         Collection<DockerImage> images = props.collect { String key, String version ->
-            File dir = new File(dockerDir, key)
-            assert dir.exists()
-            new DockerImage(dir, version)
+            File ctxDir = new File(dockerDir, key)
+            assert ctxDir.exists()
+            new DockerImage(ctxDir, version)
         }
         Collection<String> imageNames = images*.fullImageName
 
-        Collection<Promise> tasks = []
-        images.each { DockerImage image ->
-            Promise<Integer> buildTask = task {
+        // Mapping (full) image name to the exit code for the build of that imag
+        // The Dataflows are key by the full name of the image
+        Dataflows buildResults = new Dataflows()
+        // 'none' is speciel for no luci base image.
+        // Set build result for 'none' to 0, so build begins for images that doesn't depend on luci images
+        buildResults['none'] = 0
+
+        Collection<Integer> rcs = GParsPool.withPool(images.size()) {
+            // Collect images to the exit code for building it
+            images.collectParallel { DockerImage image ->
                 String baseImage = image.baseImage
+                int rc = 1 // set non-zero to indicate error until we have successful build
                 if (baseImage.startsWith('luci/')) {
                     if (!imageNames.contains(baseImage)) {
                         println "WARNING: '${image.name}' has base '${baseImage}' which is not part of build. Did you forget to update version?"
@@ -71,39 +73,28 @@ class BuildAllImages {
                 } else {
                     baseImage = 'none'
                 }
-                int rc = 1
                 try {
-                    // Get rc for base image.
-                    DataflowVariable<Integer> rcVar = buildResults[baseImage]
-                    assert rcVar != null
-                    if (rcVar.val == 0) {
+                    if (buildResults[baseImage] == 0) { // Will block until build result is ready
                         println "Building image ${image.fullImageName} with base ${baseImage}"
                         rc = image.build(dockerHost)
                     } else {
-                        println "Skipping ${image.name}. Base image is not built"
+                        println "Skipping ${image.fullImageName}. Base image (${baseImage}) is not built"
                     }
                 } finally {
-                    buildResults[image.fullImageName] << rc
+                    // Set result for this build, triggering dependent builds
+                    buildResults[image.fullImageName] = rc
                     println "Finish '${image.fullImageName}' with rc: ${rc}"
-                    return rc
                 }
-            }
-            tasks << buildTask
-            if (doPush) {
-                Promise<Integer> push = buildTask.then { int rc -> // return code from build task
-                    if (rc == 0) {
-                        rc = image.push(dockerHost)
-                    }
-                    return rc
+
+                if (doPush && rc == 0) {
+                    rc = image.push(dockerHost)
                 }
-                tasks << push
+                rc
             }
         }
-        // Set build result for 'none' to 0, so build begins for images that doesn't depend on luci images
-        buildResults['none'] << 0
-        tasks.each { it.get() }
-        boolean answer = tasks.every { it.get() == 0}
-        println "DONE. Built all images ${tasks.size()}"
+
+        boolean answer = rcs.every { it == 0 }
+        println "DONE. Built all images"
         return answer
     }
 
