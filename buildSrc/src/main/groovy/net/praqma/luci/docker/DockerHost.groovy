@@ -67,11 +67,15 @@ trait DockerHost {
      */
     Collection<Integer> boundPorts() {
         Collection<Integer> answer = [] as Set
-        new ExternalCommand(this).execute('docker', 'ps', "--format='{{.Ports}}'", out: { InputStream stream ->
+        StringBuffer err = "" << ""
+        int rc = new ExternalCommand(this).execute('docker', 'ps', "--format='{{.Ports}}'", err: err, out: { InputStream stream ->
             stream.eachLine { String line ->
                 answer.addAll(extractBoundPortsFromLine(line))
             }
         })
+        if (rc != 0) {
+            throw new RuntimeException(err.toString())
+        }
         return answer
     }
 
