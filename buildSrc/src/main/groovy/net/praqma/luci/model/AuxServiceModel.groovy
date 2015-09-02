@@ -1,5 +1,6 @@
 package net.praqma.luci.model
 
+import net.praqma.luci.docker.Containers
 import net.praqma.luci.utils.ExternalCommand
 
 /**
@@ -10,15 +11,15 @@ import net.praqma.luci.utils.ExternalCommand
  */
 trait AuxServiceModel {
 
-    def prepareService(Context context) {
+    private def prepareService(Containers containers) {
         BaseServiceModel me = this as BaseServiceModel
-        me.prepare(context)
-        return me.buildComposeMap(context)
+        me.prepare()
+        return me.buildComposeMap(containers)
     }
 
-    void startService(Context context) {
+    void startService(Containers containers) {
         BaseServiceModel me = this
-        def map = prepareService(context)
+        def map = prepareService(containers)
         List<String> startCmd = ['docker', 'run', '-d']
         map.ports.each {
             startCmd << '-p' << it
@@ -37,6 +38,6 @@ trait AuxServiceModel {
 
         startCmd.addAll(map.command)
 
-        new ExternalCommand(dockerHost).execute(startCmd as String[])
+        new ExternalCommand(me.dockerHost).execute(startCmd as String[])
     }
 }

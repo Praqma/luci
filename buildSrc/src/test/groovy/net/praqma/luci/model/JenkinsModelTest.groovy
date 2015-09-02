@@ -18,8 +18,7 @@ class JenkinsModelTest {
 
         }
         JenkinsModel model = box.properties.jenkins
-        Context ctx = new Context(box, box.dockerHost)
-        model.prepare(ctx)
+        model.prepare()
 
         // Verify the sshkeys container
         new ExternalCommand(model.dockerHost).execute('docker', 'run', '--rm', ctx.sshKeys(model.dockerHost).volumesFromArg,

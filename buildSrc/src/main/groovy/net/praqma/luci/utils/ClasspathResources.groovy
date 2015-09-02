@@ -17,7 +17,7 @@ class ClasspathResources {
     File resourceAsFile(String resource) {
         URL url = classLoader.getResource(resource)
         if (url == null) {
-            throw new IllegalArgumentException("Resouces '${resouces}' not found")
+            throw new IllegalArgumentException("Resouces '${resource}' not found")
         }
         if (url.protocol != 'file') {
             // TODO implement when executing from jar

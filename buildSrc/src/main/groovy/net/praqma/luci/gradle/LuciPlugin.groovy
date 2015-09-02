@@ -74,6 +74,7 @@ class LuciPlugin implements Plugin<Project> {
             if (box.dockerHost == null) {
                 box.dockerHost =  project.luci.defaultHost
             }
+            box.initialize()
             // Task to generate docker-compose yaml and other things needed
             // to star the lucibox
             String taskNamePrefix = "luci${box.name.capitalize()}"

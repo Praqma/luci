@@ -12,6 +12,7 @@ class ExternalCommand {
     final DockerHost dockerHost
 
     ExternalCommand(DockerHost dockerHost = null) {
+        assert dockerHost == null || dockerHost.uri != null
         this.dockerHost = dockerHost
     }
 

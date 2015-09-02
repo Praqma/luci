@@ -2,6 +2,7 @@ package net.praqma.luci.model
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import net.praqma.luci.docker.Containers
 import net.praqma.luci.docker.DockerHost
 import net.praqma.luci.utils.ClasspathResources
 import net.praqma.luci.utils.ExternalCommand
@@ -49,7 +50,7 @@ class JenkinsModel extends BaseServiceModel implements WebfrontendService {
         return this.initFiles
     }
 
-    void initFiles(File...files) {
+    void initFiles(File... files) {
         initFiles(files.toList())
     }
 
@@ -64,12 +65,12 @@ class JenkinsModel extends BaseServiceModel implements WebfrontendService {
 
     @Override
     @CompileDynamic
-    void addToComposeMap(Map map, Context context) {
-        super.addToComposeMap(map, context)
+    void addToComposeMap(Map map, Containers containers) {
+        super.addToComposeMap(map, containers)
 
-        DockerHost h = context.box.dockerHost
+        DockerHost h = box.dockerHost
         String url = "http://${h.host}:${h.port}"
-        map.command = ['-d', context.jenkinsSlave(dockerHost).name,
+        map.command = ['-d', containers.jenkinsSlave(dockerHost).name,
                        '-c', "http://${h.host}:${cloudPort()}" as String,
                        '-j', "http://${h.host}:${box.port}/jenkins" as String,
                        '-e', 'luci@praqma.net',
@@ -97,9 +98,9 @@ class JenkinsModel extends BaseServiceModel implements WebfrontendService {
         map.ports = ["${slaveAgentPort}:${slaveAgentPort}" as String] // for slave connections
         //map.ports << '10080:8080' // Enter container without nginx, for debug
         map.volumes_from <<
-                context.sshKeys(dockerHost).name <<
-                context.java8mixin(dockerHost).name <<
-                context.jenkinsConfig(this).name
+                containers.sshKeys(dockerHost).name <<
+                containers.java8mixin(dockerHost).name <<
+                containers.jenkinsConfig(this).name
     }
 
     void staticSlave(String slaveName, Closure closure) {
@@ -130,16 +131,16 @@ class JenkinsModel extends BaseServiceModel implements WebfrontendService {
 
     @Override
     @CompileDynamic
-    void prepare(Context context) {
-        super.prepare(context)
-        staticSlaves.values().each {
-            context.auxServices << it
-            it.prepare(context)
-        }
-        actions.each {
-            it()
-        }
-        initFiles(new ClasspathResources().resourceAsFile('scripts/luci-init.groovy') as File)
+    void prepare() {
+        super.prepare()
+        staticSlaves.values()*.prepare()
+        actions.each { it() }
+        initFiles(new ClasspathResources(JenkinsModel.classLoader).resourceAsFile('scripts/luci-init.groovy') as File)
+    }
+
+    @Override
+    void preStart(LuciboxModel box, Containers containers) {
+        super.preStart(box, containers)
         if (slaveAgentPort == -1) {
             slaveAgentPort = assignSlaveAgentPort()
         }
