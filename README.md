@@ -1,3 +1,7 @@
+---
+maintainer: hoeghh
+---
+
 # Luci Understands Continuous Integration
 
 ## Local Configuration
